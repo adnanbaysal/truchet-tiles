@@ -4,8 +4,6 @@ import pygame.gfxdraw
 
 
 class TruchetTiler:
-    GUI_PANEL_WIDTH = 0
-
     def __init__(
         self,
         grid: list[list[int]],
@@ -32,7 +30,7 @@ class TruchetTiler:
 
         self.grid_size = len(self.grid)
         self.draw_size = self.grid_size * self.tile_size
-        self.screen = pygame.display.set_mode((self.draw_size / 2 + self.GUI_PANEL_WIDTH, self.draw_size / 2))
+        self.screen = pygame.display.set_mode((self.draw_size / 2, self.draw_size / 2))
         self.draw_surface = pygame.Surface((self.draw_size, self.draw_size), pygame.SRCALPHA)
         self._draw_background = (255, 255, 255)
 
