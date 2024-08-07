@@ -1,4 +1,4 @@
-A pygame based implementation of Truchet tiling defined in [this blog post]([https://sparkling-coral-ef5.notion.site/Exploring-Truchet-Tiles-ec972c29dc1a4a1da77aa2f623e81d7d](https://sparkling-coral-ef5.notion.site/Exploring-Truchet-Tiles-ec972c29dc1a4a1da77aa2f623e81d7d)).
+A pygame based implementation of Truchet tiling defined in [this blog post](https://medium.com/@adbaysal/exploring-truchet-tiles-da61f02981a0).
 
 ## How to use
 After installing pygame, run main.py. This will open a pygame screen. Use the following keys to alter the tiling:
