@@ -11,6 +11,7 @@ class TruchetTiler:
         angled: bool = False,
         color = 0,
         line_color: tuple[int, int, int] = (0, 0, 0),
+        fill_color: tuple[int, int, int] = (0, 0, 0),
         line_width: int = 3,
     ) -> None:
         assert tile_size > 0, "tile_size must be positive"
@@ -20,6 +21,7 @@ class TruchetTiler:
         self.angled = angled
         self.color = color
 
+        self.fill_color = fill_color
         self.line_color = line_color
         self.line_width = line_width
 
@@ -99,8 +101,8 @@ class TruchetTiler:
                 triangle1 = ((x + end, y), (x + end, y + middle), (x + middle, y))
                 triangle2 = ((x, y + end), (x, y + middle), (x + middle, y + end))
 
-            pygame.draw.polygon(self.draw_surface, self.line_color, triangle1, width=0)
-            pygame.draw.polygon(self.draw_surface, self.line_color, triangle2, width=0)
+            pygame.draw.polygon(self.draw_surface, self.fill_color, triangle1, width=0)
+            pygame.draw.polygon(self.draw_surface, self.fill_color, triangle2, width=0)
 
         else:
             # draw hexagon
@@ -123,7 +125,7 @@ class TruchetTiler:
                     (x, y + middle),
                 )
 
-            pygame.draw.polygon(self.draw_surface, self.line_color, points, width=0)
+            pygame.draw.polygon(self.draw_surface, self.fill_color, points, width=0)
 
     @staticmethod
     def _neighbor_cell(_grid: list[list[int]], row: int, col: int) -> int:
