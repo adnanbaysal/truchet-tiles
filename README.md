@@ -11,3 +11,5 @@ After installing pygame, run main.py. This will open a pygame screen. Use the fo
 * W: Increase the width of the line in linear version.
 * S: Decrease the width of the line in linear version.
 * P: Print the current image on pygame screen to a file.
+* C: Switch between Curved and Straight lines mode
+* H: Cycle through 3 modes of Hybrid fill for curved tiling

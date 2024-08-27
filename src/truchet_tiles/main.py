@@ -8,8 +8,8 @@ from truchet_tiles.grid_generator import generate_grid, GridType
 
 
 def interactive_display(
-        grid_type: GridType, grid_size: int, tile_size: int, angled: bool, filled: bool
-    ):
+    grid_type: GridType, grid_size: int, tile_size: int, angled: bool, filled: bool, curved: bool
+):
     clock = pygame.time.Clock()
     fps = 60
 
@@ -21,7 +21,7 @@ def interactive_display(
     
     color = 0
     grid = generate_grid(grid_size, grid_type)
-    tiler = TruchetTiler(grid, tile_size, angled, color)
+    tiler = TruchetTiler(grid=grid, tile_size=tile_size, angled=angled, curved=curved, color=color)
     pygame.display.set_caption(grid_type)
     draw_func = tiler.draw_filled if filled else tiler.draw_linear
     draw_func()
@@ -46,7 +46,7 @@ def interactive_display(
                 elif event.key == pygame.K_p:
                     now_str = str(datetime.datetime.now())
                     pygame.image.save(tiler.screen, f"screenshot_{now_str}.jpeg")
-                elif event.key == pygame.K_UP:
+                elif event.key == pygame.K_UP:  # TODO: combine up and dowm
                     grid_type_index = (grid_type_index + 1) % len(grid_types)
                     grid_type = grid_types[grid_type_index]
                     grid = generate_grid(grid_size, grid_type)
@@ -75,13 +75,19 @@ def interactive_display(
                     line_width_index = (line_width_index - 1) % len(line_widths)
                     tiler.line_width = line_widths[line_width_index]
                     draw_func()
+                elif event.key == pygame.K_c:
+                    tiler.curved = tiler.curved ^ True
+                    draw_func()
+                elif event.key == pygame.K_h:
+                    tiler.rotate_hybrid_mode()
+                    draw_func()
 
         pygame.display.update()
         clock.tick(fps)
 
 
 if __name__ == "__main__":
-    """ Usage: python main.py grid_size tile_size grid_func alignment mode
+    """ Usage: python main.py grid_size tile_size grid_func alignment mode crvd
                any last-n parameter can be omitted.
         Arguments:
             grid_size: positive integer
@@ -89,6 +95,7 @@ if __name__ == "__main__":
             grid_func: One of "xor", "mod", "multxor", "powxor", "sumxor", "random"
             alignment: one of "perp" or "angl"
             mode: one of "fill" or "line"
+            crvd: one of "curved" or "straight"
 
         Sample calls:
             64 16 xor perp fill
@@ -101,5 +108,13 @@ if __name__ == "__main__":
     grid_type = GridType[sys.argv[3].upper()] if len(sys.argv) > 3 else GridType.XOR
     angled = sys.argv[4] == "angl" if len(sys.argv) > 4 else True
     filled = sys.argv[5] == "fill" if len(sys.argv) > 5 else False
+    curved = sys.argv[6] == "curved" if len(sys.argv) > 6 else False
 
-    interactive_display(grid_type, grid_size, tile_size, angled, filled)
+    interactive_display(
+        grid_type=grid_type, 
+        grid_size=grid_size, 
+        tile_size=tile_size, 
+        angled=angled, 
+        filled=filled, 
+        curved=curved,
+    )
