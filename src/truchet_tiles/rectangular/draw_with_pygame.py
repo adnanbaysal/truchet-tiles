@@ -3,7 +3,7 @@ import pygame
 import pygame.gfxdraw
 
 
-class TruchetTiler:
+class DrawTruchetPygame:
     def __init__(
         self,
         grid: list[list[int]],

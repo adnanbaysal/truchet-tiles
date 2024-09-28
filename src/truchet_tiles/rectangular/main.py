@@ -3,8 +3,8 @@ import sys
 
 import pygame
 
-from truchet_tiles.tiler import TruchetTiler
-from truchet_tiles.grid_generator import generate_grid, GridType
+from truchet_tiles.rectangular.draw_with_pygame import DrawTruchetPygame
+from truchet_tiles.rectangular.grid_generator import generate_grid, GridType
 
 
 def interactive_display(
@@ -21,9 +21,9 @@ def interactive_display(
     
     color = 0
     grid = generate_grid(grid_size, grid_type)
-    tiler = TruchetTiler(grid=grid, tile_size=tile_size, angled=angled, curved=curved, color=color)
+    drawer = DrawTruchetPygame(grid=grid, tile_size=tile_size, angled=angled, curved=curved, color=color)
     pygame.display.set_caption(grid_type)
-    draw_func = tiler.draw_filled if filled else tiler.draw_linear
+    draw_func = drawer.draw_filled if filled else drawer.draw_linear
     draw_func()
     
     running = True
@@ -36,50 +36,50 @@ def interactive_display(
                 if event.key == pygame.K_i:
                     # invert colors
                     color = color ^ 1
-                    tiler.color = color
+                    drawer.color = color
                     draw_func()
                 elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                     # Redraws screen. Useful for random tiling
                     grid = generate_grid(grid_size, grid_type)
-                    tiler.grid = grid
+                    drawer.grid = grid
                     draw_func()
                 elif event.key == pygame.K_p:
                     now_str = str(datetime.datetime.now())
-                    pygame.image.save(tiler.screen, f"screenshot_{now_str}.jpeg")
+                    pygame.image.save(drawer.screen, f"screenshot_{now_str}.jpeg")
                 elif event.key == pygame.K_UP:  # TODO: combine up and dowm
                     grid_type_index = (grid_type_index + 1) % len(grid_types)
                     grid_type = grid_types[grid_type_index]
                     grid = generate_grid(grid_size, grid_type)
-                    tiler.grid = grid
+                    drawer.grid = grid
                     draw_func()
                     pygame.display.set_caption(grid_type)
                 elif event.key == pygame.K_DOWN:
                     grid_type_index = (grid_type_index - 1) % len(grid_types)
                     grid_type = grid_types[grid_type_index]
                     grid = generate_grid(grid_size, grid_type)
-                    tiler.grid = grid
+                    drawer.grid = grid
                     draw_func()
                     pygame.display.set_caption(grid_type)
                 elif event.key == pygame.K_a:
-                    tiler.angled = tiler.angled ^ True
+                    drawer.angled = drawer.angled ^ True
                     draw_func()
                 elif event.key == pygame.K_f:
                     filled = filled ^ True
-                    draw_func = tiler.draw_filled if filled else tiler.draw_linear
+                    draw_func = drawer.draw_filled if filled else drawer.draw_linear
                     draw_func()
                 elif event.key == pygame.K_w:
                     line_width_index = (line_width_index + 1) % len(line_widths)
-                    tiler.line_width = line_widths[line_width_index]
+                    drawer.line_width = line_widths[line_width_index]
                     draw_func()
                 elif event.key == pygame.K_s:
                     line_width_index = (line_width_index - 1) % len(line_widths)
-                    tiler.line_width = line_widths[line_width_index]
+                    drawer.line_width = line_widths[line_width_index]
                     draw_func()
                 elif event.key == pygame.K_c:
-                    tiler.curved = tiler.curved ^ True
+                    drawer.curved = drawer.curved ^ True
                     draw_func()
                 elif event.key == pygame.K_h:
-                    tiler.rotate_hybrid_mode()
+                    drawer.rotate_hybrid_mode()
                     draw_func()
 
         pygame.display.update()
