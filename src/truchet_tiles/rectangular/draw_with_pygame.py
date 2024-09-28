@@ -4,31 +4,20 @@ import pygame.gfxdraw
 
 
 class DrawTruchetPygame:
-    def __init__(
-        self,
-        grid: list[list[int]],
-        tile_size: int = 32,
-        angled: bool = False,
-        curved: bool = False,
-        color = 0,
-        line_color: tuple[int, int, int] = (0, 0, 0),
-        fill_color: tuple[int, int, int] = (0, 0, 0),
-        line_width: int = 3,
-        hybrid_fill: int = 0,
-    ) -> None:
+    def __init__(self, grid: list[list[int]], tile_size: int) -> None:
         assert tile_size > 0, "tile_size must be positive"
         self.tile_size = tile_size
         self.tile_mid = int(self.tile_size / 2)
 
-        self.angled = angled
-        self.curved = curved
-        self.color = color
+        self.angled = True
+        self.curved = False
+        self.color = 0
 
-        self.fill_color = fill_color
-        self.line_color = line_color
-        self.line_width = line_width
+        self.fill_color = (0, 0, 0)
+        self.line_color = (0, 0, 0)
+        self.line_width = 3
 
-        self.hybrid_fill = hybrid_fill  # if > 0, mixes curved and straight fills
+        self.hybrid_fill = 0  # if > 0, mixes curved and straight fills
 
         self.grid = grid
         assert all(

@@ -7,23 +7,23 @@ from truchet_tiles.rectangular.draw_with_pygame import DrawTruchetPygame
 from truchet_tiles.rectangular.grid_generator import generate_grid, GridType
 
 
-def interactive_display(
-    grid_type: GridType, grid_size: int, tile_size: int, angled: bool, filled: bool, curved: bool
-):
+def interactive_display(grid_size: int, tile_size: int):
     clock = pygame.time.Clock()
     fps = 60
 
     line_widths = tuple(i for i in range(1, 64))
     line_width_index = 2
 
+    grid_type = GridType.XOR
     grid_types = [g.value for g in GridType]
     grid_type_index = grid_types.index(grid_type.value)
     
     color = 0
     grid = generate_grid(grid_size, grid_type)
-    drawer = DrawTruchetPygame(grid=grid, tile_size=tile_size, angled=angled, curved=curved, color=color)
+    drawer = DrawTruchetPygame(grid=grid, tile_size=tile_size)
     pygame.display.set_caption(grid_type)
-    draw_func = drawer.draw_filled if filled else drawer.draw_linear
+    filled = False
+    draw_func = drawer.draw_linear
     draw_func()
     
     running = True
@@ -87,34 +87,15 @@ def interactive_display(
 
 
 if __name__ == "__main__":
-    """ Usage: python main.py grid_size tile_size grid_func alignment mode crvd
-               any last-n parameter can be omitted.
+    """ Usage: python main.py grid_size tile_size
+               0, 1, or 2 arguments can be given.
         Arguments:
-            grid_size: positive integer
-            tile_size: positive integer
-            grid_func: One of "xor", "mod", "multxor", "powxor", "sumxor", "random"
-            alignment: one of "perp" or "angl"
-            mode: one of "fill" or "line"
-            crvd: one of "curved" or "straight"
-
-        Sample calls:
-            64 16 xor perp fill
-            64 16 mod angl line
+            grid_size: positive integer, default 32
+            tile_size: positive integer, default 56
     """
     pygame.init()
 
     grid_size = int(sys.argv[1]) if len(sys.argv) > 1 else 32
     tile_size = int(sys.argv[2]) if len(sys.argv) > 2 else 56
-    grid_type = GridType[sys.argv[3].upper()] if len(sys.argv) > 3 else GridType.XOR
-    angled = sys.argv[4] == "angl" if len(sys.argv) > 4 else True
-    filled = sys.argv[5] == "fill" if len(sys.argv) > 5 else False
-    curved = sys.argv[6] == "curved" if len(sys.argv) > 6 else False
 
-    interactive_display(
-        grid_type=grid_type, 
-        grid_size=grid_size, 
-        tile_size=tile_size, 
-        angled=angled, 
-        filled=filled, 
-        curved=curved,
-    )
+    interactive_display(grid_size=grid_size, tile_size=tile_size)
