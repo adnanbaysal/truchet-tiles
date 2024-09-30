@@ -4,20 +4,22 @@ import pygame.gfxdraw
 
 
 class DrawTruchetPygame:
+    MAX_LINE_WIDTH = 64
+
     def __init__(self, grid: list[list[int]], tile_size: int) -> None:
         assert tile_size > 0, "tile_size must be positive"
         self.tile_size = tile_size
         self.tile_mid = int(self.tile_size / 2)
 
-        self.angled = True
-        self.curved = False
-        self.color = 0
+        self._angled = True
+        self._curved = False
+        self._color = 0
 
         self.fill_color = (0, 0, 0)
         self.line_color = (0, 0, 0)
-        self.line_width = 3
+        self._line_width = 3
 
-        self.hybrid_fill = 0  # if > 0, mixes curved and straight fills
+        self._hybrid_fill = 0  # if > 0, mixes curved and straight fills
 
         self.grid = grid
         assert all(
@@ -30,14 +32,29 @@ class DrawTruchetPygame:
         self.draw_surface = pygame.Surface((self.draw_size, self.draw_size), pygame.SRCALPHA)
         self._draw_background = (255, 255, 255)
 
-    def rotate_hybrid_mode(self):
-        self.hybrid_fill = (self.hybrid_fill + 1) % 3
+    def next_hybrid_mode(self):
+        self._hybrid_fill = (self._hybrid_fill + 1) % 3
+
+    def invert_color(self):
+        self._color = self._color ^ 1
+
+    def increase_line_width(self):
+        self._line_width = self._line_width + 1 if self._line_width != self.MAX_LINE_WIDTH else 1
+
+    def decrease_line_width(self):
+        self._line_width = self._line_width - 1 if self._line_width != 1 else self.MAX_LINE_WIDTH
+
+    def invert_angled(self):
+        self._angled = self._angled ^ True
+
+    def invert_curved(self):
+        self._curved = self._curved ^ True
 
     def _clear_screan(self):
         self.draw_surface.fill(self._draw_background)
 
     def _show_screen(self):
-        if not self.angled:
+        if not self._angled:
             self.screen.blit(
                 pygame.transform.scale_by(
                     pygame.transform.rotate(self.draw_surface, 315),
@@ -67,8 +84,8 @@ class DrawTruchetPygame:
             left2 = (x_offset + self.tile_mid, y_offset + self.tile_size)
             right2 = (x_offset + self.tile_mid, y_offset)
 
-        pygame.draw.line(self.draw_surface, self.line_color, left1, left2, self.line_width)
-        pygame.draw.line(self.draw_surface, self.line_color, right1, right2, self.line_width)
+        pygame.draw.line(self.draw_surface, self.line_color, left1, left2, self._line_width)
+        pygame.draw.line(self.draw_surface, self.line_color, right1, right2, self._line_width)
 
     def _draw_cell_curved(self, x_offset: int, y_offset: int, cell_value: int):
         kwargs_left = {}
@@ -86,10 +103,10 @@ class DrawTruchetPygame:
             kwargs_right["draw_bottom_left"] = True
         
         pygame.draw.circle(
-            self.draw_surface, self.line_color, center_left, self.tile_mid, width=self.line_width, **kwargs_left
+            self.draw_surface, self.line_color, center_left, self.tile_mid, width=self._line_width, **kwargs_left
         )
         pygame.draw.circle(
-            self.draw_surface, self.line_color, center_right, self.tile_mid, width=self.line_width, **kwargs_right
+            self.draw_surface, self.line_color, center_right, self.tile_mid, width=self._line_width, **kwargs_right
         )
 
     def draw_linear(self):
@@ -99,7 +116,7 @@ class DrawTruchetPygame:
             for grid_col in range(self.grid_size):
                 x_offset = grid_col * self.tile_size
 
-                if self.curved:
+                if self._curved:
                     self._draw_cell_curved(x_offset, y_offset, self.grid[grid_row][grid_col])
                 else:
                     self._draw_cell_straight(x_offset, y_offset, self.grid[grid_row][grid_col])
@@ -204,12 +221,12 @@ class DrawTruchetPygame:
 
     def _draw_filled_tile_curved(self, fill_inside: int, rotate: int, x: int, y: int, middle: int, end: int):
         if fill_inside:
-            if self.hybrid_fill in (0, 1):
+            if self._hybrid_fill in (0, 1):
                 self._fill_inside_curved(rotate, x, y, end)
             else:
                 self._fill_inside_straight(rotate, x, y, middle, end)
         else:
-            if self.hybrid_fill in (0, 2):
+            if self._hybrid_fill in (0, 2):
                 self._fill_outside_curved(rotate, x, y, end)
             else:
                 self._fill_outside_straight(rotate, x, y, middle, end)
@@ -224,7 +241,7 @@ class DrawTruchetPygame:
         middle = self.tile_mid
         end = self.tile_size
 
-        if self.curved:
+        if self._curved:
             self._draw_filled_tile_curved(fill_inside, rotate, x, y, middle, end)
         else:
             self._draw_filled_tile_straight(fill_inside, rotate, x, y, middle, end)
@@ -247,7 +264,7 @@ class DrawTruchetPygame:
                 neighbor = self._neighbor_cell(self.grid, grid_row, grid_col)
                 bit_changed = self.grid[grid_row][grid_col] ^ neighbor
                 if grid_row == 0 and grid_col == 0:
-                    neighbor_fill = self.grid[0][0] ^ self.color
+                    neighbor_fill = self.grid[0][0] ^ self._color
                 else:
                     neighbor_fill = self._neighbor_cell(_grid, grid_row, grid_col)
                 _grid[grid_row].append(neighbor_fill ^ bit_changed ^ 1)

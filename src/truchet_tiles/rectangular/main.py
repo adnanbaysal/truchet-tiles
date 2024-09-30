@@ -11,14 +11,10 @@ def interactive_display(grid_size: int, tile_size: int):
     clock = pygame.time.Clock()
     fps = 60
 
-    line_widths = tuple(i for i in range(1, 64))
-    line_width_index = 2
-
     grid_type = GridType.XOR
     grid_types = [g.value for g in GridType]
     grid_type_index = grid_types.index(grid_type.value)
     
-    color = 0
     grid = generate_grid(grid_size, grid_type)
     drawer = DrawTruchetPygame(grid=grid, tile_size=tile_size)
     pygame.display.set_caption(grid_type)
@@ -34,9 +30,7 @@ def interactive_display(grid_size: int, tile_size: int):
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_i:
-                    # invert colors
-                    color = color ^ 1
-                    drawer.color = color
+                    drawer.invert_color()
                     draw_func()
                 elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                     # Redraws screen. Useful for random tiling
@@ -46,40 +40,32 @@ def interactive_display(grid_size: int, tile_size: int):
                 elif event.key == pygame.K_p:
                     now_str = str(datetime.datetime.now())
                     pygame.image.save(drawer.screen, f"screenshot_{now_str}.jpeg")
-                elif event.key == pygame.K_UP:  # TODO: combine up and dowm
-                    grid_type_index = (grid_type_index + 1) % len(grid_types)
-                    grid_type = grid_types[grid_type_index]
-                    grid = generate_grid(grid_size, grid_type)
-                    drawer.grid = grid
-                    draw_func()
-                    pygame.display.set_caption(grid_type)
-                elif event.key == pygame.K_DOWN:
-                    grid_type_index = (grid_type_index - 1) % len(grid_types)
+                elif event.key in (pygame.K_UP, pygame.K_DOWN):
+                    adder = +1 if event.key == pygame.K_UP else -1
+                    grid_type_index = (grid_type_index + adder) % len(grid_types)
                     grid_type = grid_types[grid_type_index]
                     grid = generate_grid(grid_size, grid_type)
                     drawer.grid = grid
                     draw_func()
                     pygame.display.set_caption(grid_type)
                 elif event.key == pygame.K_a:
-                    drawer.angled = drawer.angled ^ True
+                    drawer.invert_angled()
                     draw_func()
                 elif event.key == pygame.K_f:
                     filled = filled ^ True
                     draw_func = drawer.draw_filled if filled else drawer.draw_linear
                     draw_func()
                 elif event.key == pygame.K_w:
-                    line_width_index = (line_width_index + 1) % len(line_widths)
-                    drawer.line_width = line_widths[line_width_index]
+                    drawer.increase_line_width()
                     draw_func()
                 elif event.key == pygame.K_s:
-                    line_width_index = (line_width_index - 1) % len(line_widths)
-                    drawer.line_width = line_widths[line_width_index]
+                    drawer.decrease_line_width()
                     draw_func()
                 elif event.key == pygame.K_c:
-                    drawer.curved = drawer.curved ^ True
+                    drawer.invert_curved()
                     draw_func()
                 elif event.key == pygame.K_h:
-                    drawer.rotate_hybrid_mode()
+                    drawer.next_hybrid_mode()
                     draw_func()
 
         pygame.display.update()

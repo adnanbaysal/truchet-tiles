@@ -15,7 +15,7 @@ Run rectangular/main.py. This will open a pygame screen. Use the following keys 
 * **S:** Decrease the width of the line in linear version.
 * **P:** Print the current image on pygame screen to a file.
 * **C:** Switch between Curved and Straight lines mode
-* **H:** Cycle through 3 modes of Hybrid fill for curved tiling
+* **H:** Cycle through 3 modes of Hybrid fill for curved and filled tiling
 
 ### Hexagonal Tiling
 To be implemented ...
