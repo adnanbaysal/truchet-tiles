@@ -34,8 +34,7 @@ def interactive_display(grid_size: int, tile_size: int):
                     draw_func()
                 elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                     # Redraws screen. Useful for random tiling
-                    grid = generate_grid(grid_size, grid_type)
-                    drawer.grid = grid
+                    drawer.grid = generate_grid(grid_size, grid_type)
                     draw_func()
                 elif event.key == pygame.K_p:
                     now_str = str(datetime.datetime.now())
@@ -44,14 +43,14 @@ def interactive_display(grid_size: int, tile_size: int):
                     adder = +1 if event.key == pygame.K_UP else -1
                     grid_type_index = (grid_type_index + adder) % len(grid_types)
                     grid_type = grid_types[grid_type_index]
-                    grid = generate_grid(grid_size, grid_type)
-                    drawer.grid = grid
+                    drawer.grid = generate_grid(grid_size, grid_type)
                     draw_func()
                     pygame.display.set_caption(grid_type)
                 elif event.key == pygame.K_a:
                     drawer.invert_angled()
                     draw_func()
                 elif event.key == pygame.K_f:
+                    # TODO: Fix the bug when F is pressed
                     filled = filled ^ True
                     draw_func = drawer.draw_filled if filled else drawer.draw_linear
                     draw_func()
