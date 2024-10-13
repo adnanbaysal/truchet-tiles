@@ -27,11 +27,8 @@ def interactive_display(grid_size: int, tile_size: int):
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_i:
-                    drawer.invert_color()
-                    drawer.draw()
-                elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
-                    # Redraws screen. Useful for random tiling
+                if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
+                    # Redraws screen. Has effect in random tiling
                     drawer.grid = generate_grid(grid_size, grid_type)
                     drawer.draw()
                 elif event.key in (pygame.K_UP, pygame.K_DOWN):
@@ -41,6 +38,9 @@ def interactive_display(grid_size: int, tile_size: int):
                     drawer.grid = generate_grid(grid_size, grid_type)
                     drawer.draw()
                     pygame.display.set_caption(grid_type)
+                elif event.key == pygame.K_i:
+                    drawer.invert_color()
+                    drawer.draw()
                 elif event.key == pygame.K_a:
                     drawer.invert_angled()
                     drawer.draw()
@@ -48,17 +48,17 @@ def interactive_display(grid_size: int, tile_size: int):
                     # TODO: Fix the bug when F is pressed
                     drawer.invert_filled()
                     drawer.draw()
-                elif event.key == pygame.K_w:
-                    drawer.increase_line_width()
-                    drawer.draw()
-                elif event.key == pygame.K_s:
-                    drawer.decrease_line_width()
-                    drawer.draw()
                 elif event.key == pygame.K_c:
                     drawer.invert_curved()
                     drawer.draw()
                 elif event.key == pygame.K_h:
                     drawer.next_hybrid_mode()
+                    drawer.draw()
+                elif event.key == pygame.K_w:
+                    drawer.increase_line_width()
+                    drawer.draw()
+                elif event.key == pygame.K_s:
+                    drawer.decrease_line_width()
                     drawer.draw()
                 elif event.key == pygame.K_p:
                     now_str = str(datetime.datetime.now())
