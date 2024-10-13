@@ -52,6 +52,7 @@ class DrawTruchetSVG:
         self._screen = pygame.display.set_mode((self._draw_size, self._draw_size))
         self._screen.fill(self._draw_background)
         self._svg = dw.Drawing(self._draw_size, self._draw_size, id_prefix='pic')
+        self._svg_top_group = dw.Group(id="truchet_group", fill="none")  # To handle translations
         self._svg.save_png(self.PNG_FILE_PATH)
         self._draw_surface = pygame.image.load(self.PNG_FILE_PATH)
 
@@ -163,24 +164,26 @@ class DrawTruchetSVG:
             for grid_col in range(self._grid_size):
                 x_offset = grid_col * self._tile_size
 
-                if self._curve_style == CurveStyle.curved:
-                    self._draw_cell_curved(x_offset, y_offset, self._grid[grid_row][grid_col])
-                else:
+                if self._curve_style == CurveStyle.straight:
                     self._draw_cell_straight(x_offset, y_offset, self._grid[grid_row][grid_col])
+                else:
+                    self._draw_cell_curved(x_offset, y_offset, self._grid[grid_row][grid_col])
         
         self._show_screen()
 
     def _clear_screan(self):
         self._svg.clear()
+        self._svg_top_group = dw.Group(id="truchet_group", fill="none")
         self._screen.fill(self._draw_background)
         
     def _show_screen(self):
+        self._svg.append(dw.Use(self._svg_top_group, 0, 0))
         self._svg.save_png(self.PNG_FILE_PATH)
         self._draw_surface = pygame.image.load(self.PNG_FILE_PATH)
         self._screen.blit(self._draw_surface, (0, 0))
 
     def _draw_cell_straight(self, x_offset: int, y_offset: int, cell_value: int):
-        self._svg.append(
+        self._svg_top_group.append(
             dw.Use(
                 self._base_tiles[FillStyle.linear][CurveStyle.straight][cell_value],
                 x_offset, 
