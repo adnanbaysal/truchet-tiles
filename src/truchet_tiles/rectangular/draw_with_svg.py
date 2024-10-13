@@ -16,6 +16,7 @@ class DrawTruchetSVG:
         self.tile_size = tile_size
         self.tile_mid = int(self.tile_size / 2)
 
+        self._filled = False
         self._angled = True
         self._curved = False
         self._color = 0
@@ -28,11 +29,7 @@ class DrawTruchetSVG:
         self._hybrid_fill = 0  # if > 0, mixes curved and straight fills
 
         self.grid = grid
-        assert all(
-            len(row) == len(self.grid) for row in grid
-        ), "grid should have the same number of rows as the number of columns"
-
-        self.grid_size = len(self.grid)
+        self.grid_size = len(self._grid)
         self.draw_size = self.grid_size * self.tile_size
         self.screen = pygame.display.set_mode((self.draw_size, self.draw_size))
         self.screen.fill(self._draw_background)
@@ -42,6 +39,17 @@ class DrawTruchetSVG:
 
         self._straigh_linear_tiles = []
         self._create_base_tiles()
+
+    @property
+    def grid(self):
+        return self._grid
+    
+    @grid.setter
+    def grid(self, value):
+        assert all(
+            len(row) == len(value) for row in value
+        ), "grid should have the same number of rows as the number of columns"
+        self._grid = value
 
     def _create_base_tiles(self):
         self._create_straight_linear_tile(0)
@@ -67,7 +75,13 @@ class DrawTruchetSVG:
 
         self._straigh_linear_tiles.append(sl)
 
-    def draw_linear(self):
+    def draw(self):
+        if self._filled:
+            self._draw_filled()
+        else:
+            self._draw_linear()
+
+    def _draw_linear(self):
         self._clear_screan()
         
         for grid_row in range(self.grid_size):
@@ -76,9 +90,9 @@ class DrawTruchetSVG:
                 x_offset = grid_col * self.tile_size
 
                 if self._curved:
-                    self._draw_cell_curved(x_offset, y_offset, self.grid[grid_row][grid_col])
+                    self._draw_cell_curved(x_offset, y_offset, self._grid[grid_row][grid_col])
                 else:
-                    self._draw_cell_straight(x_offset, y_offset, self.grid[grid_row][grid_col])
+                    self._draw_cell_straight(x_offset, y_offset, self._grid[grid_row][grid_col])
         
         self._show_screen()
 
@@ -254,17 +268,17 @@ class DrawTruchetSVG:
         for grid_row in range(self.grid_size):
             _grid.append([])
             for grid_col in range(self.grid_size):
-                neighbor = self._neighbor_cell(self.grid, grid_row, grid_col)
-                bit_changed = self.grid[grid_row][grid_col] ^ neighbor
+                neighbor = self._neighbor_cell(self._grid, grid_row, grid_col)
+                bit_changed = self._grid[grid_row][grid_col] ^ neighbor
                 if grid_row == 0 and grid_col == 0:
-                    neighbor_fill = self.grid[0][0] ^ self._color
+                    neighbor_fill = self._grid[0][0] ^ self._color
                 else:
                     neighbor_fill = self._neighbor_cell(_grid, grid_row, grid_col)
                 _grid[grid_row].append(neighbor_fill ^ bit_changed ^ 1)
 
         return _grid
 
-    def draw_filled(self):
+    def _draw_filled(self):
         self._clear_screan()
         grid_of_fill_inside = self._generate_fill_inside_grid()
 
@@ -275,7 +289,7 @@ class DrawTruchetSVG:
 
                 self._draw_filled_tile(
                     grid_of_fill_inside[grid_row][grid_col],
-                    self.grid[grid_row][grid_col],
+                    self._grid[grid_row][grid_col],
                     x_offset,
                     y_offset,
                 )
@@ -300,9 +314,13 @@ class DrawTruchetSVG:
     def invert_curved(self):
         self._curved = self._curved ^ True
 
+    def invert_filled(self):
+        self._filled = self._filled ^ True
+
     def tiling_identifier(self) -> str:
         return (
             f"{self.grid_size}x{self.tile_size}px_"
+            f"{'filled' if self._filled else 'line'}_"
             f"{'curved' if self._curved else 'straight'}_"
             f"{'angled' if self._angled else 'upright'}_"
             f"w{self._line_width}"

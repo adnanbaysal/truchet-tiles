@@ -3,7 +3,6 @@ import sys
 
 import pygame
 
-# from truchet_tiles.rectangular.draw_with_pygame import DrawTruchetPygame
 from truchet_tiles.rectangular.draw_with_svg import DrawTruchetSVG
 from truchet_tiles.rectangular.grid_generator import generate_grid, GridType
 
@@ -19,9 +18,7 @@ def interactive_display(grid_size: int, tile_size: int):
     grid = generate_grid(grid_size, grid_type)
     drawer = DrawTruchetSVG(grid=grid, tile_size=tile_size)
     pygame.display.set_caption(grid_type)
-    filled = False
-    draw_func = drawer.draw_linear
-    draw_func()
+    drawer.draw()
     
     running = True
     while running:
@@ -32,50 +29,48 @@ def interactive_display(grid_size: int, tile_size: int):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_i:
                     drawer.invert_color()
-                    draw_func()
+                    drawer.draw()
                 elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                     # Redraws screen. Useful for random tiling
                     drawer.grid = generate_grid(grid_size, grid_type)
-                    draw_func()
+                    drawer.draw()
+                elif event.key in (pygame.K_UP, pygame.K_DOWN):
+                    adder = +1 if event.key == pygame.K_UP else -1
+                    grid_type_index = (grid_type_index + adder) % len(grid_types)
+                    grid_type = grid_types[grid_type_index]
+                    drawer.grid = generate_grid(grid_size, grid_type)
+                    drawer.draw()
+                    pygame.display.set_caption(grid_type)
+                elif event.key == pygame.K_a:
+                    drawer.invert_angled()
+                    drawer.draw()
+                elif event.key == pygame.K_f:
+                    # TODO: Fix the bug when F is pressed
+                    drawer.invert_filled()
+                    drawer.draw()
+                elif event.key == pygame.K_w:
+                    drawer.increase_line_width()
+                    drawer.draw()
+                elif event.key == pygame.K_s:
+                    drawer.decrease_line_width()
+                    drawer.draw()
+                elif event.key == pygame.K_c:
+                    drawer.invert_curved()
+                    drawer.draw()
+                elif event.key == pygame.K_h:
+                    drawer.next_hybrid_mode()
+                    drawer.draw()
                 elif event.key == pygame.K_p:
                     now_str = str(datetime.datetime.now())
                     tiling_identifier = drawer.tiling_identifier()
                     filename = (
                         f"output/"
                         f"{grid_type.value}_"
-                        f"{'filled' if filled else 'line'}_"
                         f"{tiling_identifier}_"
                         f"{now_str}"
                         f".svg"
                     )
                     drawer.save_svg(filename)
-                elif event.key in (pygame.K_UP, pygame.K_DOWN):
-                    adder = +1 if event.key == pygame.K_UP else -1
-                    grid_type_index = (grid_type_index + adder) % len(grid_types)
-                    grid_type = grid_types[grid_type_index]
-                    drawer.grid = generate_grid(grid_size, grid_type)
-                    draw_func()
-                    pygame.display.set_caption(grid_type)
-                elif event.key == pygame.K_a:
-                    drawer.invert_angled()
-                    draw_func()
-                elif event.key == pygame.K_f:
-                    # TODO: Fix the bug when F is pressed
-                    filled = filled ^ True
-                    draw_func = drawer.draw_filled if filled else drawer.draw_linear
-                    draw_func()
-                elif event.key == pygame.K_w:
-                    drawer.increase_line_width()
-                    draw_func()
-                elif event.key == pygame.K_s:
-                    drawer.decrease_line_width()
-                    draw_func()
-                elif event.key == pygame.K_c:
-                    drawer.invert_curved()
-                    draw_func()
-                elif event.key == pygame.K_h:
-                    drawer.next_hybrid_mode()
-                    draw_func()
 
         pygame.display.flip()
         pygame.display.update()
