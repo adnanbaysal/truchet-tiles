@@ -151,10 +151,10 @@ class DrawTruchetSVG:
         raise NotImplementedError()
 
     def draw(self):
-        if self._fill_style == FillStyle.filled:
-            self._draw_filled()
-        else:
+        if self._fill_style == FillStyle.linear:
             self._draw_linear()
+        else:
+            self._draw_filled()
 
     def _draw_linear(self):
         self._clear_screan()
@@ -165,9 +165,9 @@ class DrawTruchetSVG:
                 x_offset = grid_col * self._tile_size
 
                 if self._curve_style == CurveStyle.straight:
-                    self._draw_cell_straight(x_offset, y_offset, self._grid[grid_row][grid_col])
+                    self._draw_tile_linear_straight(x_offset, y_offset, self._grid[grid_row][grid_col])
                 else:
-                    self._draw_cell_curved(x_offset, y_offset, self._grid[grid_row][grid_col])
+                    self._draw_tile_linear_curved(x_offset, y_offset, self._grid[grid_row][grid_col])
         
         self._show_screen()
 
@@ -182,7 +182,7 @@ class DrawTruchetSVG:
         self._draw_surface = pygame.image.load(self.PNG_FILE_PATH)
         self._screen.blit(self._draw_surface, (0, 0))
 
-    def _draw_cell_straight(self, x_offset: int, y_offset: int, cell_value: int):
+    def _draw_tile_linear_straight(self, x_offset: int, y_offset: int, cell_value: int):
         self._svg_top_group.append(
             dw.Use(
                 self._base_tiles[FillStyle.linear][CurveStyle.straight][cell_value],
@@ -191,7 +191,7 @@ class DrawTruchetSVG:
             )
         )
 
-    def _draw_cell_curved(self, x_offset: int, y_offset: int, cell_value: int):
+    def _draw_tile_linear_curved(self, x_offset: int, y_offset: int, cell_value: int):
         kwargs_left = {}
         kwargs_right = {}
 
