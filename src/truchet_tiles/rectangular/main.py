@@ -42,7 +42,7 @@ def interactive_display(grid_size: int, tile_size: int):
                     drawer.invert_color()
                     drawer.draw()
                 elif event.key == pygame.K_a:
-                    drawer.invert_angled()
+                    drawer.invert_aligned()
                     drawer.draw()
                 elif event.key == pygame.K_f:
                     # TODO: Fix the bug when F is pressed

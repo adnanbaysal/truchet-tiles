@@ -1,5 +1,7 @@
 import pathlib
 
+from enum import Enum
+
 import drawsvg as dw
 import pygame
 import pygame.gfxdraw
@@ -7,20 +9,39 @@ import pygame.gfxdraw
 CURR_DIR = pathlib.Path(__file__).parent.resolve()
 
 
+class FillStyle(str, Enum):
+    linear = "linear"
+    filled = "filled"
+
+
+class CurveStyle(str, Enum):
+    straight = "straight"
+    curved = "curved"
+
+
+class AxisAlignmentStyle(str, Enum):
+    aligned = "aligned"
+    rotated = "rotated"
+
+
 class DrawTruchetSVG:
     MAX_LINE_WIDTH = 64
     PNG_FILE_PATH = (CURR_DIR / "truchet.png").as_posix()
 
     def __init__(self, grid: list[list[int]], tile_size: int) -> None:
+        self.grid = grid
+
         assert tile_size > 0, "tile_size must be positive"
         self.tile_size = tile_size
         self.tile_mid = int(self.tile_size / 2)
+        self.grid_size = len(self._grid)
+        self.draw_size = self.grid_size * self.tile_size    
+        
+        self._filled = FillStyle.linear
+        self._curved = CurveStyle.straight
+        self._aligned = AxisAlignmentStyle.rotated
 
-        self._filled = False
-        self._angled = True
-        self._curved = False
         self._color = 0
-
         self._fill_color = (0, 0, 0)
         self._draw_background = (255, 255, 255)
         self._line_color = "#000000"
@@ -28,16 +49,22 @@ class DrawTruchetSVG:
 
         self._hybrid_fill = 0  # if > 0, mixes curved and straight fills
 
-        self.grid = grid
-        self.grid_size = len(self._grid)
-        self.draw_size = self.grid_size * self.tile_size
         self.screen = pygame.display.set_mode((self.draw_size, self.draw_size))
         self.screen.fill(self._draw_background)
         self.svg = dw.Drawing(self.draw_size, self.draw_size, id_prefix='pic')
         self.svg.save_png(self.PNG_FILE_PATH)
         self.draw_surface = pygame.image.load(self.PNG_FILE_PATH)
 
-        self._straigh_linear_tiles = []
+        self._base_tiles = {
+            FillStyle.linear: {
+                CurveStyle.straight: [],
+                CurveStyle.curved: [],
+            },
+            FillStyle.filled: {
+                CurveStyle.straight: [],
+                CurveStyle.curved: [],
+            },
+        }
         self._create_base_tiles()
 
     @property
@@ -51,11 +78,49 @@ class DrawTruchetSVG:
         ), "grid should have the same number of rows as the number of columns"
         self._grid = value
 
+    # LEVEL 1 base tile function:
     def _create_base_tiles(self):
-        self._create_straight_linear_tile(0)
-        self._create_straight_linear_tile(1)
+        self._create_linear_base_tiles()
+        # self._create_filled_base_tiles()  # Uncomment after implementation
 
-    def _create_straight_linear_tile(self, tile_type: int):
+    # LEVEL 2 base tile functions
+    def _create_linear_base_tiles(self):
+        self._create_linear_straight_base_tiles()
+        # self._create_linear_curved_base_tiles()  # Uncomment after implementation
+
+    def _create_filled_base_tiles(self):
+        self._create_filled_straight_base_tiles()
+        self._create_filled_curved_base_tiles()
+        
+    # LEVEL 3 base tile functions
+    def _create_linear_straight_base_tiles(self):
+        self._create_linear_straight_base_tile(0)
+        self._create_linear_straight_base_tile(1)
+
+    def _create_linear_curved_base_tiles(self):
+        self._create_linear_curved_base_tile(0)
+        self._create_linear_curved_base_tile(1)
+
+    def _create_filled_straight_base_tiles(self):
+        # Fill area beween diagonal lines
+        self._create_filled_straight_base_tile(0)
+        self._create_filled_straight_base_tile(1)
+
+        # Fill area out of diagonal lines
+        self._create_filled_straight_base_tile(2)
+        self._create_filled_straight_base_tile(3)
+
+    def _create_filled_curved_base_tiles(self):
+        # Fill area betweendiagonal lines
+        self._create_filled_curved_base_tile(0)
+        self._create_filled_curved_base_tile(1)
+
+        # Fill area outside of diagonal lines
+        self._create_filled_curved_base_tile(2)
+        self._create_filled_curved_base_tile(3)
+
+    # LEVEL 4 base tile functions
+    def _create_linear_straight_base_tile(self, tile_type: int):
         left1 = (0, self.tile_mid)
         right1 = (self.tile_size, self.tile_mid)
 
@@ -73,10 +138,19 @@ class DrawTruchetSVG:
         sl.append(line_left)
         sl.append(line_right)
 
-        self._straigh_linear_tiles.append(sl)
+        self._base_tiles[FillStyle.linear][CurveStyle.straight].append(sl)
+
+    def _create_linear_curved_base_tile(self, tile_type: int):
+        raise NotImplementedError()
+
+    def _create_filled_straight_base_tile(self, tile_type: int):
+        raise NotImplementedError()
+
+    def _create_filled_curved_base_tile(self, tile_type: int):
+        raise NotImplementedError()
 
     def draw(self):
-        if self._filled:
+        if self._filled == FillStyle.filled:
             self._draw_filled()
         else:
             self._draw_linear()
@@ -89,7 +163,7 @@ class DrawTruchetSVG:
             for grid_col in range(self.grid_size):
                 x_offset = grid_col * self.tile_size
 
-                if self._curved:
+                if self._curved == CurveStyle.curved:
                     self._draw_cell_curved(x_offset, y_offset, self._grid[grid_row][grid_col])
                 else:
                     self._draw_cell_straight(x_offset, y_offset, self._grid[grid_row][grid_col])
@@ -106,7 +180,13 @@ class DrawTruchetSVG:
         self.screen.blit(self.draw_surface, (0, 0))
 
     def _draw_cell_straight(self, x_offset: int, y_offset: int, cell_value: int):
-        self.svg.append(dw.Use(self._straigh_linear_tiles[cell_value], x_offset, y_offset))
+        self.svg.append(
+            dw.Use(
+                self._base_tiles[FillStyle.linear][CurveStyle.straight][cell_value],
+                x_offset, 
+                y_offset,
+            )
+        )
 
     def _draw_cell_curved(self, x_offset: int, y_offset: int, cell_value: int):
         kwargs_left = {}
@@ -248,7 +328,7 @@ class DrawTruchetSVG:
         middle = self.tile_mid
         end = self.tile_size
 
-        if self._curved:
+        if self._curved == CurveStyle.curved:
             self._draw_filled_tile_curved(fill_inside, rotate, x, y, middle, end)
         else:
             self._draw_filled_tile_straight(fill_inside, rotate, x, y, middle, end)
@@ -308,21 +388,33 @@ class DrawTruchetSVG:
     def decrease_line_width(self):
         self._line_width = self._line_width - 1 if self._line_width != 1 else self.MAX_LINE_WIDTH
 
-    def invert_angled(self):
-        self._angled = self._angled ^ True
+    def invert_aligned(self):
+        self._aligned = (
+            AxisAlignmentStyle.aligned 
+            if self._aligned == AxisAlignmentStyle.rotated 
+            else AxisAlignmentStyle.rotated
+        )
 
     def invert_curved(self):
-        self._curved = self._curved ^ True
+        self._curved = (
+            CurveStyle.curved 
+            if self._curved == CurveStyle.straight 
+            else CurveStyle.straight
+        )
 
     def invert_filled(self):
-        self._filled = self._filled ^ True
+        self._filled = (
+            FillStyle.filled 
+            if self._filled == FillStyle.linear 
+            else FillStyle.linear
+        )
 
     def tiling_identifier(self) -> str:
         return (
             f"{self.grid_size}x{self.tile_size}px_"
-            f"{'filled' if self._filled else 'line'}_"
-            f"{'curved' if self._curved else 'straight'}_"
-            f"{'angled' if self._angled else 'upright'}_"
+            f"{'filled' if self._filled == FillStyle.filled else 'line'}_"
+            f"{'curved' if self._curved == CurveStyle.curved else 'straight'}_"
+            f"{'aligned' if self._aligned == AxisAlignmentStyle.aligned else 'rotated'}_"
             f"w{self._line_width}"
             f"{'hybrid' + str(self._hybrid_fill) + '_' if self._hybrid_fill > 0 else ''}"
         )
