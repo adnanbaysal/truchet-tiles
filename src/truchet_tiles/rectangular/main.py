@@ -14,12 +14,12 @@ def interactive_display(grid_size: int, tile_size: int):
     grid_type = GridType.XOR
     grid_types = list(GridType)
     grid_type_index = grid_types.index(grid_type)
-    
+
     grid = generate_grid(grid_size, grid_type)
     drawer = DrawTruchetSVG(grid=grid, tile_size=tile_size)
     pygame.display.set_caption(grid_type)
     drawer.draw()
-    
+
     running = True
     while running:
         events = pygame.event.get()
@@ -38,6 +38,9 @@ def interactive_display(grid_size: int, tile_size: int):
                     drawer.grid = generate_grid(grid_size, grid_type)
                     drawer.draw()
                     pygame.display.set_caption(grid_type)
+                elif event.key == pygame.K_c:
+                    drawer.invert_curved()
+                    drawer.draw()
                 elif event.key == pygame.K_i:
                     drawer.invert_color()
                     drawer.draw()
@@ -47,9 +50,6 @@ def interactive_display(grid_size: int, tile_size: int):
                 elif event.key == pygame.K_f:
                     # TODO: Fix the bug when F is pressed
                     drawer.invert_filled()
-                    drawer.draw()
-                elif event.key == pygame.K_c:
-                    drawer.invert_curved()
                     drawer.draw()
                 elif event.key == pygame.K_h:
                     drawer.next_hybrid_mode()

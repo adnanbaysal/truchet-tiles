@@ -35,8 +35,8 @@ class DrawTruchetSVG:
         self._tile_size = tile_size
         self._tile_mid = int(self._tile_size / 2)
         self._grid_size = len(self._grid)
-        self._draw_size = self._grid_size * self._tile_size    
-        
+        self._draw_size = self._grid_size * self._tile_size
+
         self._fill_style = FillStyle.linear
         self._curve_style = CurveStyle.straight
         self._alignment_style = AxisAlignmentStyle.rotated
@@ -51,8 +51,10 @@ class DrawTruchetSVG:
 
         self._screen = pygame.display.set_mode((self._draw_size, self._draw_size))
         self._screen.fill(self._draw_background)
-        self._svg = dw.Drawing(self._draw_size, self._draw_size, id_prefix='pic')
-        self._svg_top_group = dw.Group(id="truchet_group", fill="none")  # To handle translations
+        self._svg = dw.Drawing(self._draw_size, self._draw_size, id_prefix="pic")
+        self._svg_top_group = dw.Group(
+            id="truchet_group", fill="none"
+        )  # To handle translations
         self._svg.save_png(self.PNG_FILE_PATH)
         self._draw_surface = pygame.image.load(self.PNG_FILE_PATH)
 
@@ -71,7 +73,7 @@ class DrawTruchetSVG:
     @property
     def grid(self):
         return self._grid
-    
+
     @grid.setter
     def grid(self, value):
         assert all(
@@ -87,12 +89,12 @@ class DrawTruchetSVG:
     # LEVEL 2 base tile functions
     def _create_linear_base_tiles(self):
         self._create_linear_straight_base_tiles()
-        # self._create_linear_curved_base_tiles()  # Uncomment after implementation
+        self._create_linear_curved_base_tiles()
 
     def _create_filled_base_tiles(self):
         self._create_filled_straight_base_tiles()
         self._create_filled_curved_base_tiles()
-        
+
     # LEVEL 3 base tile functions
     def _create_linear_straight_base_tiles(self):
         self._create_linear_straight_base_tile(0)
@@ -132,17 +134,52 @@ class DrawTruchetSVG:
             left2 = (self._tile_mid, 0)
             right2 = (self._tile_mid, self._tile_size)
 
-        line_left = dw.Line(*left1, *left2, stroke_width=self._line_width, stroke=self._line_color)
-        line_right = dw.Line(*right1, *right2, stroke_width=self._line_width, stroke=self._line_color)
-        
-        sl = dw.Group(id=f"sl{tile_type}", fill="none")
-        sl.append(line_left)
-        sl.append(line_right)
+        line_left = dw.Line(
+            *left1, *left2, stroke_width=self._line_width, stroke=self._line_color
+        )
+        line_right = dw.Line(
+            *right1, *right2, stroke_width=self._line_width, stroke=self._line_color
+        )
 
-        self._base_tiles[FillStyle.linear][CurveStyle.straight].append(sl)
+        ls = dw.Group(id=f"ls{tile_type}", fill="none")
+        ls.append(line_left)
+        ls.append(line_right)
+
+        self._base_tiles[FillStyle.linear][CurveStyle.straight].append(ls)
 
     def _create_linear_curved_base_tile(self, tile_type: int):
-        raise NotImplementedError()
+        if tile_type == 0:
+            left_center = (0, 0)
+            left_degrees = (0, 90)
+            right_center = (self._tile_size, self._tile_size)
+            right_degrees = (180, 270)
+        else:
+            left_center = (0, self._tile_size)
+            left_degrees = (270, 360)
+            right_center = (90, 180)
+            right_degrees = (self._tile_size, 0)
+
+        curve_left = dw.Arc(
+            *left_center,
+            self._tile_mid,
+            *left_degrees,
+            stroke_width=self._line_width,
+            stroke=self._line_color,
+        )
+
+        curve_right = dw.Arc(
+            *right_center,
+            self._tile_mid,
+            *right_degrees,
+            stroke_width=self._line_width,
+            stroke=self._line_color,
+        )
+
+        lc = dw.Group(id=f"lc{tile_type}", fill="none")
+        lc.append(curve_left)
+        lc.append(curve_right)
+
+        self._base_tiles[FillStyle.linear][CurveStyle.curved].append(lc)
 
     def _create_filled_straight_base_tile(self, tile_type: int):
         raise NotImplementedError()
@@ -158,24 +195,28 @@ class DrawTruchetSVG:
 
     def _draw_linear(self):
         self._clear_screan()
-        
+
         for grid_row in range(self._grid_size):
             y_offset = grid_row * self._tile_size
             for grid_col in range(self._grid_size):
                 x_offset = grid_col * self._tile_size
 
                 if self._curve_style == CurveStyle.straight:
-                    self._draw_tile_linear_straight(x_offset, y_offset, self._grid[grid_row][grid_col])
+                    self._draw_tile_linear_straight(
+                        x_offset, y_offset, self._grid[grid_row][grid_col]
+                    )
                 else:
-                    self._draw_tile_linear_curved(x_offset, y_offset, self._grid[grid_row][grid_col])
-        
+                    self._draw_tile_linear_curved(
+                        x_offset, y_offset, self._grid[grid_row][grid_col]
+                    )
+
         self._show_screen()
 
     def _clear_screan(self):
         self._svg.clear()
         self._svg_top_group = dw.Group(id="truchet_group", fill="none")
         self._screen.fill(self._draw_background)
-        
+
     def _show_screen(self):
         self._svg.append(dw.Use(self._svg_top_group, 0, 0))
         self._svg.save_png(self.PNG_FILE_PATH)
@@ -186,39 +227,32 @@ class DrawTruchetSVG:
         self._svg_top_group.append(
             dw.Use(
                 self._base_tiles[FillStyle.linear][CurveStyle.straight][cell_value],
-                x_offset, 
+                x_offset,
                 y_offset,
             )
         )
 
     def _draw_tile_linear_curved(self, x_offset: int, y_offset: int, cell_value: int):
-        kwargs_left = {}
-        kwargs_right = {}
-
-        if cell_value == 1:
-            center_left = (x_offset, y_offset)
-            kwargs_left["draw_bottom_right"] = True
-            center_right = (x_offset + self._tile_size, y_offset + self._tile_size)
-            kwargs_right["draw_top_left"] = True
-        else:
-            center_left = (x_offset, y_offset + self._tile_size)
-            kwargs_left["draw_top_right"] = True
-            center_right = (x_offset + self._tile_size, y_offset)
-            kwargs_right["draw_bottom_left"] = True
-        
-        pygame.draw.circle(
-            self._draw_surface, self._line_color, center_left, self._tile_mid, width=self._line_width, **kwargs_left
-        )
-        pygame.draw.circle(
-            self._draw_surface, self._line_color, center_right, self._tile_mid, width=self._line_width, **kwargs_right
+        self._svg_top_group.append(
+            dw.Use(
+                self._base_tiles[FillStyle.linear][CurveStyle.curved][cell_value],
+                x_offset,
+                y_offset,
+            )
         )
 
-    def _fill_outside_straight(self, rotate: int, x: int, y: int, middle: int, end: int):
+    def _fill_outside_straight(
+        self, rotate: int, x: int, y: int, middle: int, end: int
+    ):
         # draw two triangles
         if not rotate:
             # left mid to top mid + bottom mid to right mid
             triangle1 = ((x, y), (x + middle, y), (x, y + middle))
-            triangle2 = ((x + end, y + end), (x + middle, y + end), (x + end, y + middle))
+            triangle2 = (
+                (x + end, y + end),
+                (x + middle, y + end),
+                (x + end, y + middle),
+            )
 
         else:
             triangle1 = ((x + end, y), (x + end, y + middle), (x + middle, y))
@@ -250,7 +284,9 @@ class DrawTruchetSVG:
 
         pygame.draw.polygon(self._draw_surface, self._fill_color, points, width=0)
 
-    def _draw_filled_tile_straight(self, fill_inside: int, rotate: int, x: int, y: int, middle: int, end: int):
+    def _draw_filled_tile_straight(
+        self, fill_inside: int, rotate: int, x: int, y: int, middle: int, end: int
+    ):
         if fill_inside:
             self._fill_inside_straight(rotate, x, y, middle, end)
         else:
@@ -280,10 +316,20 @@ class DrawTruchetSVG:
         )
 
         pygame.draw.circle(
-            self._draw_surface, self._line_color, center_left, self._tile_mid, width=0, **kwargs_left
+            self._draw_surface,
+            self._line_color,
+            center_left,
+            self._tile_mid,
+            width=0,
+            **kwargs_left,
         )
         pygame.draw.circle(
-            self._draw_surface, self._line_color, center_right, self._tile_mid, width=0, **kwargs_right
+            self._draw_surface,
+            self._line_color,
+            center_right,
+            self._tile_mid,
+            width=0,
+            **kwargs_right,
         )
 
     def _fill_inside_curved(self, rotate: int, x: int, y: int, end: int):
@@ -291,10 +337,10 @@ class DrawTruchetSVG:
         # draw a black square
         points = (
             (x, y),
-            (x + end , y),
+            (x + end, y),
             (x + end, y + end),
             (x, y + end),
-            (x , y),
+            (x, y),
         )
         pygame.draw.polygon(self._draw_surface, self._fill_color, points, width=0)
 
@@ -303,13 +349,25 @@ class DrawTruchetSVG:
             rotate, x, y, end
         )
         pygame.draw.circle(
-            self._draw_surface, self._draw_background, center_left, self._tile_mid, width=0, **kwargs_left
+            self._draw_surface,
+            self._draw_background,
+            center_left,
+            self._tile_mid,
+            width=0,
+            **kwargs_left,
         )
         pygame.draw.circle(
-            self._draw_surface, self._draw_background, center_right, self._tile_mid, width=0, **kwargs_right
+            self._draw_surface,
+            self._draw_background,
+            center_right,
+            self._tile_mid,
+            width=0,
+            **kwargs_right,
         )
 
-    def _draw_filled_tile_curved(self, fill_inside: int, rotate: int, x: int, y: int, middle: int, end: int):
+    def _draw_filled_tile_curved(
+        self, fill_inside: int, rotate: int, x: int, y: int, middle: int, end: int
+    ):
         if fill_inside:
             if self._hybrid_fill in (0, 1):
                 self._fill_inside_curved(rotate, x, y, end)
@@ -386,29 +444,33 @@ class DrawTruchetSVG:
         self._color = self._color ^ 1
 
     def increase_line_width(self):
-        self._line_width = self._line_width + 1 if self._line_width != self.MAX_LINE_WIDTH else 1
+        self._line_width = (
+            self._line_width + 1 if self._line_width != self.MAX_LINE_WIDTH else 1
+        )
 
     def decrease_line_width(self):
-        self._line_width = self._line_width - 1 if self._line_width != 1 else self.MAX_LINE_WIDTH
+        self._line_width = (
+            self._line_width - 1 if self._line_width != 1 else self.MAX_LINE_WIDTH
+        )
 
     def invert_aligned(self):
         self._alignment_style = (
-            AxisAlignmentStyle.aligned 
-            if self._alignment_style == AxisAlignmentStyle.rotated 
+            AxisAlignmentStyle.aligned
+            if self._alignment_style == AxisAlignmentStyle.rotated
             else AxisAlignmentStyle.rotated
         )
 
     def invert_curved(self):
         self._curve_style = (
-            CurveStyle.curved 
-            if self._curve_style == CurveStyle.straight 
+            CurveStyle.curved
+            if self._curve_style == CurveStyle.straight
             else CurveStyle.straight
         )
 
     def invert_filled(self):
         self._fill_style = (
-            FillStyle.filled 
-            if self._fill_style == FillStyle.linear 
+            FillStyle.filled
+            if self._fill_style == FillStyle.linear
             else FillStyle.linear
         )
 
