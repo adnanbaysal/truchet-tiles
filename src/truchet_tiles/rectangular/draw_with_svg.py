@@ -150,14 +150,14 @@ class DrawTruchetSVG:
     def _create_linear_curved_base_tile(self, tile_type: int):
         if tile_type == 0:
             left_center = (0, 0)
-            left_degrees = (0, 90)
+            left_degrees = (90, 0)
             right_center = (self._tile_size, self._tile_size)
-            right_degrees = (180, 270)
+            right_degrees = (270, 180)
         else:
             left_center = (0, self._tile_size)
-            left_degrees = (270, 360)
-            right_center = (90, 180)
-            right_degrees = (self._tile_size, 0)
+            left_degrees = (360, 270)
+            right_center = (self._tile_size, 0)
+            right_degrees = (180, 90)
 
         curve_left = dw.Arc(
             *left_center,
