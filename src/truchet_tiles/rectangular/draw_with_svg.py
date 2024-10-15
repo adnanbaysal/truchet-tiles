@@ -84,7 +84,7 @@ class DrawTruchetSVG:
     # LEVEL 1 base tile function:
     def _create_base_tiles(self):
         self._create_linear_base_tiles()
-        # self._create_filled_base_tiles()  # Uncomment after implementation
+        self._create_filled_base_tiles()  # Uncomment after implementation
 
     # LEVEL 2 base tile functions
     def _create_linear_base_tiles(self):
@@ -93,7 +93,7 @@ class DrawTruchetSVG:
 
     def _create_filled_base_tiles(self):
         self._create_filled_straight_base_tiles()
-        self._create_filled_curved_base_tiles()
+        # self._create_filled_curved_base_tiles()
 
     # LEVEL 3 base tile functions
     def _create_linear_straight_base_tiles(self):
@@ -105,13 +105,13 @@ class DrawTruchetSVG:
         self._create_linear_curved_base_tile(1)
 
     def _create_filled_straight_base_tiles(self):
-        # Fill area beween diagonal lines
-        self._create_filled_straight_base_tile(0)
-        self._create_filled_straight_base_tile(1)
-
         # Fill area out of diagonal lines
-        self._create_filled_straight_base_tile(2)
-        self._create_filled_straight_base_tile(3)
+        self._create_outside_filled_straight_base_tile(0)
+        self._create_outside_filled_straight_base_tile(1)
+
+        # Fill area beween diagonal lines
+        self._create_inside_filled_straight_base_tile(0)
+        self._create_inside_filled_straight_base_tile(1)
 
     def _create_filled_curved_base_tiles(self):
         # Fill area betweendiagonal lines
@@ -181,8 +181,103 @@ class DrawTruchetSVG:
 
         self._base_tiles[FillStyle.linear][CurveStyle.curved].append(lc)
 
-    def _create_filled_straight_base_tile(self, tile_type: int):
-        raise NotImplementedError()
+    def _create_outside_filled_straight_base_tile(self, tile_type: int):
+        left_start = (0, self._tile_mid)
+        right_start = (self._tile_size, self._tile_mid)
+
+        if tile_type == 0:
+            left_second = (self._tile_mid, self._tile_size)
+            right_second = (self._tile_mid, 0)
+        else:
+            left_second = (self._tile_mid, 0)
+            right_second = (self._tile_mid, self._tile_size)
+
+        triangle_left = dw.Lines(
+            *left_start,
+            *left_second,
+            fill=self._line_color,
+            stroke=self._line_color,
+            close="true",
+        )
+
+        triangle_right = dw.Lines(
+            *right_start,
+            *right_second,
+            fill=self._line_color,
+            stroke=self._line_color,
+            close="true",
+        )
+
+        fos = dw.Group(id=f"fos{tile_type}", fill="none")
+        fos.append(triangle_left)
+        fos.append(triangle_right)
+
+        self._base_tiles[FillStyle.filled][CurveStyle.straight].append(fos)
+
+    def _create_inside_filled_straight_base_tile(self, tile_type: int):
+        p0 = (0, self._tile_mid)
+        p3 = (self._tile_size, self._tile_mid)
+
+        if tile_type == 0:
+            p1 = (self._tile_mid, self._tile_size)
+            p2 = (self._tile_size, self._tile_size)
+            p4 = (self._tile_mid, 0)
+            p5 = (0, 0)
+        else:
+            p1 = (0, self._tile_size)
+            p2 = (self._tile_mid, self._tile_size)
+            p4 = (self._tile_size, 0)
+            p5 = (self._tile_mid, 0)
+
+        hexagon = dw.Lines(
+            *p0,
+            *p1,
+            *p2,
+            *p3,
+            *p4,
+            *p5,
+            fill=self._line_color,
+            stroke=self._line_color,
+            close="true",
+        )
+
+        fis = dw.Group(id=f"fis{tile_type}", fill="none")
+        fis.append(hexagon)
+
+        self._base_tiles[FillStyle.filled][CurveStyle.straight].append(fis)
+
+    def _create_outside_filled_straight_base_tile(self, tile_type: int):
+        left_start = (0, self._tile_mid)
+        right_start = (self._tile_size, self._tile_mid)
+
+        if tile_type == 0:
+            left_second = (self._tile_mid, self._tile_size)
+            right_second = (self._tile_mid, 0)
+        else:
+            left_second = (self._tile_mid, 0)
+            right_second = (self._tile_mid, self._tile_size)
+
+        triangle_left = dw.Lines(
+            *left_start,
+            *left_second,
+            fill=self._line_color,
+            stroke=self._line_color,
+            close="true",
+        )
+
+        triangle_right = dw.Lines(
+            *right_start,
+            *right_second,
+            fill=self._line_color,
+            stroke=self._line_color,
+            close="true",
+        )
+
+        fos = dw.Group(id=f"fos{tile_type}", fill="none")
+        fos.append(triangle_left)
+        fos.append(triangle_right)
+
+        self._base_tiles[FillStyle.filled][CurveStyle.straight].append(fos)
 
     def _create_filled_curved_base_tile(self, tile_type: int):
         raise NotImplementedError()
@@ -241,168 +336,33 @@ class DrawTruchetSVG:
             )
         )
 
-    def _fill_outside_straight(
-        self, rotate: int, x: int, y: int, middle: int, end: int
-    ):
-        # draw two triangles
-        if not rotate:
-            # left mid to top mid + bottom mid to right mid
-            triangle1 = ((x, y), (x + middle, y), (x, y + middle))
-            triangle2 = (
-                (x + end, y + end),
-                (x + middle, y + end),
-                (x + end, y + middle),
-            )
+    def _draw_filled(self):
+        self._clear_screan()
+        grid_of_fill_inside = self._generate_fill_inside_grid()
 
-        else:
-            triangle1 = ((x + end, y), (x + end, y + middle), (x + middle, y))
-            triangle2 = ((x, y + end), (x, y + middle), (x + middle, y + end))
+        for grid_row in range(self._grid_size):
+            y_offset = grid_row * self._tile_size
+            for grid_col in range(self._grid_size):
+                x_offset = grid_col * self._tile_size
 
-        pygame.draw.polygon(self._draw_surface, self._fill_color, triangle1, width=0)
-        pygame.draw.polygon(self._draw_surface, self._fill_color, triangle2, width=0)
+                svg_tile_index = (
+                    self._grid[grid_row][grid_col]
+                    + 2 * grid_of_fill_inside[grid_row][grid_col]
+                )
 
-    def _fill_inside_straight(self, rotate: int, x: int, y: int, middle: int, end: int):
-        # draw hexagon
-        if not rotate:
-            points = (
-                (x, y + end),
-                (x, y + middle),
-                (x + middle, y),
-                (x + end, y),
-                (x + end, y + middle),
-                (x + middle, y + end),
-            )
-        else:
-            points = (
-                (x, y),
-                (x + middle, y),
-                (x + end, y + middle),
-                (x + end, y + end),
-                (x + middle, y + end),
-                (x, y + middle),
-            )
+                if self._curve_style == CurveStyle.straight:
+                    self._draw_tile_filled_straight(x_offset, y_offset, svg_tile_index)
+                else:
+                    self._draw_tile_filled_curved(x_offset, y_offset, svg_tile_index)
 
-        pygame.draw.polygon(self._draw_surface, self._fill_color, points, width=0)
+                # self._draw_filled_tile(
+                #     grid_of_fill_inside[grid_row][grid_col],
+                #     self._grid[grid_row][grid_col],
+                #     x_offset,
+                #     y_offset,
+                # )
 
-    def _draw_filled_tile_straight(
-        self, fill_inside: int, rotate: int, x: int, y: int, middle: int, end: int
-    ):
-        if fill_inside:
-            self._fill_inside_straight(rotate, x, y, middle, end)
-        else:
-            self._fill_outside_straight(rotate, x, y, middle, end)
-
-    def _get_arc_parameters(
-        self, rotate: int, x: int, y: int, end: int
-    ) -> tuple[tuple[int, int], dict[str, bool], tuple[int, int], dict[str, bool]]:
-        if not rotate:
-            # left mid to top mid + bottom mid to right mid
-            center_left = (x, y)
-            kwargs_left = {"draw_bottom_right": True}
-            center_right = (x + end, y + end)
-            kwargs_right = {"draw_top_left": True}
-        else:
-            center_left = (x, y + end)
-            kwargs_left = {"draw_top_right": True}
-            center_right = (x + end, y)
-            kwargs_right = {"draw_bottom_left": True}
-
-        return center_left, kwargs_left, center_right, kwargs_right
-
-    def _fill_outside_curved(self, rotate: int, x: int, y: int, end: int):
-        # quarter circles are black, bg is white
-        center_left, kwargs_left, center_right, kwargs_right = self._get_arc_parameters(
-            rotate, x, y, end
-        )
-
-        pygame.draw.circle(
-            self._draw_surface,
-            self._line_color,
-            center_left,
-            self._tile_mid,
-            width=0,
-            **kwargs_left,
-        )
-        pygame.draw.circle(
-            self._draw_surface,
-            self._line_color,
-            center_right,
-            self._tile_mid,
-            width=0,
-            **kwargs_right,
-        )
-
-    def _fill_inside_curved(self, rotate: int, x: int, y: int, end: int):
-        # bg is black, quarter circles are white
-        # draw a black square
-        points = (
-            (x, y),
-            (x + end, y),
-            (x + end, y + end),
-            (x, y + end),
-            (x, y),
-        )
-        pygame.draw.polygon(self._draw_surface, self._fill_color, points, width=0)
-
-        # draw two white quarter circles
-        center_left, kwargs_left, center_right, kwargs_right = self._get_arc_parameters(
-            rotate, x, y, end
-        )
-        pygame.draw.circle(
-            self._draw_surface,
-            self._draw_background,
-            center_left,
-            self._tile_mid,
-            width=0,
-            **kwargs_left,
-        )
-        pygame.draw.circle(
-            self._draw_surface,
-            self._draw_background,
-            center_right,
-            self._tile_mid,
-            width=0,
-            **kwargs_right,
-        )
-
-    def _draw_filled_tile_curved(
-        self, fill_inside: int, rotate: int, x: int, y: int, middle: int, end: int
-    ):
-        if fill_inside:
-            if self._hybrid_fill in (0, 1):
-                self._fill_inside_curved(rotate, x, y, end)
-            else:
-                self._fill_inside_straight(rotate, x, y, middle, end)
-        else:
-            if self._hybrid_fill in (0, 2):
-                self._fill_outside_curved(rotate, x, y, end)
-            else:
-                self._fill_outside_straight(rotate, x, y, middle, end)
-
-    def _draw_filled_tile(
-        self,
-        fill_inside: int,
-        rotate: int,
-        x: int,
-        y: int,
-    ):
-        middle = self._tile_mid
-        end = self._tile_size
-
-        if self._curve_style == CurveStyle.curved:
-            self._draw_filled_tile_curved(fill_inside, rotate, x, y, middle, end)
-        else:
-            self._draw_filled_tile_straight(fill_inside, rotate, x, y, middle, end)
-
-    @staticmethod
-    def _neighbor_cell(_grid: list[list[int]], row: int, col: int) -> int:
-        if row == 0 and col == 0:
-            return _grid[row][col]
-        if col > 0:
-            return _grid[row][col - 1]
-        if row > 0:
-            return _grid[row - 1][col]
-        raise ValueError("Invalid row and column")
+        self._show_screen()
 
     def _generate_fill_inside_grid(self) -> list[list[int]]:
         _grid: list[list[int]] = []
@@ -419,23 +379,27 @@ class DrawTruchetSVG:
 
         return _grid
 
-    def _draw_filled(self):
-        self._clear_screan()
-        grid_of_fill_inside = self._generate_fill_inside_grid()
+    @staticmethod
+    def _neighbor_cell(_grid: list[list[int]], row: int, col: int) -> int:
+        if row == 0 and col == 0:
+            return _grid[row][col]
+        if col > 0:
+            return _grid[row][col - 1]
+        if row > 0:
+            return _grid[row - 1][col]
+        raise ValueError("Invalid row and column")
 
-        for grid_row in range(self._grid_size):
-            y_offset = grid_row * self._tile_size
-            for grid_col in range(self._grid_size):
-                x_offset = grid_col * self._tile_size
+    def _draw_tile_filled_straight(self, x_offset: int, y_offset: int, tile_index: int):
+        self._svg_top_group.append(
+            dw.Use(
+                self._base_tiles[FillStyle.filled][CurveStyle.straight][tile_index],
+                x_offset,
+                y_offset,
+            )
+        )
 
-                self._draw_filled_tile(
-                    grid_of_fill_inside[grid_row][grid_col],
-                    self._grid[grid_row][grid_col],
-                    x_offset,
-                    y_offset,
-                )
-
-        self._show_screen()
+    def _draw_tile_filled_curved(self, x_offset: int, y_offset: int, tile_index: int):
+        raise NotImplementedError()
 
     def next_hybrid_mode(self):
         self._hybrid_fill = (self._hybrid_fill + 1) % 3
@@ -486,3 +450,156 @@ class DrawTruchetSVG:
 
     def save_svg(self, filepath: str | pathlib.Path):
         self._svg.save_svg(filepath)
+
+    # def _draw_filled_tile_curved(
+    #     self, fill_inside: int, rotate: int, x: int, y: int, middle: int, end: int
+    # ):
+    #     if fill_inside:
+    #         if self._hybrid_fill in (0, 1):
+    #             self._fill_inside_curved(rotate, x, y, end)
+    #         else:
+    #             self._fill_inside_straight(rotate, x, y, middle, end)
+    #     else:
+    #         if self._hybrid_fill in (0, 2):
+    #             self._fill_outside_curved(rotate, x, y, end)
+    #         else:
+    #             self._fill_outside_straight(rotate, x, y, middle, end)
+
+    # def _draw_filled_tile(
+    #     self,
+    #     fill_inside: int,
+    #     rotate: int,
+    #     x: int,
+    #     y: int,
+    # ):
+    #     middle = self._tile_mid
+    #     end = self._tile_size
+
+    #     if self._curve_style == CurveStyle.curved:
+    #         self._draw_filled_tile_curved(fill_inside, rotate, x, y, middle, end)
+    #     else:
+    #         self._draw_filled_tile_straight(fill_inside, rotate, x, y, middle, end)
+
+    # def _fill_outside_straight(
+    #     self, rotate: int, x: int, y: int, middle: int, end: int
+    # ):
+    #     # draw two triangles
+    #     if not rotate:
+    #         # left mid to top mid + bottom mid to right mid
+    #         triangle1 = ((x, y), (x + middle, y), (x, y + middle))
+    #         triangle2 = (
+    #             (x + end, y + end),
+    #             (x + middle, y + end),
+    #             (x + end, y + middle),
+    #         )
+
+    #     else:
+    #         triangle1 = ((x + end, y), (x + end, y + middle), (x + middle, y))
+    #         triangle2 = ((x, y + end), (x, y + middle), (x + middle, y + end))
+
+    #     pygame.draw.polygon(self._draw_surface, self._fill_color, triangle1, width=0)
+    #     pygame.draw.polygon(self._draw_surface, self._fill_color, triangle2, width=0)
+
+    # def _fill_inside_straight(self, rotate: int, x: int, y: int, middle: int, end: int):
+    #     # draw hexagon
+    #     if not rotate:
+    #         points = (
+    #             (x, y + end),
+    #             (x, y + middle),
+    #             (x + middle, y),
+    #             (x + end, y),
+    #             (x + end, y + middle),
+    #             (x + middle, y + end),
+    #         )
+    #     else:
+    #         points = (
+    #             (x, y),
+    #             (x + middle, y),
+    #             (x + end, y + middle),
+    #             (x + end, y + end),
+    #             (x + middle, y + end),
+    #             (x, y + middle),
+    #         )
+
+    #     pygame.draw.polygon(self._draw_surface, self._fill_color, points, width=0)
+
+    # def _draw_filled_tile_straight(
+    #     self, fill_inside: int, rotate: int, x: int, y: int, middle: int, end: int
+    # ):
+    #     if fill_inside:
+    #         self._fill_inside_straight(rotate, x, y, middle, end)
+    #     else:
+    #         self._fill_outside_straight(rotate, x, y, middle, end)
+
+    # def _get_arc_parameters(
+    #     self, rotate: int, x: int, y: int, end: int
+    # ) -> tuple[tuple[int, int], dict[str, bool], tuple[int, int], dict[str, bool]]:
+    #     if not rotate:
+    #         # left mid to top mid + bottom mid to right mid
+    #         center_left = (x, y)
+    #         kwargs_left = {"draw_bottom_right": True}
+    #         center_right = (x + end, y + end)
+    #         kwargs_right = {"draw_top_left": True}
+    #     else:
+    #         center_left = (x, y + end)
+    #         kwargs_left = {"draw_top_right": True}
+    #         center_right = (x + end, y)
+    #         kwargs_right = {"draw_bottom_left": True}
+
+    #     return center_left, kwargs_left, center_right, kwargs_right
+
+    # def _fill_outside_curved(self, rotate: int, x: int, y: int, end: int):
+    #     # quarter circles are black, bg is white
+    #     center_left, kwargs_left, center_right, kwargs_right = self._get_arc_parameters(
+    #         rotate, x, y, end
+    #     )
+
+    #     pygame.draw.circle(
+    #         self._draw_surface,
+    #         self._line_color,
+    #         center_left,
+    #         self._tile_mid,
+    #         width=0,
+    #         **kwargs_left,
+    #     )
+    #     pygame.draw.circle(
+    #         self._draw_surface,
+    #         self._line_color,
+    #         center_right,
+    #         self._tile_mid,
+    #         width=0,
+    #         **kwargs_right,
+    #     )
+
+    # def _fill_inside_curved(self, rotate: int, x: int, y: int, end: int):
+    #     # bg is black, quarter circles are white
+    #     # draw a black square
+    #     points = (
+    #         (x, y),
+    #         (x + end, y),
+    #         (x + end, y + end),
+    #         (x, y + end),
+    #         (x, y),
+    #     )
+    #     pygame.draw.polygon(self._draw_surface, self._fill_color, points, width=0)
+
+    #     # draw two white quarter circles
+    #     center_left, kwargs_left, center_right, kwargs_right = self._get_arc_parameters(
+    #         rotate, x, y, end
+    #     )
+    #     pygame.draw.circle(
+    #         self._draw_surface,
+    #         self._draw_background,
+    #         center_left,
+    #         self._tile_mid,
+    #         width=0,
+    #         **kwargs_left,
+    #     )
+    #     pygame.draw.circle(
+    #         self._draw_surface,
+    #         self._draw_background,
+    #         center_right,
+    #         self._tile_mid,
+    #         width=0,
+    #         **kwargs_right,
+    #     )
