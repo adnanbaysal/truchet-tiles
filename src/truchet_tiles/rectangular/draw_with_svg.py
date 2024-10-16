@@ -44,7 +44,8 @@ class DrawTruchetSVG:
         self._color = 0
         self._fill_color = (0, 0, 0)
         self._draw_background = (255, 255, 255)
-        self._line_color = "#000000"
+        self._svg_white = "#FFFFFF"
+        self._svg_black = "#000000"
         self._line_width = 1
 
         self._hybrid_fill = 0  # if > 0, mixes curved and straight fills
@@ -135,10 +136,10 @@ class DrawTruchetSVG:
             right2 = (self._tile_mid, self._tile_size)
 
         line_left = dw.Line(
-            *left1, *left2, stroke_width=self._line_width, stroke=self._line_color
+            *left1, *left2, stroke_width=self._line_width, stroke=self._svg_black
         )
         line_right = dw.Line(
-            *right1, *right2, stroke_width=self._line_width, stroke=self._line_color
+            *right1, *right2, stroke_width=self._line_width, stroke=self._svg_black
         )
 
         ls = dw.Group(id=f"ls{tile_type}", fill="none")
@@ -164,7 +165,7 @@ class DrawTruchetSVG:
             self._tile_mid,
             *left_degrees,
             stroke_width=self._line_width,
-            stroke=self._line_color,
+            stroke=self._svg_black,
         )
 
         curve_right = dw.Arc(
@@ -172,7 +173,7 @@ class DrawTruchetSVG:
             self._tile_mid,
             *right_degrees,
             stroke_width=self._line_width,
-            stroke=self._line_color,
+            stroke=self._svg_black,
         )
 
         lc = dw.Group(id=f"lc{tile_type}", fill="none")
@@ -182,29 +183,35 @@ class DrawTruchetSVG:
         self._base_tiles[FillStyle.linear][CurveStyle.curved].append(lc)
 
     def _create_outside_filled_straight_base_tile(self, tile_type: int):
-        left_start = (0, self._tile_mid)
-        right_start = (self._tile_size, self._tile_mid)
+        left0 = (0, self._tile_mid)
+        right0 = (self._tile_size, self._tile_mid)
 
         if tile_type == 0:
-            left_second = (self._tile_mid, self._tile_size)
-            right_second = (self._tile_mid, 0)
+            left1 = (self._tile_mid, self._tile_size)
+            left2 = (0, self._tile_size)
+            right1 = (self._tile_mid, 0)
+            right2 = (self._tile_size, 0)
         else:
-            left_second = (self._tile_mid, 0)
-            right_second = (self._tile_mid, self._tile_size)
+            left1 = (self._tile_mid, 0)
+            left2 = (0, 0)
+            right1 = (self._tile_mid, self._tile_size)
+            right2 = (self._tile_size, self._tile_size)
 
         triangle_left = dw.Lines(
-            *left_start,
-            *left_second,
-            fill=self._line_color,
-            stroke=self._line_color,
+            *left0,
+            *left1,
+            *left2,
+            fill=self._svg_black,
+            stroke=self._svg_black,
             close="true",
         )
 
         triangle_right = dw.Lines(
-            *right_start,
-            *right_second,
-            fill=self._line_color,
-            stroke=self._line_color,
+            *right0,
+            *right1,
+            *right2,
+            fill=self._svg_black,
+            stroke=self._svg_black,
             close="true",
         )
 
@@ -236,8 +243,8 @@ class DrawTruchetSVG:
             *p3,
             *p4,
             *p5,
-            fill=self._line_color,
-            stroke=self._line_color,
+            fill=self._svg_black,
+            stroke=self._svg_black,
             close="true",
         )
 
@@ -245,39 +252,6 @@ class DrawTruchetSVG:
         fis.append(hexagon)
 
         self._base_tiles[FillStyle.filled][CurveStyle.straight].append(fis)
-
-    def _create_outside_filled_straight_base_tile(self, tile_type: int):
-        left_start = (0, self._tile_mid)
-        right_start = (self._tile_size, self._tile_mid)
-
-        if tile_type == 0:
-            left_second = (self._tile_mid, self._tile_size)
-            right_second = (self._tile_mid, 0)
-        else:
-            left_second = (self._tile_mid, 0)
-            right_second = (self._tile_mid, self._tile_size)
-
-        triangle_left = dw.Lines(
-            *left_start,
-            *left_second,
-            fill=self._line_color,
-            stroke=self._line_color,
-            close="true",
-        )
-
-        triangle_right = dw.Lines(
-            *right_start,
-            *right_second,
-            fill=self._line_color,
-            stroke=self._line_color,
-            close="true",
-        )
-
-        fos = dw.Group(id=f"fos{tile_type}", fill="none")
-        fos.append(triangle_left)
-        fos.append(triangle_right)
-
-        self._base_tiles[FillStyle.filled][CurveStyle.straight].append(fos)
 
     def _create_filled_curved_base_tile(self, tile_type: int):
         raise NotImplementedError()
