@@ -1,4 +1,3 @@
-import math
 import pathlib
 
 from enum import Enum
@@ -63,16 +62,7 @@ class DrawTruchetSVG:
         self._svg.save_png(self.PNG_FILE_PATH)
         self._draw_surface = pygame.image.load(self.PNG_FILE_PATH)
 
-        self._base_tiles = {
-            FillStyle.linear: {
-                CurveStyle.straight: [],
-                CurveStyle.curved: [],
-            },
-            FillStyle.filled: {
-                CurveStyle.straight: [],
-                CurveStyle.curved: [],
-            },
-        }
+        self._base_tiles = {}
         self._create_base_tiles()
 
     @property
@@ -88,6 +78,15 @@ class DrawTruchetSVG:
 
     # LEVEL 1 base tile function:
     def _create_base_tiles(self):
+        self._base_tiles[FillStyle.linear] = {
+            CurveStyle.straight: [],
+            CurveStyle.curved: [],
+        }
+
+        self._base_tiles[FillStyle.filled] = {
+            CurveStyle.straight: [],
+            CurveStyle.curved: [],
+        }
         self._create_linear_base_tiles()
         self._create_filled_base_tiles()
 
@@ -387,31 +386,21 @@ class DrawTruchetSVG:
         self._screen.fill(PYG_WHITE)
 
     def _get_transform(self):
-        rotation_degree = (
-            315 if self._alignment_style == AxisAlignmentStyle.aligned else 0
-        )
-        center_coord = self._t_end * self._grid_size / 2
-        rotation = f"rotate({rotation_degree},cx={center_coord},cy={center_coord})"
-
-        scaling_factor = (
-            math.sqrt(2) / 2
+        return (
+            f"matrix(.5 -.5 .5 .5 0 {self._t_end * self._grid_size / 2})"
             if self._alignment_style == AxisAlignmentStyle.aligned
-            else 1
+            else None
         )
-        scaling = f"scale({scaling_factor})"
-
-        translation_amount = (
-            -center_coord if self._alignment_style == AxisAlignmentStyle.aligned else 0
-        )
-        translation = f"translate({translation_amount},{-translation_amount})"
-
-        return f"{rotation} {scaling} {translation}"
 
     def _update_svg(self):
         self._svg.clear()
-        self._svg.append(
-            dw.Use(self._svg_top_group, 0, 0, transform=self._get_transform())
-        )
+        kwargs = {}
+        transform = self._get_transform()
+
+        if transform:
+            kwargs["transform"] = transform
+
+        self._svg.append(dw.Use(self._svg_top_group, 0, 0, **kwargs))
 
     def _show_screen(self):
         self._update_svg()
@@ -549,7 +538,4 @@ class DrawTruchetSVG:
         )
 
     def save_svg(self, filepath: str | pathlib.Path):
-        # NOTE: Svg file is created with transform info but transform is not displayed
-        # at all in MacOS: preview, gimp and MacSVG and in online viewers.
-        # TODO: Try to fix this
         self._svg.save_svg(filepath)
