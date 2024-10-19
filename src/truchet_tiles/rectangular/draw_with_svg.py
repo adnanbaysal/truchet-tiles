@@ -1,3 +1,4 @@
+import math
 import pathlib
 
 from enum import Enum
@@ -50,6 +51,7 @@ class DrawTruchetSVG:
         self._color = 0
         self._line_width = 1
 
+        # TODO: Implement hybrid fill
         self._hybrid_fill = 0  # if > 0, mixes curved and straight fills
 
         self._screen = pygame.display.set_mode((self._draw_size, self._draw_size))
@@ -381,12 +383,38 @@ class DrawTruchetSVG:
         self._show_screen()
 
     def _clear_screan(self):
-        self._svg.clear()
         self._svg_top_group = dw.Group(id="truchet_group", fill="none")
         self._screen.fill(PYG_WHITE)
 
+    def _get_transform(self):
+        rotation_degree = (
+            315 if self._alignment_style == AxisAlignmentStyle.aligned else 0
+        )
+        center_coord = self._t_end * self._grid_size / 2
+        rotation = f"rotate({rotation_degree},cx={center_coord},cy={center_coord})"
+
+        scaling_factor = (
+            math.sqrt(2) / 2
+            if self._alignment_style == AxisAlignmentStyle.aligned
+            else 1
+        )
+        scaling = f"scale({scaling_factor})"
+
+        translation_amount = (
+            -center_coord if self._alignment_style == AxisAlignmentStyle.aligned else 0
+        )
+        translation = f"translate({translation_amount},{-translation_amount})"
+
+        return f"{rotation} {scaling} {translation}"
+
+    def _update_svg(self):
+        self._svg.clear()
+        self._svg.append(
+            dw.Use(self._svg_top_group, 0, 0, transform=self._get_transform())
+        )
+
     def _show_screen(self):
-        self._svg.append(dw.Use(self._svg_top_group, 0, 0))
+        self._update_svg()
         self._svg.save_png(self.PNG_FILE_PATH)
         self._draw_surface = pygame.image.load(self.PNG_FILE_PATH)
         self._screen.blit(self._draw_surface, (0, 0))
@@ -521,4 +549,7 @@ class DrawTruchetSVG:
         )
 
     def save_svg(self, filepath: str | pathlib.Path):
+        # NOTE: Svg file is created with transform info but transform is not displayed
+        # at all in MacOS: preview, gimp and MacSVG and in online viewers.
+        # TODO: Try to fix this
         self._svg.save_svg(filepath)
