@@ -48,7 +48,6 @@ def interactive_display(grid_size: int, tile_size: int):
                     drawer.invert_aligned()
                     drawer.draw()
                 elif event.key == pygame.K_f:
-                    # TODO: Fix the bug when F is pressed
                     drawer.invert_filled()
                     drawer.draw()
                 elif event.key == pygame.K_h:
