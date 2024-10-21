@@ -224,7 +224,7 @@ class DrawTruchetSVG:
 
         self._base_tiles[FillStyle.filled][CurveStyle.straight].append(fos)
 
-    def _create_inside_filled_straight_base_tile(self, tile_type: int):
+    def _get_hexagon_points(self, tile_type: int):
         p0 = (0, self._t_mid)
         p3 = (self._t_end, self._t_mid)
 
@@ -239,13 +239,13 @@ class DrawTruchetSVG:
             p4 = (self._t_end, 0)
             p5 = (self._t_mid, 0)
 
+        return (*p0, *p1, *p2, *p3, *p4, *p5)
+
+    def _create_inside_filled_straight_base_tile(self, tile_type: int):
+        hexagon_points = self._get_hexagon_points(tile_type)
+
         hexagon = dw.Lines(
-            *p0,
-            *p1,
-            *p2,
-            *p3,
-            *p4,
-            *p5,
+            *hexagon_points,
             fill=SVG_BLACK,
             stroke=SVG_BLACK,
             close="true",
@@ -288,39 +288,35 @@ class DrawTruchetSVG:
 
     def _create_inside_filled_curved_base_tile(self, tile_type: int):
         # TODO: Fix the visual bug of these tiles
-        left_p1 = (0, self._t_mid)
-        right_p1 = (self._t_end, self._t_mid)
+        # lt: left triangle, rt: right triangle, la: left arc, ra: right arc
+        lt_p1 = (0, self._t_mid)
+        rt_p1 = (self._t_end, self._t_mid)
 
         if tile_type == 1:
-            left_center = (0, 0)
-            left_degrees = (90, 0)
-            left_p2 = (self._t_mid, 0)
-            right_center = (self._t_end, self._t_end)
-            right_degrees = (270, 180)
-            right_p2 = (self._t_mid, self._t_end)
+            la_center = (0, 0)
+            la_degrees = (90, 0)
+            lt_p2 = (self._t_mid, 0)
+            ra_center = (self._t_end, self._t_end)
+            ra_degrees = (270, 180)
+            rt_p2 = (self._t_mid, self._t_end)
         else:
-            left_center = (0, self._t_end)
-            left_degrees = (360, 270)
-            left_p2 = (self._t_mid, self._t_end)
-            right_center = (self._t_end, 0)
-            right_degrees = (180, 90)
-            right_p2 = (self._t_mid, 0)
+            la_center = (0, self._t_end)
+            la_degrees = (360, 270)
+            lt_p2 = (self._t_mid, self._t_end)
+            ra_center = (self._t_end, 0)
+            ra_degrees = (180, 90)
+            rt_p2 = (self._t_mid, 0)
 
-        pie_lef = self._create_circle_pie(
-            left_center, left_degrees, left_p1, left_p2, color=SVG_WHITE
+        pie_left = self._create_circle_pie(
+            la_center, la_degrees, lt_p1, lt_p2, color=SVG_WHITE
         )
         pie_right = self._create_circle_pie(
-            right_center, right_degrees, right_p1, right_p2, color=SVG_WHITE
+            ra_center, ra_degrees, rt_p1, rt_p2, color=SVG_WHITE
         )
+
+        hexagon_points = self._get_hexagon_points(tile_type)
         black_hexagon = dw.Lines(
-            0,
-            0,
-            self._t_end,
-            0,
-            self._t_end,
-            self._t_end,
-            0,
-            self._t_end,
+            *hexagon_points,
             stroke=SVG_BLACK,
             fill=SVG_BLACK,
             closed=True,
@@ -328,7 +324,7 @@ class DrawTruchetSVG:
 
         fic = dw.Group(id=f"fic{tile_type}", fill="none")
         fic.append(black_hexagon)
-        fic.append(pie_lef)
+        fic.append(pie_left)
         fic.append(pie_right)
 
         self._base_tiles[FillStyle.filled][CurveStyle.curved].append(fic)
@@ -339,7 +335,7 @@ class DrawTruchetSVG:
             self._t_mid,
             *degrees,
             stroke_width=self._line_width,
-            stroke=color,
+            stroke=SVG_BLACK,
             fill=color,
             closed="true",
         )
