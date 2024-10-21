@@ -55,7 +55,9 @@ class DrawTruchetSVG:
 
         self._screen = pygame.display.set_mode((self._draw_size, self._draw_size))
         self._screen.fill(PYG_WHITE)
-        self._svg = dw.Drawing(self._draw_size, self._draw_size, id_prefix="pic")
+        self._svg = dw.Drawing(
+            self._draw_size, self._draw_size, id_prefix="truchet_tiling"
+        )
         self._svg_top_group = dw.Group(
             id="truchet_group", fill="none"
         )  # To handle translations
@@ -287,6 +289,7 @@ class DrawTruchetSVG:
         self._base_tiles[FillStyle.filled][CurveStyle.curved].append(foc)
 
     def _create_inside_filled_curved_base_tile(self, tile_type: int):
+        # TODO: Fix the final visual bug creating notches on circles
         # lt: left triangle, rt: right triangle, la: left arc, ra: right arc
         lt_p1 = (0, self._t_mid)
         rt_p1 = (self._t_end, self._t_mid)
@@ -377,6 +380,10 @@ class DrawTruchetSVG:
         self._show_screen()
 
     def _clear_screan(self):
+        self._svg.clear()
+        self._svg = dw.Drawing(
+            self._draw_size, self._draw_size, id_prefix="truchet_tiling"
+        )
         self._svg_top_group = dw.Group(id="truchet_group", fill="none")
         self._screen.fill(PYG_WHITE)
 
@@ -388,14 +395,19 @@ class DrawTruchetSVG:
         )
 
     def _update_svg(self):
-        self._svg.clear()
         kwargs = {}
         transform = self._get_transform()
 
         if transform:
-            # TODO: Show center square cropped image of the rotated tiling
             kwargs["transform"] = transform
+            self._svg.view_box = (
+                self._draw_size / 4,
+                self._draw_size / 4,
+                self._draw_size / 2,
+                self._draw_size / 2,
+            )
 
+        self._svg.set_render_size()
         self._svg.append(dw.Use(self._svg_top_group, 0, 0, **kwargs))
 
     def _show_screen(self):
