@@ -287,7 +287,6 @@ class DrawTruchetSVG:
         self._base_tiles[FillStyle.filled][CurveStyle.curved].append(foc)
 
     def _create_inside_filled_curved_base_tile(self, tile_type: int):
-        # TODO: Fix the visual bug of these tiles
         # lt: left triangle, rt: right triangle, la: left arc, ra: right arc
         lt_p1 = (0, self._t_mid)
         rt_p1 = (self._t_end, self._t_mid)
@@ -394,6 +393,7 @@ class DrawTruchetSVG:
         transform = self._get_transform()
 
         if transform:
+            # TODO: Show center square cropped image of the rotated tiling
             kwargs["transform"] = transform
 
         self._svg.append(dw.Use(self._svg_top_group, 0, 0, **kwargs))
