@@ -1,3 +1,4 @@
+import math
 import pathlib
 
 from enum import Enum
@@ -32,7 +33,7 @@ class AxisAlignmentStyle(str, Enum):
 
 class DrawTruchetSVG:
     MAX_LINE_WIDTH = 64
-    PNG_FILE_PATH = (CURR_DIR / "truchet.png").as_posix()
+    DISPLAY_FILE_PATH = (CURR_DIR / "truchet.png").as_posix()
 
     def __init__(self, grid: list[list[int]], tile_size: int) -> None:
         self.grid = grid
@@ -61,8 +62,8 @@ class DrawTruchetSVG:
         self._svg_top_group = dw.Group(
             id="truchet_group", fill="none"
         )  # To handle translations
-        self._svg.save_png(self.PNG_FILE_PATH)
-        self._draw_surface = pygame.image.load(self.PNG_FILE_PATH)
+        self._svg.save_png(self.DISPLAY_FILE_PATH)
+        self._draw_surface = pygame.image.load(self.DISPLAY_FILE_PATH)
 
         self._base_tiles = {}
         self._create_base_tiles()
@@ -259,28 +260,15 @@ class DrawTruchetSVG:
         self._base_tiles[FillStyle.filled][CurveStyle.straight].append(fis)
 
     def _create_outside_filled_curved_base_tile(self, tile_type: int):
-        left_p1 = (0, self._t_mid)
-        right_p1 = (self._t_end, self._t_mid)
-
         if tile_type == 1:
             left_center = (0, 0)
-            left_degrees = (90, 0)
-            left_p2 = (self._t_mid, 0)
             right_center = (self._t_end, self._t_end)
-            right_degrees = (270, 180)
-            right_p2 = (self._t_mid, self._t_end)
         else:
             left_center = (0, self._t_end)
-            left_degrees = (360, 270)
-            left_p2 = (self._t_mid, self._t_end)
             right_center = (self._t_end, 0)
-            right_degrees = (180, 90)
-            right_p2 = (self._t_mid, 0)
 
-        pie_lef = self._create_circle_pie(left_center, left_degrees, left_p1, left_p2)
-        pie_right = self._create_circle_pie(
-            right_center, right_degrees, right_p1, right_p2
-        )
+        pie_lef = self._create_circle_pie(left_center)
+        pie_right = self._create_circle_pie(right_center)
 
         foc = dw.Group(id=f"foc{tile_type}", fill="none")
         foc.append(pie_lef)
@@ -289,32 +277,15 @@ class DrawTruchetSVG:
         self._base_tiles[FillStyle.filled][CurveStyle.curved].append(foc)
 
     def _create_inside_filled_curved_base_tile(self, tile_type: int):
-        # TODO: Fix the final visual bug creating notches on circles
-        # lt: left triangle, rt: right triangle, la: left arc, ra: right arc
-        lt_p1 = (0, self._t_mid)
-        rt_p1 = (self._t_end, self._t_mid)
-
         if tile_type == 1:
             la_center = (0, 0)
-            la_degrees = (90, 0)
-            lt_p2 = (self._t_mid, 0)
             ra_center = (self._t_end, self._t_end)
-            ra_degrees = (270, 180)
-            rt_p2 = (self._t_mid, self._t_end)
         else:
             la_center = (0, self._t_end)
-            la_degrees = (360, 270)
-            lt_p2 = (self._t_mid, self._t_end)
             ra_center = (self._t_end, 0)
-            ra_degrees = (180, 90)
-            rt_p2 = (self._t_mid, 0)
 
-        pie_left = self._create_circle_pie(
-            la_center, la_degrees, lt_p1, lt_p2, color=SVG_WHITE
-        )
-        pie_right = self._create_circle_pie(
-            ra_center, ra_degrees, rt_p1, rt_p2, color=SVG_WHITE
-        )
+        pie_left = self._create_circle_pie(la_center, color=SVG_WHITE)
+        pie_right = self._create_circle_pie(ra_center, color=SVG_WHITE)
 
         hexagon_points = self._get_hexagon_points(tile_type)
         black_hexagon = dw.Lines(
@@ -331,27 +302,13 @@ class DrawTruchetSVG:
 
         self._base_tiles[FillStyle.filled][CurveStyle.curved].append(fic)
 
-    def _create_circle_pie(self, center, degrees, p1, p2, color=SVG_BLACK):
-        arc = dw.Arc(
+    def _create_circle_pie(self, center, color=SVG_BLACK):
+        pie = dw.Circle(
             *center,
             self._t_mid,
-            *degrees,
-            stroke_width=self._line_width,
-            stroke=SVG_BLACK,
             fill=color,
-            closed="true",
+            path_length=math.pi * self._t_mid / 2,
         )
-        triangle = dw.Lines(
-            *center,
-            *p1,
-            *p2,
-            stroke=color,
-            fill=color,
-            closed=True,
-        )
-        pie = dw.Group(fill="none")
-        pie.append(arc)
-        pie.append(triangle)
         return pie
 
     def draw(self):
@@ -412,8 +369,8 @@ class DrawTruchetSVG:
 
     def _show_screen(self):
         self._update_svg()
-        self._svg.save_png(self.PNG_FILE_PATH)
-        self._draw_surface = pygame.image.load(self.PNG_FILE_PATH)
+        self._svg.save_png(self.DISPLAY_FILE_PATH)
+        self._draw_surface = pygame.image.load(self.DISPLAY_FILE_PATH)
         self._screen.blit(self._draw_surface, (0, 0))
 
     def _draw_tile_linear_straight(self, x_offset: int, y_offset: int, cell_value: int):
