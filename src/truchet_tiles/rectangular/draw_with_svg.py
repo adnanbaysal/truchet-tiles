@@ -269,8 +269,16 @@ class DrawTruchetSVG:
 
         pie_lef = self._create_circle_pie(left_center)
         pie_right = self._create_circle_pie(right_center)
+        hexagon_points = self._get_hexagon_points(tile_type)
+        white_hexagon = dw.Lines(
+            *hexagon_points,
+            stroke=SVG_WHITE,
+            fill=SVG_WHITE,
+            closed=True,
+        )
 
         foc = dw.Group(id=f"foc{tile_type}", fill="none")
+        foc.append(white_hexagon)
         foc.append(pie_lef)
         foc.append(pie_right)
 
