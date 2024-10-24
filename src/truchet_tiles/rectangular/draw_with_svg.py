@@ -31,8 +31,13 @@ class AxisAlignmentStyle(str, Enum):
     rotated = "rotated"
 
 
+class TileFilling(int, Enum):
+    inside = 0
+    outside = 1
+
+
 class DrawTruchetSVG:
-    MAX_LINE_WIDTH = 64
+    MAX_LINE_WIDTH = 32
     DISPLAY_FILE_PATH = (CURR_DIR / "truchet.png").as_posix()
 
     def __init__(self, grid: list[list[int]], tile_size: int) -> None:
@@ -48,7 +53,7 @@ class DrawTruchetSVG:
         self._curve_style = CurveStyle.straight
         self._alignment_style = AxisAlignmentStyle.rotated
 
-        self._color = 0
+        self._tile_filling = TileFilling.inside
         self._line_width = 1
 
         # TODO: Implement hybrid fill
@@ -81,15 +86,9 @@ class DrawTruchetSVG:
 
     # LEVEL 1 base tile function:
     def _create_base_tiles(self):
-        self._base_tiles[FillStyle.linear] = {
-            CurveStyle.straight: [],
-            CurveStyle.curved: [],
-        }
+        self._base_tiles[FillStyle.linear] = {}
+        self._base_tiles[FillStyle.filled] = {}
 
-        self._base_tiles[FillStyle.filled] = {
-            CurveStyle.straight: [],
-            CurveStyle.curved: [],
-        }
         self._create_linear_base_tiles()
         self._create_filled_base_tiles()
 
@@ -104,14 +103,17 @@ class DrawTruchetSVG:
 
     # LEVEL 3 base tile functions
     def _create_linear_straight_base_tiles(self):
+        self._base_tiles[FillStyle.linear][CurveStyle.straight] = []
         self._create_linear_straight_base_tile(0)
         self._create_linear_straight_base_tile(1)
 
     def _create_linear_curved_base_tiles(self):
+        self._base_tiles[FillStyle.linear][CurveStyle.curved] = []
         self._create_linear_curved_base_tile(0)
         self._create_linear_curved_base_tile(1)
 
     def _create_filled_straight_base_tiles(self):
+        self._base_tiles[FillStyle.filled][CurveStyle.straight] = []
         # Fill area out of diagonal lines
         self._create_outside_filled_straight_base_tile(0)
         self._create_outside_filled_straight_base_tile(1)
@@ -121,6 +123,7 @@ class DrawTruchetSVG:
         self._create_inside_filled_straight_base_tile(1)
 
     def _create_filled_curved_base_tiles(self):
+        self._base_tiles[FillStyle.filled][CurveStyle.curved] = []
         # Fill area outside of arc lines
         self._create_outside_filled_curved_base_tile(0)
         self._create_outside_filled_curved_base_tile(1)
@@ -428,7 +431,7 @@ class DrawTruchetSVG:
                 neighbor = self._neighbor_cell(self._grid, grid_row, grid_col)
                 bit_changed = self._grid[grid_row][grid_col] ^ neighbor
                 if grid_row == 0 and grid_col == 0:
-                    neighbor_fill = self._grid[0][0] ^ self._color
+                    neighbor_fill = self._grid[0][0] ^ self._tile_filling.value
                 else:
                     neighbor_fill = self._neighbor_cell(_grid, grid_row, grid_col)
                 _grid[grid_row].append(neighbor_fill ^ bit_changed ^ 1)
@@ -467,17 +470,23 @@ class DrawTruchetSVG:
         self._hybrid_fill = (self._hybrid_fill + 1) % 3
 
     def invert_color(self):
-        self._color = self._color ^ 1
+        self._tile_filling = (
+            TileFilling.inside
+            if self._tile_filling == TileFilling.outside
+            else TileFilling.outside
+        )
 
     def increase_line_width(self):
         self._line_width = (
             self._line_width + 1 if self._line_width != self.MAX_LINE_WIDTH else 1
         )
+        self._create_linear_base_tiles()
 
     def decrease_line_width(self):
         self._line_width = (
             self._line_width - 1 if self._line_width != 1 else self.MAX_LINE_WIDTH
         )
+        self._create_linear_base_tiles()
 
     def invert_aligned(self):
         self._alignment_style = (
