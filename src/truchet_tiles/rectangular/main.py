@@ -50,6 +50,9 @@ def interactive_display(grid_size: int, tile_size: int):
                 elif event.key == pygame.K_f:
                     drawer.invert_filled()
                     drawer.draw()
+                elif event.key == pygame.K_g:
+                    drawer.invert_show_grid_lines()
+                    drawer.draw()
                 elif event.key == pygame.K_h:
                     drawer.next_hybrid_mode()
                     drawer.draw()

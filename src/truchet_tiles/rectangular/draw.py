@@ -11,6 +11,7 @@ CURR_DIR = pathlib.Path(__file__).parent.resolve()
 
 SVG_BLACK = "#000000"
 SVG_WHITE = "#FFFFFF"
+SVG_RED = "#FF0000"
 
 PYG_BLACK = (0, 0, 0)
 PYG_WHITE = (255, 255, 255)
@@ -56,7 +57,9 @@ class DrawTruchetSVG:
         self._tiling_color = TilingColor.base
         self._line_width = 1
 
-        self._hybrid_fill = 0  # if > 0, mixes curved and straight fills
+        # if > 0, mixes curved and straight fills. Alternates between 0, 1, 2
+        self._hybrid_fill = 0
+        self._show_grid_lines = False
 
         self._screen = pygame.display.set_mode((self._draw_size, self._draw_size))
         self._screen.fill(PYG_WHITE)
@@ -85,10 +88,30 @@ class DrawTruchetSVG:
 
     def draw(self):
         # TODO: Fix svg to png issue on windows
+        self._clear_screan()
+
         if self._fill_style == FillStyle.linear:
             self._draw_linear()
         else:
             self._draw_filled()
+
+        if self._show_grid_lines:
+            self._draw_grid_lines()
+
+        self._show_screen()
+
+    def _draw_grid_lines(self):
+        for i in range(self._grid_size + 1):
+            self._svg_top_group.append(
+                dw.Line(
+                    0, i * self._t_end, self._draw_size, i * self._t_end, stroke=SVG_RED
+                )
+            )
+            self._svg_top_group.append(
+                dw.Line(
+                    i * self._t_end, 0, i * self._t_end, self._draw_size, stroke=SVG_RED
+                )
+            )
 
     def next_hybrid_mode(self):
         self._hybrid_fill = (self._hybrid_fill + 1) % 3
@@ -132,6 +155,9 @@ class DrawTruchetSVG:
             if self._fill_style == FillStyle.linear
             else FillStyle.linear
         )
+
+    def invert_show_grid_lines(self):
+        self._show_grid_lines = self._show_grid_lines ^ True
 
     def tiling_identifier(self) -> str:
         return (
@@ -385,8 +411,6 @@ class DrawTruchetSVG:
         return pie
 
     def _draw_linear(self):
-        self._clear_screan()
-
         for grid_row in range(self._grid_size):
             y_offset = grid_row * self._t_end
             for grid_col in range(self._grid_size):
@@ -400,8 +424,6 @@ class DrawTruchetSVG:
                     self._draw_tile_linear_curved(
                         x_offset, y_offset, self._grid[grid_row][grid_col]
                     )
-
-        self._show_screen()
 
     def _clear_screan(self):
         self._svg.clear()
@@ -459,7 +481,6 @@ class DrawTruchetSVG:
         )
 
     def _draw_filled(self):
-        self._clear_screan()
         grid_of_fill_side = self._generate_fill_inside_grid()
 
         for grid_row in range(self._grid_size):
@@ -476,8 +497,6 @@ class DrawTruchetSVG:
                     self._draw_tile_filled_straight(x_offset, y_offset, svg_tile_index)
                 else:
                     self._draw_tile_filled_curved(x_offset, y_offset, svg_tile_index)
-
-        self._show_screen()
 
     def _generate_fill_inside_grid(self) -> list[list[int]]:
         _grid: list[list[int]] = []
