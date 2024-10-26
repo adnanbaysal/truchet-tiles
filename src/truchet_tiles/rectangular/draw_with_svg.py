@@ -84,6 +84,7 @@ class DrawTruchetSVG:
         self._grid = value
 
     def draw(self):
+        # TODO: Fix svg to png issue on windows
         if self._fill_style == FillStyle.linear:
             self._draw_linear()
         else:
