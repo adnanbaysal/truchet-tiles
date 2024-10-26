@@ -31,9 +31,9 @@ class AxisAlignmentStyle(str, Enum):
     rotated = "rotated"
 
 
-class TileFilling(int, Enum):
-    inside = 0
-    outside = 1
+class TileColor(int, Enum):
+    base = 0
+    inverted = 1
 
 
 class DrawTruchetSVG:
@@ -53,7 +53,7 @@ class DrawTruchetSVG:
         self._curve_style = CurveStyle.straight
         self._alignment_style = AxisAlignmentStyle.rotated
 
-        self._tile_filling = TileFilling.inside
+        self._tile_filling = TileColor.base
         self._line_width = 1
 
         self._hybrid_fill = 0  # if > 0, mixes curved and straight fills
@@ -461,7 +461,7 @@ class DrawTruchetSVG:
         inside = tile_index > 1
         h_not_2 = self._hybrid_fill in (0, 1)
         h_not_1 = self._hybrid_fill in (0, 2)
-        inverted = self._tile_filling == TileFilling.inside
+        inverted = self._tile_filling == TileColor.base
 
         if (
             (inside and h_not_2 and inverted)
@@ -490,9 +490,9 @@ class DrawTruchetSVG:
 
     def invert_color(self):
         self._tile_filling = (
-            TileFilling.inside
-            if self._tile_filling == TileFilling.outside
-            else TileFilling.outside
+            TileColor.base
+            if self._tile_filling == TileColor.inverted
+            else TileColor.inverted
         )
 
     def increase_line_width(self):
