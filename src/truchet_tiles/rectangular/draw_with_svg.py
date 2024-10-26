@@ -458,48 +458,24 @@ class DrawTruchetSVG:
         )
 
     def _draw_tile_filled_curved(self, x_offset: int, y_offset: int, tile_index: int):
-        if tile_index > 1:
-            if self._hybrid_fill in (0, 1):
-                self._svg_top_group.append(
-                    dw.Use(
-                        self._base_tiles[FillStyle.filled][CurveStyle.curved][
-                            tile_index
-                        ],
-                        x_offset,
-                        y_offset,
-                    )
+        if (tile_index > 1 and self._hybrid_fill in (0, 1)) or (
+            tile_index < 2 and self._hybrid_fill in (0, 2)
+        ):
+            self._svg_top_group.append(
+                dw.Use(
+                    self._base_tiles[FillStyle.filled][CurveStyle.curved][tile_index],
+                    x_offset,
+                    y_offset,
                 )
-            else:
-                self._svg_top_group.append(
-                    dw.Use(
-                        self._base_tiles[FillStyle.filled][CurveStyle.straight][
-                            tile_index
-                        ],
-                        x_offset,
-                        y_offset,
-                    )
-                )
+            )
         else:
-            if self._hybrid_fill in (0, 2):
-                self._svg_top_group.append(
-                    dw.Use(
-                        self._base_tiles[FillStyle.filled][CurveStyle.curved][
-                            tile_index
-                        ],
-                        x_offset,
-                        y_offset,
-                    )
+            self._svg_top_group.append(
+                dw.Use(
+                    self._base_tiles[FillStyle.filled][CurveStyle.straight][tile_index],
+                    x_offset,
+                    y_offset,
                 )
-            else:
-                self._svg_top_group.append(
-                    dw.Use(
-                        self._base_tiles[FillStyle.filled][CurveStyle.straight][
-                            tile_index
-                        ],
-                        x_offset,
-                        y_offset,
-                    )
-                )
+            )
 
     def next_hybrid_mode(self):
         self._hybrid_fill = (self._hybrid_fill + 1) % 3
