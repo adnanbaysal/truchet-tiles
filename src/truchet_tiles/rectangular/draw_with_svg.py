@@ -56,7 +56,6 @@ class DrawTruchetSVG:
         self._tile_filling = TileFilling.inside
         self._line_width = 1
 
-        # TODO: Implement hybrid fill
         self._hybrid_fill = 0  # if > 0, mixes curved and straight fills
 
         self._screen = pygame.display.set_mode((self._draw_size, self._draw_size))
@@ -458,8 +457,17 @@ class DrawTruchetSVG:
         )
 
     def _draw_tile_filled_curved(self, x_offset: int, y_offset: int, tile_index: int):
-        if (tile_index > 1 and self._hybrid_fill in (0, 1)) or (
-            tile_index < 2 and self._hybrid_fill in (0, 2)
+        outside = tile_index < 2
+        inside = tile_index > 1
+        h_not_2 = self._hybrid_fill in (0, 1)
+        h_not_1 = self._hybrid_fill in (0, 2)
+        inverted = self._tile_filling == TileFilling.inside
+
+        if (
+            (inside and h_not_2 and inverted)
+            or (outside and h_not_1 and inverted)
+            or (inside and h_not_1 and not inverted)
+            or (outside and h_not_2 and not inverted)
         ):
             self._svg_top_group.append(
                 dw.Use(
