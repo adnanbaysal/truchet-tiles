@@ -3,7 +3,7 @@ import sys
 
 import pygame
 
-from truchet_tiles.rectangular.draw_with_svg import DrawTruchetSVG
+from truchet_tiles.rectangular.draw import DrawTruchetSVG
 from truchet_tiles.rectangular.grid_generator import generate_grid, GridType
 
 
