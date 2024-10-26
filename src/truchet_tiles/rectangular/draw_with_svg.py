@@ -83,6 +83,68 @@ class DrawTruchetSVG:
         ), "grid should have the same number of rows as the number of columns"
         self._grid = value
 
+    def draw(self):
+        if self._fill_style == FillStyle.linear:
+            self._draw_linear()
+        else:
+            self._draw_filled()
+
+    def next_hybrid_mode(self):
+        self._hybrid_fill = (self._hybrid_fill + 1) % 3
+
+    def invert_color(self):
+        self._tiling_color = (
+            TilingColor.base
+            if self._tiling_color == TilingColor.inverted
+            else TilingColor.inverted
+        )
+
+    def increase_line_width(self):
+        self._line_width = (
+            self._line_width + 1 if self._line_width != self.MAX_LINE_WIDTH else 1
+        )
+        self._create_linear_base_tiles()
+
+    def decrease_line_width(self):
+        self._line_width = (
+            self._line_width - 1 if self._line_width != 1 else self.MAX_LINE_WIDTH
+        )
+        self._create_linear_base_tiles()
+
+    def invert_aligned(self):
+        self._alignment_style = (
+            AxisAlignmentStyle.aligned
+            if self._alignment_style == AxisAlignmentStyle.rotated
+            else AxisAlignmentStyle.rotated
+        )
+
+    def invert_curved(self):
+        self._curve_style = (
+            CurveStyle.curved
+            if self._curve_style == CurveStyle.straight
+            else CurveStyle.straight
+        )
+
+    def invert_filled(self):
+        self._fill_style = (
+            FillStyle.filled
+            if self._fill_style == FillStyle.linear
+            else FillStyle.linear
+        )
+
+    def tiling_identifier(self) -> str:
+        return (
+            f"{self._grid_size}x{self._t_end}px_"
+            f"{'filled' if self._fill_style == FillStyle.filled else 'line'}_"
+            f"{'curved' if self._curve_style == CurveStyle.curved else 'straight'}_"
+            f"{'aligned' if self._alignment_style == AxisAlignmentStyle.aligned else 'rotated'}_"
+            f"w{self._line_width}"
+            f"{'hybrid' + str(self._hybrid_fill) + '_' if self._hybrid_fill > 0 else ''}"
+        )
+
+    def save_svg(self, filepath: str | pathlib.Path):
+        self._svg.save_svg(filepath)
+
     # LEVEL 1 base tile function:
     def _create_base_tiles(self):
         self._base_tiles[FillStyle.linear] = {}
@@ -321,12 +383,6 @@ class DrawTruchetSVG:
         )
         return pie
 
-    def draw(self):
-        if self._fill_style == FillStyle.linear:
-            self._draw_linear()
-        else:
-            self._draw_filled()
-
     def _draw_linear(self):
         self._clear_screan()
 
@@ -484,59 +540,3 @@ class DrawTruchetSVG:
                     y_offset,
                 )
             )
-
-    def next_hybrid_mode(self):
-        self._hybrid_fill = (self._hybrid_fill + 1) % 3
-
-    def invert_color(self):
-        self._tiling_color = (
-            TilingColor.base
-            if self._tiling_color == TilingColor.inverted
-            else TilingColor.inverted
-        )
-
-    def increase_line_width(self):
-        self._line_width = (
-            self._line_width + 1 if self._line_width != self.MAX_LINE_WIDTH else 1
-        )
-        self._create_linear_base_tiles()
-
-    def decrease_line_width(self):
-        self._line_width = (
-            self._line_width - 1 if self._line_width != 1 else self.MAX_LINE_WIDTH
-        )
-        self._create_linear_base_tiles()
-
-    def invert_aligned(self):
-        self._alignment_style = (
-            AxisAlignmentStyle.aligned
-            if self._alignment_style == AxisAlignmentStyle.rotated
-            else AxisAlignmentStyle.rotated
-        )
-
-    def invert_curved(self):
-        self._curve_style = (
-            CurveStyle.curved
-            if self._curve_style == CurveStyle.straight
-            else CurveStyle.straight
-        )
-
-    def invert_filled(self):
-        self._fill_style = (
-            FillStyle.filled
-            if self._fill_style == FillStyle.linear
-            else FillStyle.linear
-        )
-
-    def tiling_identifier(self) -> str:
-        return (
-            f"{self._grid_size}x{self._t_end}px_"
-            f"{'filled' if self._fill_style == FillStyle.filled else 'line'}_"
-            f"{'curved' if self._curve_style == CurveStyle.curved else 'straight'}_"
-            f"{'aligned' if self._alignment_style == AxisAlignmentStyle.aligned else 'rotated'}_"
-            f"w{self._line_width}"
-            f"{'hybrid' + str(self._hybrid_fill) + '_' if self._hybrid_fill > 0 else ''}"
-        )
-
-    def save_svg(self, filepath: str | pathlib.Path):
-        self._svg.save_svg(filepath)
