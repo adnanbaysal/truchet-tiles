@@ -3,7 +3,7 @@ import sys
 
 import pygame
 
-from truchet_tiles.rectangular.draw_with_svg import DrawTruchetSVG
+from truchet_tiles.rectangular.draw import DrawTruchetSVG
 from truchet_tiles.rectangular.grid_generator import generate_grid, GridType
 
 
@@ -49,6 +49,9 @@ def interactive_display(grid_size: int, tile_size: int):
                     drawer.draw()
                 elif event.key == pygame.K_f:
                     drawer.invert_filled()
+                    drawer.draw()
+                elif event.key == pygame.K_g:
+                    drawer.invert_show_grid_lines()
                     drawer.draw()
                 elif event.key == pygame.K_h:
                     drawer.next_hybrid_mode()
