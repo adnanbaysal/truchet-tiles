@@ -31,7 +31,7 @@ class AxisAlignmentStyle(str, Enum):
     rotated = "rotated"
 
 
-class TileColor(int, Enum):
+class TilingColor(int, Enum):
     base = 0
     inverted = 1
 
@@ -53,7 +53,7 @@ class DrawTruchetSVG:
         self._curve_style = CurveStyle.straight
         self._alignment_style = AxisAlignmentStyle.rotated
 
-        self._tile_filling = TileColor.base
+        self._tiling_color = TilingColor.base
         self._line_width = 1
 
         self._hybrid_fill = 0  # if > 0, mixes curved and straight fills
@@ -430,7 +430,7 @@ class DrawTruchetSVG:
                 neighbor = self._neighbor_cell(self._grid, grid_row, grid_col)
                 bit_changed = self._grid[grid_row][grid_col] ^ neighbor
                 if grid_row == 0 and grid_col == 0:
-                    neighbor_fill = self._grid[0][0] ^ self._tile_filling.value
+                    neighbor_fill = self._grid[0][0] ^ self._tiling_color.value
                 else:
                     neighbor_fill = self._neighbor_cell(_grid, grid_row, grid_col)
                 _grid[grid_row].append(neighbor_fill ^ bit_changed ^ 1)
@@ -461,7 +461,7 @@ class DrawTruchetSVG:
         inside = tile_index > 1
         h_not_2 = self._hybrid_fill in (0, 1)
         h_not_1 = self._hybrid_fill in (0, 2)
-        inverted = self._tile_filling == TileColor.base
+        inverted = self._tiling_color == TilingColor.base
 
         if (
             (inside and h_not_2 and inverted)
@@ -489,10 +489,10 @@ class DrawTruchetSVG:
         self._hybrid_fill = (self._hybrid_fill + 1) % 3
 
     def invert_color(self):
-        self._tile_filling = (
-            TileColor.base
-            if self._tile_filling == TileColor.inverted
-            else TileColor.inverted
+        self._tiling_color = (
+            TilingColor.base
+            if self._tiling_color == TilingColor.inverted
+            else TilingColor.inverted
         )
 
     def increase_line_width(self):
