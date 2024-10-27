@@ -17,17 +17,17 @@ PYG_BLACK = (0, 0, 0)
 PYG_WHITE = (255, 255, 255)
 
 
-class FillStyle(str, Enum):
+class Filledness(str, Enum):
     linear = "linear"
     filled = "filled"
 
 
-class CurveStyle(str, Enum):
+class Curvedness(str, Enum):
     straight = "straight"
     curved = "curved"
 
 
-class AxisAlignmentStyle(str, Enum):
+class AxisAlignment(str, Enum):
     aligned = "aligned"
     rotated = "rotated"
 
@@ -35,6 +35,12 @@ class AxisAlignmentStyle(str, Enum):
 class TilingColor(int, Enum):
     base = 0
     inverted = 1
+
+
+class HybridFill(int, Enum):
+    none = 0
+    hybrid_1 = 1
+    hybrid_2 = 2
 
 
 class DrawTruchetSVG:
@@ -50,15 +56,14 @@ class DrawTruchetSVG:
         self._grid_size = len(self._grid)
         self._draw_size = self._grid_size * self._t_end
 
-        self._fill_style = FillStyle.linear
-        self._curve_style = CurveStyle.straight
-        self._alignment_style = AxisAlignmentStyle.rotated
+        self._fill_style = Filledness.linear
+        self._curve_style = Curvedness.straight
+        self._alignment_style = AxisAlignment.rotated
 
         self._tiling_color = TilingColor.base
         self._line_width = 1
 
-        # if > 0, mixes curved and straight fills. Alternates between 0, 1, 2
-        self._hybrid_fill = 0
+        self._hybrid_fill = HybridFill.none
         self._show_grid_lines = False
 
         self._screen = pygame.display.set_mode((self._draw_size, self._draw_size))
@@ -90,7 +95,7 @@ class DrawTruchetSVG:
         # TODO: Fix svg to png issue on windows
         self._clear_screan()
 
-        if self._fill_style == FillStyle.linear:
+        if self._fill_style == Filledness.linear:
             self._draw_linear()
         else:
             self._draw_filled()
@@ -114,7 +119,9 @@ class DrawTruchetSVG:
             )
 
     def next_hybrid_mode(self):
-        self._hybrid_fill = (self._hybrid_fill + 1) % 3
+        hybrid_before = self._hybrid_fill
+        hybrid_after = (hybrid_before + 1) % 3
+        self._hybrid_fill = HybridFill(hybrid_after)
 
     def invert_color(self):
         self._tiling_color = (
@@ -137,23 +144,23 @@ class DrawTruchetSVG:
 
     def invert_aligned(self):
         self._alignment_style = (
-            AxisAlignmentStyle.aligned
-            if self._alignment_style == AxisAlignmentStyle.rotated
-            else AxisAlignmentStyle.rotated
+            AxisAlignment.aligned
+            if self._alignment_style == AxisAlignment.rotated
+            else AxisAlignment.rotated
         )
 
     def invert_curved(self):
         self._curve_style = (
-            CurveStyle.curved
-            if self._curve_style == CurveStyle.straight
-            else CurveStyle.straight
+            Curvedness.curved
+            if self._curve_style == Curvedness.straight
+            else Curvedness.straight
         )
 
     def invert_filled(self):
         self._fill_style = (
-            FillStyle.filled
-            if self._fill_style == FillStyle.linear
-            else FillStyle.linear
+            Filledness.filled
+            if self._fill_style == Filledness.linear
+            else Filledness.linear
         )
 
     def invert_show_grid_lines(self):
@@ -162,11 +169,11 @@ class DrawTruchetSVG:
     def tiling_identifier(self) -> str:
         return (
             f"{self._grid_size}x{self._t_end}px_"
-            f"{'filled' if self._fill_style == FillStyle.filled else 'line'}_"
-            f"{'curved' if self._curve_style == CurveStyle.curved else 'straight'}_"
-            f"{'aligned' if self._alignment_style == AxisAlignmentStyle.aligned else 'rotated'}_"
+            f"{'filled' if self._fill_style == Filledness.filled else 'line'}_"
+            f"{'curved' if self._curve_style == Curvedness.curved else 'straight'}_"
+            f"{'aligned' if self._alignment_style == AxisAlignment.aligned else 'rotated'}_"
             f"w{self._line_width}"
-            f"{'hybrid' + str(self._hybrid_fill) + '_' if self._hybrid_fill > 0 else ''}"
+            f"{'hybrid' + str(self._hybrid_fill.value) + '_' if self._hybrid_fill.value > 0 else ''}"
         )
 
     def save_svg(self, filepath: str | pathlib.Path):
@@ -174,8 +181,8 @@ class DrawTruchetSVG:
 
     # LEVEL 1 base tile function:
     def _create_base_tiles(self):
-        self._base_tiles[FillStyle.linear] = {}
-        self._base_tiles[FillStyle.filled] = {}
+        self._base_tiles[Filledness.linear] = {}
+        self._base_tiles[Filledness.filled] = {}
 
         self._create_linear_base_tiles()
         self._create_filled_base_tiles()
@@ -191,17 +198,17 @@ class DrawTruchetSVG:
 
     # LEVEL 3 base tile functions
     def _create_linear_straight_base_tiles(self):
-        self._base_tiles[FillStyle.linear][CurveStyle.straight] = []
+        self._base_tiles[Filledness.linear][Curvedness.straight] = []
         self._create_linear_straight_base_tile(0)
         self._create_linear_straight_base_tile(1)
 
     def _create_linear_curved_base_tiles(self):
-        self._base_tiles[FillStyle.linear][CurveStyle.curved] = []
+        self._base_tiles[Filledness.linear][Curvedness.curved] = []
         self._create_linear_curved_base_tile(0)
         self._create_linear_curved_base_tile(1)
 
     def _create_filled_straight_base_tiles(self):
-        self._base_tiles[FillStyle.filled][CurveStyle.straight] = []
+        self._base_tiles[Filledness.filled][Curvedness.straight] = []
         # Fill area out of diagonal lines
         self._create_outside_filled_straight_base_tile(0)
         self._create_outside_filled_straight_base_tile(1)
@@ -211,7 +218,7 @@ class DrawTruchetSVG:
         self._create_inside_filled_straight_base_tile(1)
 
     def _create_filled_curved_base_tiles(self):
-        self._base_tiles[FillStyle.filled][CurveStyle.curved] = []
+        self._base_tiles[Filledness.filled][Curvedness.curved] = []
         # Fill area outside of arc lines
         self._create_outside_filled_curved_base_tile(0)
         self._create_outside_filled_curved_base_tile(1)
@@ -243,7 +250,7 @@ class DrawTruchetSVG:
         ls.append(line_left)
         ls.append(line_right)
 
-        self._base_tiles[FillStyle.linear][CurveStyle.straight].append(ls)
+        self._base_tiles[Filledness.linear][Curvedness.straight].append(ls)
 
     def _create_linear_curved_base_tile(self, tile_type: int):
         if tile_type == 1:
@@ -277,7 +284,7 @@ class DrawTruchetSVG:
         lc.append(curve_left)
         lc.append(curve_right)
 
-        self._base_tiles[FillStyle.linear][CurveStyle.curved].append(lc)
+        self._base_tiles[Filledness.linear][Curvedness.curved].append(lc)
 
     def _create_outside_filled_straight_base_tile(self, tile_type: int):
         left0 = (0, self._t_mid)
@@ -316,7 +323,7 @@ class DrawTruchetSVG:
         fos.append(triangle_left)
         fos.append(triangle_right)
 
-        self._base_tiles[FillStyle.filled][CurveStyle.straight].append(fos)
+        self._base_tiles[Filledness.filled][Curvedness.straight].append(fos)
 
     def _get_hexagon_points(self, tile_type: int):
         p0 = (0, self._t_mid)
@@ -348,7 +355,7 @@ class DrawTruchetSVG:
         fis = dw.Group(id=f"fis{tile_type}", fill="none")
         fis.append(hexagon)
 
-        self._base_tiles[FillStyle.filled][CurveStyle.straight].append(fis)
+        self._base_tiles[Filledness.filled][Curvedness.straight].append(fis)
 
     def _create_outside_filled_curved_base_tile(self, tile_type: int):
         if tile_type == 1:
@@ -373,7 +380,7 @@ class DrawTruchetSVG:
         foc.append(pie_lef)
         foc.append(pie_right)
 
-        self._base_tiles[FillStyle.filled][CurveStyle.curved].append(foc)
+        self._base_tiles[Filledness.filled][Curvedness.curved].append(foc)
 
     def _create_inside_filled_curved_base_tile(self, tile_type: int):
         if tile_type == 1:
@@ -399,7 +406,7 @@ class DrawTruchetSVG:
         fic.append(pie_left)
         fic.append(pie_right)
 
-        self._base_tiles[FillStyle.filled][CurveStyle.curved].append(fic)
+        self._base_tiles[Filledness.filled][Curvedness.curved].append(fic)
 
     def _create_circle_pie(self, center, color=SVG_BLACK):
         pie = dw.Circle(
@@ -416,7 +423,7 @@ class DrawTruchetSVG:
             for grid_col in range(self._grid_size):
                 x_offset = grid_col * self._t_end
 
-                if self._curve_style == CurveStyle.straight:
+                if self._curve_style == Curvedness.straight:
                     self._draw_tile_linear_straight(
                         x_offset, y_offset, self._grid[grid_row][grid_col]
                     )
@@ -436,7 +443,7 @@ class DrawTruchetSVG:
     def _get_transform(self):
         return (
             f"matrix(.5 -.5 .5 .5 0 {self._t_end * self._grid_size / 2})"
-            if self._alignment_style == AxisAlignmentStyle.aligned
+            if self._alignment_style == AxisAlignment.aligned
             else None
         )
 
@@ -465,7 +472,7 @@ class DrawTruchetSVG:
     def _draw_tile_linear_straight(self, x_offset: int, y_offset: int, cell_value: int):
         self._svg_top_group.append(
             dw.Use(
-                self._base_tiles[FillStyle.linear][CurveStyle.straight][cell_value],
+                self._base_tiles[Filledness.linear][Curvedness.straight][cell_value],
                 x_offset,
                 y_offset,
             )
@@ -474,7 +481,7 @@ class DrawTruchetSVG:
     def _draw_tile_linear_curved(self, x_offset: int, y_offset: int, cell_value: int):
         self._svg_top_group.append(
             dw.Use(
-                self._base_tiles[FillStyle.linear][CurveStyle.curved][cell_value],
+                self._base_tiles[Filledness.linear][Curvedness.curved][cell_value],
                 x_offset,
                 y_offset,
             )
@@ -493,7 +500,7 @@ class DrawTruchetSVG:
                     + 2 * grid_of_fill_side[grid_row][grid_col]
                 )
 
-                if self._curve_style == CurveStyle.straight:
+                if self._curve_style == Curvedness.straight:
                     self._draw_tile_filled_straight(x_offset, y_offset, svg_tile_index)
                 else:
                     self._draw_tile_filled_curved(x_offset, y_offset, svg_tile_index)
@@ -526,7 +533,7 @@ class DrawTruchetSVG:
     def _draw_tile_filled_straight(self, x_offset: int, y_offset: int, tile_index: int):
         self._svg_top_group.append(
             dw.Use(
-                self._base_tiles[FillStyle.filled][CurveStyle.straight][tile_index],
+                self._base_tiles[Filledness.filled][Curvedness.straight][tile_index],
                 x_offset,
                 y_offset,
             )
@@ -535,8 +542,8 @@ class DrawTruchetSVG:
     def _draw_tile_filled_curved(self, x_offset: int, y_offset: int, tile_index: int):
         outside = tile_index < 2
         inside = tile_index > 1
-        h_not_2 = self._hybrid_fill in (0, 1)
-        h_not_1 = self._hybrid_fill in (0, 2)
+        h_not_2 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_1)
+        h_not_1 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_2)
         inverted = self._tiling_color == TilingColor.base
 
         if (
@@ -547,7 +554,7 @@ class DrawTruchetSVG:
         ):
             self._svg_top_group.append(
                 dw.Use(
-                    self._base_tiles[FillStyle.filled][CurveStyle.curved][tile_index],
+                    self._base_tiles[Filledness.filled][Curvedness.curved][tile_index],
                     x_offset,
                     y_offset,
                 )
@@ -555,7 +562,9 @@ class DrawTruchetSVG:
         else:
             self._svg_top_group.append(
                 dw.Use(
-                    self._base_tiles[FillStyle.filled][CurveStyle.straight][tile_index],
+                    self._base_tiles[Filledness.filled][Curvedness.straight][
+                        tile_index
+                    ],
                     x_offset,
                     y_offset,
                 )
