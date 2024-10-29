@@ -3,7 +3,7 @@ import sys
 
 import pygame
 
-from truchet_tiles.rectangular.draw import DrawTruchetSVG
+from truchet_tiles.rectangular.draw import TilingDrawer
 from truchet_tiles.rectangular.grid_generator import generate_grid, GridType
 
 
@@ -16,7 +16,7 @@ def interactive_display(grid_size: int, tile_size: int):
     grid_type_index = grid_types.index(grid_type)
 
     grid = generate_grid(grid_size, grid_type)
-    drawer = DrawTruchetSVG(grid=grid, tile_size=tile_size)
+    drawer = TilingDrawer(grid=grid, tile_size=tile_size)
     pygame.display.set_caption(grid_type)
     drawer.draw()
 
@@ -74,12 +74,12 @@ if __name__ == "__main__":
     """ Usage: python main.py grid_size tile_size
                0, 1, or 2 arguments can be given.
         Arguments:
-            grid_size: positive integer, default 4
-            tile_size: positive integer, default 128
+            grid_size: positive integer, default 16
+            tile_size: positive integer, default 50
     """
     pygame.init()
 
-    grid_size = int(sys.argv[1]) if len(sys.argv) > 1 else 4
-    tile_size = int(sys.argv[2]) if len(sys.argv) > 2 else 128
+    grid_size = int(sys.argv[1]) if len(sys.argv) > 1 else 16
+    tile_size = int(sys.argv[2]) if len(sys.argv) > 2 else 50
 
     interactive_display(grid_size=grid_size, tile_size=tile_size)
