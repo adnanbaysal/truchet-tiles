@@ -48,7 +48,10 @@ class DrawTruchetSVG:
     DISPLAY_FILE_PATH = (CURR_DIR / "truchet.png").as_posix()
 
     def __init__(self, grid: list[list[int]], tile_size: int) -> None:
-        self.grid = grid
+        assert all(
+            len(row) == len(grid) for row in grid
+        ), "grid should have the same number of rows as the number of columns"
+        self._grid = grid
 
         assert tile_size > 0, "tile_size must be positive"
         self._t_end = tile_size
@@ -80,17 +83,6 @@ class DrawTruchetSVG:
         self._base_tiles = {}
         self._create_base_tiles()
 
-    @property
-    def grid(self):
-        return self._grid
-
-    @grid.setter
-    def grid(self, value):
-        assert all(
-            len(row) == len(value) for row in value
-        ), "grid should have the same number of rows as the number of columns"
-        self._grid = value
-
     def draw(self):
         # TODO: Fix svg to png issue on windows
         self._clear_screan()
@@ -105,23 +97,18 @@ class DrawTruchetSVG:
 
         self._show_screen()
 
-    def _draw_grid_lines(self):
-        for i in range(self._grid_size + 1):
-            self._svg_top_group.append(
-                dw.Line(
-                    0, i * self._t_end, self._draw_size, i * self._t_end, stroke=SVG_RED
-                )
-            )
-            self._svg_top_group.append(
-                dw.Line(
-                    i * self._t_end, 0, i * self._t_end, self._draw_size, stroke=SVG_RED
-                )
-            )
+    def update_grid(self, grid: list[list[int]]):
+        assert all(
+            len(row) == len(grid) for row in grid
+        ), "grid should have the same number of rows as the number of columns"
+        self._grid = grid
+        self.draw()
 
     def next_hybrid_mode(self):
         hybrid_before = self._hybrid_fill
         hybrid_after = (hybrid_before + 1) % 3
         self._hybrid_fill = HybridFill(hybrid_after)
+        self.draw()
 
     def invert_color(self):
         self._tiling_color = (
@@ -129,18 +116,21 @@ class DrawTruchetSVG:
             if self._tiling_color == TilingColor.inverted
             else TilingColor.inverted
         )
+        self.draw()
 
     def increase_line_width(self):
         self._line_width = (
             self._line_width + 1 if self._line_width != self.MAX_LINE_WIDTH else 1
         )
         self._create_linear_base_tiles()
+        self.draw()
 
     def decrease_line_width(self):
         self._line_width = (
             self._line_width - 1 if self._line_width != 1 else self.MAX_LINE_WIDTH
         )
         self._create_linear_base_tiles()
+        self.draw()
 
     def invert_aligned(self):
         self._alignment_style = (
@@ -148,6 +138,7 @@ class DrawTruchetSVG:
             if self._alignment_style == AxisAlignment.rotated
             else AxisAlignment.rotated
         )
+        self.draw()
 
     def invert_curved(self):
         self._curve_style = (
@@ -155,6 +146,7 @@ class DrawTruchetSVG:
             if self._curve_style == Curvedness.straight
             else Curvedness.straight
         )
+        self.draw()
 
     def invert_filled(self):
         self._fill_style = (
@@ -162,9 +154,11 @@ class DrawTruchetSVG:
             if self._fill_style == Filledness.linear
             else Filledness.linear
         )
+        self.draw()
 
     def invert_show_grid_lines(self):
         self._show_grid_lines = self._show_grid_lines ^ True
+        self.draw()
 
     def tiling_identifier(self) -> str:
         return (
@@ -567,5 +561,18 @@ class DrawTruchetSVG:
                     ],
                     x_offset,
                     y_offset,
+                )
+            )
+
+    def _draw_grid_lines(self):
+        for i in range(self._grid_size + 1):
+            self._svg_top_group.append(
+                dw.Line(
+                    0, i * self._t_end, self._draw_size, i * self._t_end, stroke=SVG_RED
+                )
+            )
+            self._svg_top_group.append(
+                dw.Line(
+                    i * self._t_end, 0, i * self._t_end, self._draw_size, stroke=SVG_RED
                 )
             )

@@ -29,39 +29,30 @@ def interactive_display(grid_size: int, tile_size: int):
             elif event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                     # Redraws screen. Has effect in random tiling
-                    drawer.grid = generate_grid(grid_size, grid_type)
-                    drawer.draw()
+                    drawer.update_grid(generate_grid(grid_size, grid_type))
                 elif event.key in (pygame.K_UP, pygame.K_DOWN):
                     adder = +1 if event.key == pygame.K_UP else -1
                     grid_type_index = (grid_type_index + adder) % len(grid_types)
                     grid_type = grid_types[grid_type_index]
-                    drawer.grid = generate_grid(grid_size, grid_type)
+                    drawer.update_grid(generate_grid(grid_size, grid_type))
                     drawer.draw()
                     pygame.display.set_caption(grid_type)
                 elif event.key == pygame.K_c:
                     drawer.invert_curved()
-                    drawer.draw()
                 elif event.key == pygame.K_i:
                     drawer.invert_color()
-                    drawer.draw()
                 elif event.key == pygame.K_a:
                     drawer.invert_aligned()
-                    drawer.draw()
                 elif event.key == pygame.K_f:
                     drawer.invert_filled()
-                    drawer.draw()
                 elif event.key == pygame.K_g:
                     drawer.invert_show_grid_lines()
-                    drawer.draw()
                 elif event.key == pygame.K_h:
                     drawer.next_hybrid_mode()
-                    drawer.draw()
                 elif event.key == pygame.K_w:
                     drawer.increase_line_width()
-                    drawer.draw()
                 elif event.key == pygame.K_s:
                     drawer.decrease_line_width()
-                    drawer.draw()
                 elif event.key == pygame.K_p:
                     now_str = str(datetime.datetime.now())
                     tiling_identifier = drawer.tiling_identifier()
