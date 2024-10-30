@@ -40,7 +40,6 @@ class TilingDrawer:
         self._show_grid_lines = False
 
         self._screen = pygame.display.set_mode((self._draw_size, self._draw_size))
-        self._screen.fill(Colors.PYG_WHITE)
         self._svg = dw.Drawing(
             self._draw_size, self._draw_size, id_prefix="truchet_tiling"
         )
@@ -158,7 +157,22 @@ class TilingDrawer:
             self._draw_size, self._draw_size, id_prefix="truchet_tiling"
         )
         self._svg_top_group = dw.Group(id="truchet_group", fill="none")
-        self._screen.fill(Colors.PYG_WHITE)
+        # The following is the white background for svg
+        self._svg_top_group.append(
+            dw.Lines(
+                0,
+                0,
+                self._draw_size,
+                0,
+                self._draw_size,
+                self._draw_size,
+                0,
+                self._draw_size,
+                stroke=Colors.SVG_WHITE,
+                fill=Colors.SVG_WHITE,
+                close=True,
+            )
+        )
 
     def _get_transform(self):
         return (

@@ -10,8 +10,8 @@ from .enum import Colors, Curvedness, Filledness
 class TileGenerator(dict):
     def __init__(self, tile_size: int, max_line_width: int = 32) -> None:
         assert tile_size > 0, "tile_size must be positive"
-        self._t_end = tile_size
-        self._t_mid = int(self._t_end / 2)
+        self._end = tile_size
+        self._mid = int(self._end / 2)
         self._max_line_width = max_line_width
 
         self._base_tiles = {
@@ -72,15 +72,15 @@ class TileGenerator(dict):
 
     # LEVEL 3 base tile functions
     def _create_linear_straight_base_tile(self, tile_type: int, line_width: int):
-        left1 = (0, self._t_mid)
-        right1 = (self._t_end, self._t_mid)
+        left1 = (0, self._mid)
+        right1 = (self._end, self._mid)
 
         if tile_type == 0:
-            left2 = (self._t_mid, self._t_end)
-            right2 = (self._t_mid, 0)
+            left2 = (self._mid, self._end)
+            right2 = (self._mid, 0)
         else:
-            left2 = (self._t_mid, 0)
-            right2 = (self._t_mid, self._t_end)
+            left2 = (self._mid, 0)
+            right2 = (self._mid, self._end)
 
         line_left = dw.Line(
             *left1, *left2, stroke_width=line_width, stroke=Colors.SVG_BLACK
@@ -99,17 +99,17 @@ class TileGenerator(dict):
         if tile_type == 1:
             left_center = (0, 0)
             left_degrees = (90, 0)
-            right_center = (self._t_end, self._t_end)
+            right_center = (self._end, self._end)
             right_degrees = (270, 180)
         else:
-            left_center = (0, self._t_end)
+            left_center = (0, self._end)
             left_degrees = (360, 270)
-            right_center = (self._t_end, 0)
+            right_center = (self._end, 0)
             right_degrees = (180, 90)
 
         curve_left = dw.Arc(
             *left_center,
-            self._t_mid,
+            self._mid,
             *left_degrees,
             stroke_width=line_width,
             stroke=Colors.SVG_BLACK,
@@ -117,7 +117,7 @@ class TileGenerator(dict):
 
         curve_right = dw.Arc(
             *right_center,
-            self._t_mid,
+            self._mid,
             *right_degrees,
             stroke_width=line_width,
             stroke=Colors.SVG_BLACK,
@@ -130,19 +130,19 @@ class TileGenerator(dict):
         self._base_tiles[Filledness.linear][Curvedness.curved][line_width].append(lc)
 
     def _create_outside_filled_straight_base_tile(self, tile_type: int):
-        left0 = (0, self._t_mid)
-        right0 = (self._t_end, self._t_mid)
+        left0 = (0, self._mid)
+        right0 = (self._end, self._mid)
 
         if tile_type == 0:
-            left1 = (self._t_mid, self._t_end)
-            left2 = (0, self._t_end)
-            right1 = (self._t_mid, 0)
-            right2 = (self._t_end, 0)
+            left1 = (self._mid, self._end)
+            left2 = (0, self._end)
+            right1 = (self._mid, 0)
+            right2 = (self._end, 0)
         else:
-            left1 = (self._t_mid, 0)
+            left1 = (self._mid, 0)
             left2 = (0, 0)
-            right1 = (self._t_mid, self._t_end)
-            right2 = (self._t_end, self._t_end)
+            right1 = (self._mid, self._end)
+            right2 = (self._end, self._end)
 
         triangle_left = dw.Lines(
             *left0,
@@ -169,19 +169,19 @@ class TileGenerator(dict):
         self._base_tiles[Filledness.filled][Curvedness.straight].append(fos)
 
     def _get_hexagon_points(self, tile_type: int):
-        p0 = (0, self._t_mid)
-        p3 = (self._t_end, self._t_mid)
+        p0 = (0, self._mid)
+        p3 = (self._end, self._mid)
 
         if tile_type == 0:
-            p1 = (self._t_mid, self._t_end)
-            p2 = (self._t_end, self._t_end)
-            p4 = (self._t_mid, 0)
+            p1 = (self._mid, self._end)
+            p2 = (self._end, self._end)
+            p4 = (self._mid, 0)
             p5 = (0, 0)
         else:
-            p1 = (0, self._t_end)
-            p2 = (self._t_mid, self._t_end)
-            p4 = (self._t_end, 0)
-            p5 = (self._t_mid, 0)
+            p1 = (0, self._end)
+            p2 = (self._mid, self._end)
+            p4 = (self._end, 0)
+            p5 = (self._mid, 0)
 
         return (*p0, *p1, *p2, *p3, *p4, *p5)
 
@@ -203,24 +203,16 @@ class TileGenerator(dict):
     def _create_outside_filled_curved_base_tile(self, tile_type: int):
         if tile_type == 1:
             left_center = (0, 0)
-            right_center = (self._t_end, self._t_end)
+            right_center = (self._end, self._end)
         else:
-            left_center = (0, self._t_end)
-            right_center = (self._t_end, 0)
+            left_center = (0, self._end)
+            right_center = (self._end, 0)
 
-        pie_lef = self._create_circle_pie(left_center)
+        pie_left = self._create_circle_pie(left_center)
         pie_right = self._create_circle_pie(right_center)
-        hexagon_points = self._get_hexagon_points(tile_type)
-        white_hexagon = dw.Lines(
-            *hexagon_points,
-            stroke=Colors.SVG_WHITE,
-            fill=Colors.SVG_WHITE,
-            closed=True,
-        )
 
         foc = dw.Group(id=f"foc{tile_type}", fill="none")
-        foc.append(white_hexagon)
-        foc.append(pie_lef)
+        foc.append(pie_left)
         foc.append(pie_right)
 
         self._base_tiles[Filledness.filled][Curvedness.curved].append(foc)
@@ -228,10 +220,10 @@ class TileGenerator(dict):
     def _create_inside_filled_curved_base_tile(self, tile_type: int):
         if tile_type == 1:
             la_center = (0, 0)
-            ra_center = (self._t_end, self._t_end)
+            ra_center = (self._end, self._end)
         else:
-            la_center = (0, self._t_end)
-            ra_center = (self._t_end, 0)
+            la_center = (0, self._end)
+            ra_center = (self._end, 0)
 
         pie_left = self._create_circle_pie(la_center, color=Colors.SVG_WHITE)
         pie_right = self._create_circle_pie(ra_center, color=Colors.SVG_WHITE)
@@ -254,8 +246,8 @@ class TileGenerator(dict):
     def _create_circle_pie(self, center, color=Colors.SVG_BLACK):
         pie = dw.Circle(
             *center,
-            self._t_mid,
+            self._mid,
             fill=color,
-            path_length=math.pi * self._t_mid / 2,
+            path_length=math.pi * self._mid / 2,
         )
         return pie
