@@ -17,6 +17,8 @@ Run rectangular/main.py. This will open a pygame screen. Use the following keys 
 * **P:** Print the current image on pygame screen to a file.
 * **C:** Switch between Curved and Straight lines mode
 * **H:** Cycle through 3 modes of Hybrid fill for curved and filled tiling
+* **M:** Turn on/off SVG animation (not visible in Pygame screen)
+* **N:** Cycle through 3 animation methods (all tiles at once, row by row, tile by tile)
 
 ### Hexagonal Tiling
 To be implemented ...
