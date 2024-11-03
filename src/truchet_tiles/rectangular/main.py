@@ -37,6 +37,10 @@ def interactive_display(grid_size: int, tile_size: int):
                     drawer.update_grid(generate_grid(grid_size, grid_type))
                     drawer.draw()
                     pygame.display.set_caption(grid_type)
+                elif event.key == pygame.K_m:
+                    drawer.invert_animate()
+                elif event.key == pygame.K_n:
+                    drawer.next_animation_mode()
                 elif event.key == pygame.K_c:
                     drawer.invert_curved()
                 elif event.key == pygame.K_i:
