@@ -4,7 +4,15 @@ import drawsvg as dw
 import pygame
 import pygame.gfxdraw
 
-from .enum import Colors, AxisAlignment, Curvedness, Filledness, HybridFill, TilingColor
+from .enum import (
+    AnimationMethod,
+    Colors,
+    AxisAlignment,
+    Curvedness,
+    Filledness,
+    HybridFill,
+    TilingColor,
+)
 from .tile_generator import TileGenerator
 
 
@@ -13,6 +21,8 @@ CURR_DIR = pathlib.Path(__file__).parent.resolve()
 
 class TilingDrawer:
     DISPLAY_FILE_PATH = (CURR_DIR / "truchet.png").as_posix()
+    ANIMATION_DELAY = "0.000001s"
+    ANIMATION_BEGIN = 1.0
 
     def __init__(
         self, grid: list[list[int]], tile_size: int, max_line_width: int = 32
@@ -38,6 +48,11 @@ class TilingDrawer:
         self._hybrid_fill = HybridFill.none
 
         self._show_grid_lines = False
+
+        self._animate = False
+        self._animation_method = AnimationMethod.at_once
+        self._animation_prev_grid = [[0] * self._grid_size] * self._grid_size
+        self._animation_rotation_dur = 1.0
 
         self._screen = pygame.display.set_mode((self._draw_size, self._draw_size))
         self._svg = dw.Drawing(
@@ -132,24 +147,48 @@ class TilingDrawer:
             f"{'filled' if self._fill_style == Filledness.filled else 'line'}_"
             f"{'curved' if self._curve_style == Curvedness.curved else 'straight'}_"
             f"{'aligned' if self._alignment_style == AxisAlignment.aligned else 'rotated'}_"
-            f"w{self._line_width}"
-            f"{'hybrid' + str(self._hybrid_fill.value) + '_' if self._hybrid_fill.value > 0 else ''}"
+            f"w{self._line_width}_"
+            f"{'hybrid' + str(self._hybrid_fill.value) + '_'}"
+            f"{'anim_' + str(self._animation_method.value)}"
         )
 
     def save_svg(self, filepath: str | pathlib.Path):
         self._svg.save_svg(filepath)
 
+    def invert_animate(self):
+        self._animate ^= True
+        self.draw()
+
+    def set_rotation_duration(self, dur: float):
+        self._animation_rotation_dur = dur
+        self.draw()
+
+    def set_animation_method(self, method: str):
+        self._animation_method = AnimationMethod(method)
+        self.draw()
+
+    def next_animation_mode(self):
+        if self._animation_method == AnimationMethod.at_once:
+            self._animation_method = AnimationMethod.by_row
+        elif self._animation_method == AnimationMethod.by_row:
+            self._animation_method = AnimationMethod.by_tile
+        else:
+            self._animation_method = AnimationMethod.at_once
+
+        self.draw()
+
     def _draw_linear(self):
-        for grid_row in range(self._grid_size):
-            y_offset = grid_row * self._t_end
-            for grid_col in range(self._grid_size):
-                x_offset = grid_col * self._t_end
-                self._insert_linear_tile(
-                    x_offset,
-                    y_offset,
-                    self._curve_style,
-                    self._grid[grid_row][grid_col],
-                )
+        anim_start = self.ANIMATION_BEGIN
+        for row in range(self._grid_size):
+            for col in range(self._grid_size):
+                self._insert_linear_tile(row, col, anim_start)
+
+                if self._animation_method == AnimationMethod.by_tile:
+                    if self._grid[row][col] != self._animation_prev_grid[row][col]:
+                        anim_start += self._animation_rotation_dur
+
+            if self._animation_method == AnimationMethod.by_row:
+                anim_start += self._animation_rotation_dur
 
     def _clear_screan(self):
         self._svg.clear()
@@ -203,18 +242,42 @@ class TilingDrawer:
         self._draw_surface = pygame.image.load(self.DISPLAY_FILE_PATH)
         self._screen.blit(self._draw_surface, (0, 0))
 
-    def _insert_linear_tile(
-        self, x_offset: int, y_offset: int, curvedness: Curvedness, cell_value: int
-    ):
-        self._svg_top_group.append(
-            dw.Use(
-                self._base_tiles[Filledness.linear][curvedness][self._line_width][
-                    cell_value
-                ],
-                x_offset,
-                y_offset,
-            )
+    def _insert_linear_tile(self, row: int, col: int, anim_start: float):
+        y_offset = row * self._t_end
+        x_offset = col * self._t_end
+
+        used_tile = dw.Use(
+            self._base_tiles[Filledness.linear][self._curve_style][self._line_width][
+                self._grid[row][col]
+            ],
+            x_offset,
+            y_offset,
         )
+        if self._animate and (
+            self._animation_prev_grid[row][col] != self._grid[row][col]
+        ):
+
+            def _get_rotation(begin, dur, start_deg, end_deg):
+                return dw.AnimateTransform(
+                    attributeName="transform",
+                    begin=begin,
+                    dur=dur,
+                    type="rotate",
+                    from_or_values=f"{start_deg} {x_offset + self._t_mid} {y_offset + self._t_mid}",
+                    to=f"{end_deg} {x_offset + self._t_mid} {y_offset + self._t_mid}",
+                    fill="freeze",
+                    repeatCount="1",
+                )
+
+            # The following animation will make the svg appear to start from the prev state
+            used_tile.append_anim(
+                _get_rotation(self.ANIMATION_DELAY, self.ANIMATION_DELAY, 0, 90)
+            )
+            used_tile.append_anim(
+                _get_rotation(anim_start, self._animation_rotation_dur, 90, 180)
+            )
+
+        self._svg_top_group.append(used_tile)
 
     def _draw_filled(self):
         grid_of_fill_side = self._generate_fill_inside_grid()
