@@ -80,10 +80,13 @@ class TilingDrawer:
 
         self._show_screen()
 
-    def update_grid(self, grid: list[list[int]]):
+    def update_grid(self, grid: list[list[int]], set_current_to_prev: False):
         assert all(
             len(row) == len(grid) for row in grid
         ), "grid should have the same number of rows as the number of columns"
+        if set_current_to_prev:
+            self._animation_prev_grid = self._grid
+
         self._grid = grid
         self.draw()
 
