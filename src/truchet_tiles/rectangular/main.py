@@ -4,7 +4,7 @@ import sys
 import pygame
 
 from truchet_tiles.rectangular.draw import TilingDrawer
-from truchet_tiles.rectangular.grid_generator import generate_grid, GridType
+from truchet_tiles.rectangular.grid_generator import GridGenerator, GridType
 
 
 def interactive_display(grid_size: int, tile_size: int):
@@ -12,10 +12,9 @@ def interactive_display(grid_size: int, tile_size: int):
     fps = 60
 
     grid_type = GridType.XOR
-    grid_types = list(GridType)
-    grid_type_index = grid_types.index(grid_type)
+    grid_generator = GridGenerator(grid_size, grid_type)
+    grid = grid_generator.get_grid()
 
-    grid = generate_grid(grid_size, grid_type)
     drawer = TilingDrawer(grid=grid, tile_size=tile_size)
     pygame.display.set_caption(grid_type)
     drawer.draw()
@@ -29,14 +28,16 @@ def interactive_display(grid_size: int, tile_size: int):
             elif event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                     # Redraws screen. Has effect in random tiling
-                    drawer.update_grid(generate_grid(grid_size, grid_type))
+                    drawer.update_grid(grid_generator.get_grid())
                 elif event.key in (pygame.K_UP, pygame.K_DOWN):
-                    adder = +1 if event.key == pygame.K_UP else -1
-                    grid_type_index = (grid_type_index + adder) % len(grid_types)
-                    grid_type = grid_types[grid_type_index]
-                    drawer.update_grid(generate_grid(grid_size, grid_type))
+                    grid_func = (
+                        grid_generator.get_next_grid
+                        if event.key == pygame.K_UP
+                        else grid_generator.get_prev_grid
+                    )
+                    drawer.update_grid(grid_func())
                     drawer.draw()
-                    pygame.display.set_caption(grid_type)
+                    pygame.display.set_caption(grid_generator.get_grid_type())
                 elif event.key == pygame.K_m:
                     drawer.invert_animate()
                 elif event.key == pygame.K_n:
