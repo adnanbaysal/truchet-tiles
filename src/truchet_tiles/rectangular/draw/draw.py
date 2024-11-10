@@ -1,8 +1,5 @@
 import pathlib
-
 import drawsvg as dw
-import pygame
-import pygame.gfxdraw
 
 from .enum import (
     AnimationMethod,
@@ -16,11 +13,7 @@ from .enum import (
 from .tile_generator import TileGenerator
 
 
-CURR_DIR = pathlib.Path(__file__).parent.resolve()
-
-
 class TilingDrawer:
-    DISPLAY_FILE_PATH = (CURR_DIR / "truchet.png").as_posix()
     ANIMATION_DELAY = "0.000001s"
     ANIMATION_BEGIN = 1.0
 
@@ -54,17 +47,18 @@ class TilingDrawer:
         self._animation_prev_grid = [[0] * self._grid_size] * self._grid_size
         self._animation_rotation_dur = 1.0
 
-        self._screen = pygame.display.set_mode((self._draw_size, self._draw_size))
         self._svg = dw.Drawing(
             self._draw_size, self._draw_size, id_prefix="truchet_tiling"
         )
         self._svg_top_group = dw.Group(
             id="truchet_group", fill="none"
         )  # To handle translations
-        self._svg.save_png(self.DISPLAY_FILE_PATH)
-        self._draw_surface = pygame.image.load(self.DISPLAY_FILE_PATH)
 
         self._base_tiles = TileGenerator(tile_size, max_line_width=self._max_line_width)
+
+    @property
+    def svg(self):
+        return self._svg
 
     def draw(self):
         # TODO: Fix svg to png issue on windows
@@ -78,9 +72,9 @@ class TilingDrawer:
         if self._show_grid_lines:
             self._draw_grid_lines()
 
-        self._show_screen()
+        self._update_svg()
 
-    def update_grid(self, grid: list[list[int]], set_current_to_prev: False):
+    def update_grid(self, grid: list[list[int]], set_current_to_prev: bool = False):
         assert all(
             len(row) == len(grid) for row in grid
         ), "grid should have the same number of rows as the number of columns"
@@ -238,12 +232,6 @@ class TilingDrawer:
 
         self._svg.set_render_size()
         self._svg.append(dw.Use(self._svg_top_group, 0, 0, **kwargs))
-
-    def _show_screen(self):
-        self._update_svg()
-        self._svg.save_png(self.DISPLAY_FILE_PATH)
-        self._draw_surface = pygame.image.load(self.DISPLAY_FILE_PATH)
-        self._screen.blit(self._draw_surface, (0, 0))
 
     def _insert_linear_tile(self, row: int, col: int, anim_start: float):
         y_offset = row * self._t_end
