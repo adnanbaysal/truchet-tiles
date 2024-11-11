@@ -16,12 +16,12 @@ class AxisAlignment(str, Enum):
     rotated = "rotated"
 
 
-class TilingColor(int, Enum):
+class TilingColor(Enum):
     base = 0
     inverted = 1
 
 
-class HybridFill(int, Enum):
+class HybridFill(Enum):
     none = 0
     hybrid_1 = 1
     hybrid_2 = 2

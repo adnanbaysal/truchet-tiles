@@ -1,0 +1,23 @@
+{% extends template %}
+
+{% block title %}Rectangular Truchet Tiling{% endblock %}
+
+{% block content %}
+    <turbo-frame id="main" data-turbo-action="advance">
+        {% load static %}
+        <div class="page-container">
+            <!-- SVG Display Area -->
+            <div class="display-area" id="svg-container">
+                <div>
+                    {{ svg_text|safe }}
+                </div>
+            </div>
+            <div class="controls-sidebar" id="form-container">
+                <form action="/rect/" method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                </form>
+            </div>
+        </div>
+    </turbo-frame>
+{% endblock %}

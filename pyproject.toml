@@ -8,7 +8,8 @@ version = "0.1.0"
 requires-python = ">= 3.8"
 dependencies = [
   "pygame",
-  "drawsvg[all]~=2.0"
+  "drawsvg[all]~=2.0",
+  "django"
 ]
 
 [tool.hatch.build.targets.wheel]

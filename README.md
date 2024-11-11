@@ -4,7 +4,9 @@ A pygame based implementation of Truchet tiling defined in [this blog post](http
 First install dependencies, preferably in a virtual environment.
 
 ### Rectangular Tiling
-Run rectangular/main.py. This will open a pygame screen. Use the following keys to alter the tiling:
+
+#### Running with Pygame (unix only)
+Run rectangular/pygame_ui.py. This will open a pygame screen. Use the following keys to alter the tiling:
 
 * **UP-DOWN Arrows:** Change the function being shown
 * **LEFT-RIGHT Arrows:** Regenerate an image in the random function mode.
@@ -19,6 +21,11 @@ Run rectangular/main.py. This will open a pygame screen. Use the following keys 
 * **H:** Cycle through 3 modes of Hybrid fill for curved and filled tiling
 * **M:** Turn on/off SVG animation (not visible in Pygame screen)
 * **N:** Cycle through 3 animation methods (all tiles at once, row by row, tile by tile)
+
+Note that animation will not play in Pygame.
+
+#### Running as a web service (unix only)
+Run web_ui/manage.py. Then open http://127.0.0.1:8000/rect. Use the UI to change the display settings of the tiling.
 
 ### Hexagonal Tiling
 To be implemented ...

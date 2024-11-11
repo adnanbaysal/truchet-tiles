@@ -18,7 +18,20 @@ class TilingDrawer:
     ANIMATION_BEGIN = 1.0
 
     def __init__(
-        self, grid: list[list[int]], tile_size: int, max_line_width: int = 32
+        self,
+        grid: list[list[int]],
+        tile_size: int,
+        max_line_width: int = 32,
+        align_to_axis: bool = False,
+        fill: bool = False,
+        invert_colors: bool = False,
+        curved: bool = False,
+        hybrid_mode: int = 0,
+        animate: bool = False,
+        animation_method: str = "at_once",
+        show_grid: bool = False,
+        line_width: int = 1,
+        animation_duration: float = 1.0,
     ) -> None:
         assert all(
             len(row) == len(grid) for row in grid
@@ -32,20 +45,22 @@ class TilingDrawer:
         self._draw_size = self._grid_size * self._t_end
 
         self._max_line_width = max_line_width
-        self._line_width = 1
+        self._line_width = line_width
 
-        self._fill_style = Filledness.linear
-        self._curve_style = Curvedness.straight
-        self._alignment_style = AxisAlignment.rotated
-        self._tiling_color = TilingColor.base
-        self._hybrid_fill = HybridFill.none
+        self._fill_style = Filledness.filled if fill else Filledness.linear
+        self._curve_style = Curvedness.curved if curved else Curvedness.straight
+        self._alignment_style = (
+            AxisAlignment.aligned if align_to_axis else AxisAlignment.rotated
+        )
+        self._tiling_color = TilingColor(invert_colors)
+        self._hybrid_fill = HybridFill(hybrid_mode)
 
-        self._show_grid_lines = False
+        self._show_grid_lines = show_grid
 
-        self._animate = False
-        self._animation_method = AnimationMethod.at_once
+        self._animate = animate
+        self._animation_method = AnimationMethod(animation_method)
         self._animation_prev_grid = [[0] * self._grid_size] * self._grid_size
-        self._animation_rotation_dur = 1.0
+        self._animation_rotation_dur = animation_duration
 
         self._svg = dw.Drawing(
             self._draw_size, self._draw_size, id_prefix="truchet_tiling"
@@ -85,7 +100,7 @@ class TilingDrawer:
         self.draw()
 
     def next_hybrid_mode(self):
-        hybrid_before = self._hybrid_fill
+        hybrid_before = self._hybrid_fill.value
         hybrid_after = (hybrid_before + 1) % 3
         self._hybrid_fill = HybridFill(hybrid_after)
         self.draw()
