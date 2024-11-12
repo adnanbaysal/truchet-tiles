@@ -1,12 +1,18 @@
-A pygame based implementation of Truchet tiling defined in [this blog post](https://medium.com/@adbaysal/exploring-truchet-tiles-da61f02981a0).
+A drawsvg and Django based implementation of Truchet tiling defined in [this blog post](https://medium.com/@adbaysal/exploring-truchet-tiles-da61f02981a0).
 
-## How to use
-First install dependencies, preferably in a virtual environment.
+## How to use with Django
+First install dependencies, preferably in a virtual environment. Then run the web server with `python web_ui/manage.py` (or using the run config if you are using VS Code). Then for the rectangular tiling, open http://127.0.0.1:8000/rect in your browser. Use the UI to change the display settings of the tiling.
 
-### Rectangular Tiling
+Some settings will not take affect depending on other settings:
 
-#### Running with Pygame (unix only)
-Run rectangular/pygame_ui.py. This will open a pygame screen. Use the following keys to alter the tiling:
+* Invert colors requires Fill to be selected.
+* Line width needs Fill to be NOT selected.
+* Hybrid fill mode needs both Fill and Curved to be selected.
+* Animate needs Fill to be NOT selected (may change in the future).
+* Animation mode needs Animate to be selected.
+
+## How to use with Pygame (unix only)
+Run `python rectangular/pygame_ui.py`. This will open a pygame screen. Use the following keys to alter the tiling:
 
 * **UP-DOWN Arrows:** Change the function being shown
 * **LEFT-RIGHT Arrows:** Regenerate an image in the random function mode.
@@ -22,10 +28,4 @@ Run rectangular/pygame_ui.py. This will open a pygame screen. Use the following 
 * **M:** Turn on/off SVG animation (not visible in Pygame screen)
 * **N:** Cycle through 3 animation methods (all tiles at once, row by row, tile by tile)
 
-Note that animation will not play in Pygame.
-
-#### Running as a web service (unix only)
-Run web_ui/manage.py. Then open http://127.0.0.1:8000/rect. Use the UI to change the display settings of the tiling.
-
-### Hexagonal Tiling
-To be implemented ...
+Note that animation will not play in Pygame, but key `P` will save the SVG with animation.
