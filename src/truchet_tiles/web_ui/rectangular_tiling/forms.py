@@ -66,13 +66,13 @@ class TilingForm(forms.Form):
     dimension = forms.IntegerField(
         initial=8,
         min_value=1,
-        max_value=64,
+        max_value=128,
         widget=forms.NumberInput(attrs={"onchange": "submit();"}),
         required=False,
     )
     tile_size = forms.IntegerField(
         initial=32,
-        min_value=8,
+        min_value=6,
         max_value=512,
         widget=forms.NumberInput(attrs={"onchange": "submit();"}),
         required=False,
