@@ -5,15 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Django",
+            "name": "Django",
             "type": "debugpy",
             "request": "launch",
             "args": [
                 "runserver"
             ],
             "django": true,
-            "autoStartBrowser": false,
+            "autoStartBrowser": true,
             "program": "${workspaceFolder}/src/truchet_tiles/web_ui/manage.py"
+        },
+        {
+            "name": "Pygame Rectangular",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/truchet_tiles/pygame_ui/rectangular.py"
         }
     ]
 }

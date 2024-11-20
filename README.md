@@ -1,7 +1,10 @@
 A drawsvg and Django based implementation of Truchet tiling defined in [this blog post](https://medium.com/@adbaysal/exploring-truchet-tiles-da61f02981a0).
 
-## How to use with Django
-First install dependencies, preferably in a virtual environment. Then run the web server with `python web_ui/manage.py` (or using the run config if you are using VS Code). Then for the rectangular tiling, open http://127.0.0.1:8000/rect in your browser. Use the UI to change the display settings of the tiling.
+# How to run
+First install dependencies, preferably in a virtual environment. 
+
+## How to run with Django
+Run the web server with `python web_ui/manage.py` (or using the `Django` debug config if you are using VS Code). Then for the rectangular tiling, click the `Rectangular Tiling` button on the main page, or open `http://127.0.0.1:8000/rect` in your browser. Use the UI to change the display settings of the tiling.
 
 Some settings will not take affect depending on other settings:
 
@@ -11,8 +14,9 @@ Some settings will not take affect depending on other settings:
 * Animate needs Fill to be NOT selected (may change in the future).
 * Animation mode needs Animate to be selected.
 
-## How to use with Pygame (unix only)
-Run `python rectangular/pygame_ui.py`. This will open a pygame screen. Use the following keys to alter the tiling:
+## How to run with Pygame (unix only)
+### Rectangular tiling
+Run `python pygame_ui/rectangular.py`, or use the `Pygame Rectangular` debug config if you are using VS Code. This will open a pygame screen. Use the following keys to alter the tiling:
 
 * **UP-DOWN Arrows:** Change the function being shown
 * **LEFT-RIGHT Arrows:** Regenerate an image in the random function mode.
