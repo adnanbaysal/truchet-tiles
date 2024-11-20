@@ -1,4 +1,3 @@
-from .draw import TilingDrawer
+from truchet_tiles.rectangular.draw.draw import RectTilingDrawer
 
-
-__all__ = ["TilingDrawer"]
+__all__ = ["RectTilingDrawer"]

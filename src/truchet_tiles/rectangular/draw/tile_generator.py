@@ -4,10 +4,10 @@ from typing import Any
 
 import drawsvg as dw
 
-from .enum import Colors, Curvedness, Filledness
+from truchet_tiles.rectangular.draw.enum import Colors, Curvedness, Filledness
 
 
-class TileGenerator(dict):
+class RectTileGenerator(dict):
     def __init__(self, tile_size: int, max_line_width: int = 32) -> None:
         assert tile_size > 0, "tile_size must be positive"
         self._end = tile_size

@@ -2,8 +2,8 @@ import random
 
 from functools import cache
 
-from truchet_tiles.rectangular.draw import TilingDrawer
-from truchet_tiles.rectangular.grid_generator import GridGenerator, GridType
+from truchet_tiles.rectangular.draw import RectTilingDrawer
+from truchet_tiles.rectangular.grid_generator import RectGridGenerator, RectGridType
 
 
 @cache
@@ -27,10 +27,10 @@ def get_rectangular_tiling(
     # Pass the same rand_seed to update visual settings of the existing random tiling
     random.seed(rand_seed)
 
-    grid_generator = GridGenerator(dimension, GridType(function.lower()))
-    grid = grid_generator.get_grid()
+    grid_generator = RectGridGenerator(dimension, RectGridType(function.lower()))
+    grid = grid_generator.grid
 
-    drawer = TilingDrawer(
+    drawer = RectTilingDrawer(
         grid=grid,
         tile_size=tile_size,
         align_to_axis=align_to_axis,

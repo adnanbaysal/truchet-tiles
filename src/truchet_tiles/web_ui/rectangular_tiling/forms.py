@@ -1,16 +1,16 @@
 from django import forms
 
-from truchet_tiles.rectangular.grid_generator import GridType
+from truchet_tiles.rectangular.grid_generator import RectGridType
 from truchet_tiles.rectangular.draw.enum import AnimationMethod
 
-grid_types = [(gt.value.upper(), gt.value.upper()) for gt in GridType]
+grid_types = [(gt.value.upper(), gt.value.upper()) for gt in RectGridType]
 animation_methods = [(m.value, m.value.replace("_", " ")) for m in AnimationMethod]
 
 
 class TilingForm(forms.Form):
     function = forms.ChoiceField(
         choices=grid_types,
-        initial=GridType.XOR.value.upper(),
+        initial=RectGridType.XOR.value.upper(),
         widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )
@@ -66,7 +66,7 @@ class TilingForm(forms.Form):
     dimension = forms.IntegerField(
         initial=8,
         min_value=1,
-        max_value=128,
+        max_value=512,
         widget=forms.NumberInput(attrs={"onchange": "submit();"}),
         required=False,
     )

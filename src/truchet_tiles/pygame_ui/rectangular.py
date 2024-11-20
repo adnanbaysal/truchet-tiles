@@ -4,14 +4,14 @@ import sys
 
 import pygame
 
-from truchet_tiles.rectangular.draw import TilingDrawer
-from truchet_tiles.rectangular.grid_generator import GridGenerator, GridType
+from truchet_tiles.rectangular.draw import RectTilingDrawer
+from truchet_tiles.rectangular.grid_generator import RectGridGenerator, RectGridType
 
 
 CURR_DIR = pathlib.Path(__file__).parent.resolve()
 
 
-class PygameViewer:
+class RectPygameViewer:
     DISPLAY_FILE_PATH = (CURR_DIR / "truchet.png").as_posix()
     FPS = 60
 
@@ -22,11 +22,11 @@ class PygameViewer:
         self._screen = pygame.display.set_mode((self._draw_size, self._draw_size))
         self._clock = pygame.time.Clock()
 
-        self._grid_type = GridType.XOR
-        self._grid_generator = GridGenerator(self._grid_size, self._grid_type)
-        self._grid = self._grid_generator.get_grid()
+        self._grid_type = RectGridType.XOR
+        self._grid_generator = RectGridGenerator(self._grid_size, self._grid_type)
+        self._grid = self._grid_generator.grid
 
-        self._drawer = TilingDrawer(grid=self._grid, tile_size=self._tile_size)
+        self._drawer = RectTilingDrawer(grid=self._grid, tile_size=self._tile_size)
         self._drawer.draw()
 
     def show_svg(self):
@@ -46,7 +46,9 @@ class PygameViewer:
                 elif event.type == pygame.KEYDOWN:
                     if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                         # Redraws screen. Has effect in random tiling
-                        self._drawer.update_grid(self._grid_generator.get_grid())
+                        self._drawer.update_grid(
+                            self._grid_generator.get_grid_by_name(self._grid_type.value)
+                        )
                         self.show_svg()
                     elif event.key in (pygame.K_UP, pygame.K_DOWN):
                         grid_func = (
@@ -116,4 +118,4 @@ if __name__ == "__main__":
     grid_size = int(sys.argv[1]) if len(sys.argv) > 1 else 16
     tile_size = int(sys.argv[2]) if len(sys.argv) > 2 else 50
 
-    PygameViewer(grid_size=grid_size, tile_size=tile_size).interactive_display()
+    RectPygameViewer(grid_size=grid_size, tile_size=tile_size).interactive_display()

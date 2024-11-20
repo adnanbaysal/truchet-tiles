@@ -1,7 +1,7 @@
 import pathlib
 import drawsvg as dw
 
-from .enum import (
+from truchet_tiles.rectangular.draw.enum import (
     AnimationMethod,
     Colors,
     AxisAlignment,
@@ -10,10 +10,10 @@ from .enum import (
     HybridFill,
     TilingColor,
 )
-from .tile_generator import TileGenerator
+from truchet_tiles.rectangular.draw.tile_generator import RectTileGenerator
 
 
-class TilingDrawer:
+class RectTilingDrawer:
     ANIMATION_DELAY = "0.000001s"
     ANIMATION_BEGIN = 1.0
 
@@ -69,7 +69,9 @@ class TilingDrawer:
             id="truchet_group", fill="none"
         )  # To handle translations
 
-        self._base_tiles = TileGenerator(tile_size, max_line_width=self._max_line_width)
+        self._base_tiles = RectTileGenerator(
+            tile_size, max_line_width=self._max_line_width
+        )
 
     @property
     def svg(self):
