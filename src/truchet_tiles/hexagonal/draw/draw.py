@@ -1,28 +1,37 @@
 import pathlib
-import drawsvg as dw
+import drawsvg as dw  # type: ignore
 
-from truchet_tiles.rectangular.draw.enum import (
+from truchet_tiles.hexagonal.draw.enum import (
     AnimationMethod,
     Colors,
-    AxisAlignment,
+    HexTop,
     Curvedness,
     Filledness,
     HybridFill,
     TilingColor,
 )
-from truchet_tiles.rectangular.draw.tile_generator import RectTileGenerator
+from truchet_tiles.hexagonal.draw.tile_generator import HexTileGenerator
+from truchet_tiles.hexagonal.hex_grid import (
+    ORIENTATIONS,
+    Hex,
+    HexGrid,
+    HexGridData,
+    Layout,
+    Point,
+)
 
 
-class RectTilingDrawer:
+class HexTilingDrawer:
     ANIMATION_DELAY = "0.000001s"
     ANIMATION_BEGIN = 1.0
 
     def __init__(
         self,
-        grid: list[list[int]],
-        tile_size: int,
+        grid_dimension: int,
+        grid: dict[tuple[int, int], int],
+        edge_length: int,
         max_line_width: int = 32,
-        align_to_axis: bool = False,
+        flat_top: bool = False,
         fill: bool = False,
         invert_colors: bool = False,
         curved: bool = False,
@@ -33,25 +42,26 @@ class RectTilingDrawer:
         line_width: int = 1,
         animation_duration: float = 1.0,
     ) -> None:
-        assert all(
-            len(row) == len(grid) for row in grid
-        ), "grid should have the same number of rows as the number of columns"
-        self._grid = grid
+        assert grid_dimension > 0, "grid_dimension must be positive"
+        self._grid_dimension = grid_dimension
 
-        assert tile_size > 0, "tile_size must be positive"
-        self._t_end = tile_size
-        self._t_mid = int(self._t_end / 2)
-        self._grid_size = len(self._grid)
-        self._draw_size = self._grid_size * self._t_end
+        assert len(grid) == 1 + sum(6 * i for i in range(grid_dimension))
+
+        assert edge_length > 0, "edge_length must be positive"
+        self._edge_length = edge_length
+        self._draw_size = 2 * (2 * self._grid_dimension - 1) * self._edge_length
+
+        self._orientation_name = HexTop.flat if flat_top else HexTop.pointy
+        self._orientation = ORIENTATIONS[self._orientation_name]
+
+        self._grid = grid
+        self._hex_grid = self._calculate_hex_grid()
 
         self._max_line_width = max_line_width
         self._line_width = line_width
 
         self._fill_style = Filledness.filled if fill else Filledness.linear
         self._curve_style = Curvedness.curved if curved else Curvedness.straight
-        self._alignment_style = (
-            AxisAlignment.aligned if align_to_axis else AxisAlignment.rotated
-        )
         self._tiling_color = TilingColor(invert_colors)
         self._hybrid_fill = HybridFill(hybrid_mode)
 
@@ -59,19 +69,30 @@ class RectTilingDrawer:
 
         self._animate = animate
         self._animation_method = AnimationMethod(animation_method)
-        self._animation_prev_grid = [[0] * self._grid_size] * self._grid_size
+        self._animation_prev_grid = {
+            key: 0 for key in grid
+        }  # TODO: Add hex grid versionæ
         self._animation_rotation_dur = animation_duration
 
         self._svg = dw.Drawing(
-            self._draw_size, self._draw_size, id_prefix="rect_truchet_tiling"
+            self._draw_size, self._draw_size, id_prefix="hex_truchet_tiling"
         )
         self._svg_top_group = dw.Group(
             id="truchet_group", fill="none"
         )  # To handle translations
 
-        self._base_tiles = RectTileGenerator(
-            tile_size, max_line_width=self._max_line_width
+        self._base_tiles = HexTileGenerator(
+            edge_length, max_line_width=self._max_line_width
         )
+
+    def _calculate_hex_grid(self) -> HexGrid:
+        layout = Layout(
+            orientation=self._orientation,
+            size=Point(self._edge_length, self._edge_length),
+            origin=Point(0, 0),
+        )
+
+        return HexGrid(hex_grid=self._grid, layout=layout)
 
     @property
     def svg(self):
@@ -91,14 +112,14 @@ class RectTilingDrawer:
 
         self._update_svg()
 
-    def update_grid(self, grid: list[list[int]], set_current_to_prev: bool = False):
-        assert all(
-            len(row) == len(grid) for row in grid
-        ), "grid should have the same number of rows as the number of columns"
+    def update_grid(
+        self, grid: dict[tuple[int, int], int], set_current_to_prev: bool = False
+    ):
         if set_current_to_prev:
             self._animation_prev_grid = self._grid
 
         self._grid = grid
+        self._hex_grid = self._calculate_hex_grid()
         self.draw()
 
     def next_hybrid_mode(self):
@@ -127,11 +148,9 @@ class RectTilingDrawer:
         )
         self.draw()
 
-    def invert_aligned(self):
-        self._alignment_style = (
-            AxisAlignment.aligned
-            if self._alignment_style == AxisAlignment.rotated
-            else AxisAlignment.rotated
+    def invert_orientation(self):
+        self._orientation_name = (
+            HexTop.flat if self._orientation_name == HexTop.pointy else HexTop.pointy
         )
         self.draw()
 
@@ -157,10 +176,10 @@ class RectTilingDrawer:
 
     def tiling_identifier(self) -> str:
         return (
-            f"{self._grid_size}x{self._t_end}px_"
+            f"{self._grid_dimension}x{self._edge_length}px_"
             f"{'filled' if self._fill_style == Filledness.filled else 'line'}_"
             f"{'curved' if self._curve_style == Curvedness.curved else 'straight'}_"
-            f"{'aligned' if self._alignment_style == AxisAlignment.aligned else 'rotated'}_"
+            f"{'flat' if self._orientation_name == HexTop.flat else 'pointy'}_"
             f"w{self._line_width}_"
             f"{'hybrid' + str(self._hybrid_fill.value) + '_'}"
             f"{'anim_' + str(self._animation_method.value)}"
@@ -193,16 +212,12 @@ class RectTilingDrawer:
 
     def _draw_linear(self):
         anim_start = self.ANIMATION_BEGIN
-        for row in range(self._grid_size):
-            for col in range(self._grid_size):
-                self._insert_linear_tile(row, col, anim_start)
+        for hex_, hex_data in self._hex_grid.items():
+            self._insert_linear_tile(hex_, hex_data, anim_start)
 
-                if self._animation_method == AnimationMethod.by_tile:
-                    if self._grid[row][col] != self._animation_prev_grid[row][col]:
-                        anim_start += self._animation_rotation_dur
-
-            if self._animation_method == AnimationMethod.by_row:
-                anim_start += self._animation_rotation_dur
+            if self._animation_method == AnimationMethod.by_tile:
+                if self._hex_grid[hex_] != self._animation_prev_grid[hex_]:
+                    anim_start += self._animation_rotation_dur
 
     def _clear_screan(self):
         self._svg.clear()
@@ -230,7 +245,7 @@ class RectTilingDrawer:
     def _get_transform(self):
         return (
             f"matrix(.5 -.5 .5 .5 0 {self._t_end * self._grid_size / 2})"
-            if self._alignment_style == AxisAlignment.aligned
+            if self._orientation_name == HexTop.flat
             else None
         )
 
@@ -250,19 +265,16 @@ class RectTilingDrawer:
         self._svg.set_render_size()
         self._svg.append(dw.Use(self._svg_top_group, 0, 0, **kwargs))
 
-    def _insert_linear_tile(self, row: int, col: int, anim_start: float):
-        y_offset = row * self._t_end
-        x_offset = col * self._t_end
-
+    def _insert_linear_tile(self, hex_: Hex, hex_data: HexGridData, anim_start: float):
         used_tile = dw.Use(
-            self._base_tiles[Filledness.linear][self._curve_style][self._line_width][
-                self._grid[row][col]
-            ],
-            x_offset,
-            y_offset,
+            self._base_tiles[self._orientation_name][Filledness.linear][
+                self._curve_style
+            ][self._line_width][hex_data.value],
+            hex_data.center.x,
+            hex_data.center.y,
         )
         if self._animate and (
-            self._animation_prev_grid[row][col] != self._grid[row][col]
+            self._animation_prev_grid[(hex_.q, hex_.r)] != self._grid[(hex_.q, hex_.r)]
         ):
 
             def _get_rotation(begin, dur, start_deg, end_deg):
@@ -271,8 +283,8 @@ class RectTilingDrawer:
                     begin=begin,
                     dur=dur,
                     type="rotate",
-                    from_or_values=f"{start_deg} {x_offset + self._t_mid} {y_offset + self._t_mid}",
-                    to=f"{end_deg} {x_offset + self._t_mid} {y_offset + self._t_mid}",
+                    from_or_values=f"{start_deg} {hex_data.center.x} {hex_data.center.y}",
+                    to=f"{end_deg} {hex_data.center.x} {hex_data.center.x}",
                     fill="freeze",
                     repeatCount="1",
                 )
@@ -296,7 +308,7 @@ class RectTilingDrawer:
                 x_offset = grid_col * self._t_end
 
                 base_tile_index = (
-                    self._grid[grid_row][grid_col]
+                    self._hex_grid[grid_row][grid_col]
                     + 2 * grid_of_fill_side[grid_row][grid_col]
                 )
 
@@ -312,10 +324,10 @@ class RectTilingDrawer:
         for grid_row in range(self._grid_size):
             _grid.append([])
             for grid_col in range(self._grid_size):
-                neighbor = self._neighbor_cell(self._grid, grid_row, grid_col)
-                bit_changed = self._grid[grid_row][grid_col] ^ neighbor
+                neighbor = self._neighbor_cell(self._hex_grid, grid_row, grid_col)
+                bit_changed = self._hex_grid[grid_row][grid_col] ^ neighbor
                 if grid_row == 0 and grid_col == 0:
-                    neighbor_fill = self._grid[0][0] ^ self._tiling_color.value
+                    neighbor_fill = self._hex_grid[0][0] ^ self._tiling_color.value
                 else:
                     neighbor_fill = self._neighbor_cell(_grid, grid_row, grid_col)
                 _grid[grid_row].append(neighbor_fill ^ bit_changed ^ 1)
