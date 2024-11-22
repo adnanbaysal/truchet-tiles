@@ -53,9 +53,10 @@ class HexTilingDrawer:
 
         self._orientation_name = HexTop.flat if flat_top else HexTop.pointy
         self._orientation = ORIENTATIONS[self._orientation_name]
-
         self._grid = grid
-        self._hex_grid = self._calculate_hex_grid()
+        self._hex_grid = (
+            self._calculate_hex_grid()
+        )  # NOTE: grid should be updated if orientation changed
 
         self._max_line_width = max_line_width
         self._line_width = line_width
@@ -75,7 +76,10 @@ class HexTilingDrawer:
         self._animation_rotation_dur = animation_duration
 
         self._svg = dw.Drawing(
-            self._draw_size, self._draw_size, id_prefix="hex_truchet_tiling"
+            self._draw_size,
+            self._draw_size,
+            origin=(0, 0),
+            id_prefix="hex_truchet_tiling",
         )
         self._svg_top_group = dw.Group(
             id="truchet_group", fill="none"
@@ -152,6 +156,8 @@ class HexTilingDrawer:
         self._orientation_name = (
             HexTop.flat if self._orientation_name == HexTop.pointy else HexTop.pointy
         )
+        self._orientation = ORIENTATIONS[self._orientation_name]
+        self._hex_grid = self._calculate_hex_grid()
         self.draw()
 
     def invert_curved(self):
@@ -216,7 +222,7 @@ class HexTilingDrawer:
             self._insert_linear_tile(hex_, hex_data, anim_start)
 
             if self._animation_method == AnimationMethod.by_tile:
-                if self._hex_grid[hex_] != self._animation_prev_grid[hex_]:
+                if self._hex_grid[hex_].value != self._animation_prev_grid[hex_]:
                     anim_start += self._animation_rotation_dur
 
     def _clear_screan(self):
@@ -228,14 +234,14 @@ class HexTilingDrawer:
         # The following is the white background for svg
         self._svg_top_group.append(
             dw.Lines(
-                0,
-                0,
-                self._draw_size,
-                0,
-                self._draw_size,
-                self._draw_size,
-                0,
-                self._draw_size,
+                -self._draw_size / 2,
+                -self._draw_size / 2,
+                -self._draw_size / 2,
+                +self._draw_size / 2,
+                +self._draw_size / 2,
+                +self._draw_size / 2,
+                +self._draw_size / 2,
+                -self._draw_size / 2,
                 stroke=Colors.SVG_WHITE,
                 fill=Colors.SVG_WHITE,
                 close=True,
@@ -243,15 +249,23 @@ class HexTilingDrawer:
         )
 
     def _get_transform(self):
-        return (
-            f"matrix(.5 -.5 .5 .5 0 {self._t_end * self._grid_size / 2})"
-            if self._orientation_name == HexTop.flat
-            else None
-        )
+        # return (
+        #     f"matrix(.5 -.5 .5 .5 0 {self._t_end * self._grid_size / 2})"
+        #     if self._orientation_name == HexTop.flat
+        #     else None
+        # )
+        return None
 
     def _update_svg(self):
         kwargs = {}
         transform = self._get_transform()
+
+        self._svg.view_box = (
+            -self._draw_size / 2,
+            -self._draw_size / 2,
+            self._draw_size,
+            self._draw_size,
+        )
 
         if transform:
             kwargs["transform"] = transform

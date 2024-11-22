@@ -104,7 +104,7 @@ class HexTileGenerator(dict):
                     hex_geometry.mids[2 * i + tile_type].x,
                     hex_geometry.mids[2 * i + tile_type].y,
                     hex_geometry.mids[(2 * i + 1 + tile_type) % 6].x,
-                    hex_geometry.mids[(2 * i + 1 + tile_type) % 6].x,
+                    hex_geometry.mids[(2 * i + 1 + tile_type) % 6].y,
                     stroke_width=line_width,
                     stroke=Colors.SVG_BLACK,
                 )

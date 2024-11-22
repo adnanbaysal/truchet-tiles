@@ -18,7 +18,7 @@ class HexPygameViewer:
     def __init__(self, grid_dimension: int, edge_length: int):
         self._grid_dimension = grid_dimension
         self._edge_length = edge_length
-        self._draw_size = self._grid_dimension * self._edge_length
+        self._draw_size = 2 * (2 * self._grid_dimension - 1) * self._edge_length
         self._screen = pygame.display.set_mode((self._draw_size, self._draw_size))
         self._clock = pygame.time.Clock()
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     pygame.init()
 
     grid_dimension = int(sys.argv[1]) if len(sys.argv) > 1 else 4
-    edge_length = int(sys.argv[2]) if len(sys.argv) > 2 else 50
+    edge_length = int(sys.argv[2]) if len(sys.argv) > 2 else 64
 
     HexPygameViewer(
         grid_dimension=grid_dimension, edge_length=edge_length

@@ -11,6 +11,9 @@ class HexGridType(str, Enum):
     XSIGNMAG = "xsignmag"  # Negative numbers are represented as sign magnitude form
     XONESCOMP = "xonescomp"  # Negative numbers are represented as one's complement form
     XTWOSCOMP = "xtwoscomp"  # Negative numbers are represented as two's complement form
+    XSIGNMAGQR = "xsignmagqr"  # Like xsignmag, but only q and r coordinates are used
+    XONESCOMPQR = "xonescompqr"  # Like xonescomp, but only q and r coordinates are used
+    XTWOSCOMPQR = "xtwoscompqr"  # Like xtwoscomp, but only q and r coordinates are used
     RANDOM = "random"
 
 
@@ -64,6 +67,12 @@ class HexGridGenerator:
                 grid_func = lambda q, r: oc_parity(q) ^ oc_parity(r) ^ oc_parity(-q - r)  # noqa: E731
             case HexGridType.XTWOSCOMP:
                 grid_func = lambda q, r: tc_parity(q) ^ tc_parity(r) ^ tc_parity(-q - r)  # noqa: E731
+            case HexGridType.XSIGNMAGQR:
+                grid_func = lambda q, r: sm_parity(q) ^ sm_parity(r)  # noqa: E731
+            case HexGridType.XONESCOMPQR:
+                grid_func = lambda q, r: oc_parity(q) ^ oc_parity(r)  # noqa: E731
+            case HexGridType.XTWOSCOMPQR:
+                grid_func = lambda q, r: tc_parity(q) ^ tc_parity(r)  # noqa: E731
             case _:
                 grid_func = lambda q, r: randint(0, 1)  # noqa: E731
 
