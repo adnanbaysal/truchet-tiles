@@ -63,7 +63,7 @@ class HexTileGenerator(dict):
     # LEVEL 1 base tile functions
     def _create_linear_base_tiles(self, line_width: int):
         self._create_linear_straight_base_tiles(line_width)
-        # self._create_linear_curved_base_tiles(line_width)
+        self._create_linear_curved_base_tiles(line_width)
 
     # def _create_filled_base_tiles(self):
     #     self._create_filled_straight_base_tiles()
@@ -74,9 +74,9 @@ class HexTileGenerator(dict):
         self._create_linear_straight_base_tile(0, line_width)
         self._create_linear_straight_base_tile(1, line_width)
 
-    # def _create_linear_curved_base_tiles(self, line_width: int):
-    #     self._create_linear_curved_base_tile(0, line_width)
-    #     self._create_linear_curved_base_tile(1, line_width)
+    def _create_linear_curved_base_tiles(self, line_width: int):
+        self._create_linear_curved_base_tile(0, line_width)
+        self._create_linear_curved_base_tile(1, line_width)
 
     # def _create_filled_straight_base_tiles(self):
     #     # Fill area out of diagonal lines
@@ -111,7 +111,7 @@ class HexTileGenerator(dict):
                 for i in range(3)
             ]
 
-            ls = dw.Group(id=f"ls{tile_type}", fill="none")
+            ls = dw.Group(id=f"ls{hex_top.value}{tile_type}", fill="none")
             for i in range(3):
                 ls.append(lines[i])
 
@@ -119,39 +119,29 @@ class HexTileGenerator(dict):
                 line_width
             ].append(ls)
 
-    # def _create_linear_curved_base_tile(self, tile_type: int, line_width: int):
-    #     if tile_type == 1:
-    #         left_center = (0, 0)
-    #         left_degrees = (90, 0)
-    #         right_center = (self._r_outer, self._r_outer)
-    #         right_degrees = (270, 180)
-    #     else:
-    #         left_center = (0, self._r_outer)
-    #         left_degrees = (360, 270)
-    #         right_center = (self._r_outer, 0)
-    #         right_degrees = (180, 90)
+    def _create_linear_curved_base_tile(self, tile_type: int, line_width: int):
+        for hex_top, hex_geometry in self._hex_geometries.items():
+            arcs = [
+                dw.Path(
+                    d=f"""
+                        M {hex_geometry.mids[2 * i + tile_type].x} {hex_geometry.mids[2 * i + tile_type].y}
+                        A {self._edge_length / 2} {self._edge_length / 2} 0 0 1 
+                          {hex_geometry.mids[(2 * i + 1 + tile_type) % 6].x} 
+                          {hex_geometry.mids[(2 * i + 1 + tile_type) % 6].y}
+                    """,
+                    stroke_width=line_width,
+                    stroke=Colors.SVG_BLACK,
+                )
+                for i in range(3)
+            ]
 
-    #     curve_left = dw.Arc(
-    #         *left_center,
-    #         self._mid,
-    #         *left_degrees,
-    #         stroke_width=line_width,
-    #         stroke=Colors.SVG_BLACK,
-    #     )
+            ls = dw.Group(id=f"lc{hex_top.value}{tile_type}", fill="none")
+            for i in range(3):
+                ls.append(arcs[i])
 
-    #     curve_right = dw.Arc(
-    #         *right_center,
-    #         self._mid,
-    #         *right_degrees,
-    #         stroke_width=line_width,
-    #         stroke=Colors.SVG_BLACK,
-    #     )
-
-    #     lc = dw.Group(id=f"lc{tile_type}", fill="none")
-    #     lc.append(curve_left)
-    #     lc.append(curve_right)
-
-    #     self._base_tiles[Filledness.linear][Curvedness.curved][line_width].append(lc)
+            self._base_tiles[hex_top][Filledness.linear][Curvedness.curved][
+                line_width
+            ].append(ls)
 
     # def _create_outside_filled_straight_base_tile(self, tile_type: int):
     #     left0 = (0, self._mid)

@@ -25,7 +25,7 @@
             "name": "Pygame Hexagonal",
             "type": "debugpy",
             "request": "launch",
-            "args": ["2", "128"],
+            "args": ["16", "16"],
             "program": "${workspaceFolder}/src/truchet_tiles/pygame_ui/hexagonal.py"
         }
     ]
