@@ -244,7 +244,7 @@ class RectTileGenerator(dict):
 
         self._base_tiles[Filledness.filled][Curvedness.curved].append(fic)
 
-    def _create_circle_pie(self, center, color=Colors.SVG_BLACK):
+    def _create_circle_pie(self, center: tuple[int, int], color=Colors.SVG_BLACK):
         pie = dw.Circle(
             *center,
             self._mid,

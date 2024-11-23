@@ -250,18 +250,7 @@ class HexTilingDrawer:
             )
         )
 
-    def _get_transform(self):
-        # return (
-        #     f"matrix(.5 -.5 .5 .5 0 {self._t_end * self._grid_size / 2})"
-        #     if self._orientation_name == HexTop.flat
-        #     else None
-        # )
-        return None
-
     def _update_svg(self):
-        kwargs = {}
-        transform = self._get_transform()
-
         self._svg.view_box = (
             -self._draw_size / 2,
             -self._draw_size / 2,
@@ -269,17 +258,8 @@ class HexTilingDrawer:
             self._draw_size,
         )
 
-        if transform:
-            kwargs["transform"] = transform
-            self._svg.view_box = (
-                self._draw_size / 4,
-                self._draw_size / 4,
-                self._draw_size / 2,
-                self._draw_size / 2,
-            )
-
         self._svg.set_render_size()
-        self._svg.append(dw.Use(self._svg_top_group, 0, 0, **kwargs))
+        self._svg.append(dw.Use(self._svg_top_group, 0, 0))
 
     def _insert_linear_tile(self, hex_: Hex, hex_data: HexGridData, anim_start: float):
         used_tile = dw.Use(
@@ -317,35 +297,44 @@ class HexTilingDrawer:
 
     def _draw_filled(self):
         for hex_data in self._hex_grid.values():
-            base_tile_index = 2 * hex_data.value + self._tiling_color.value
-
             if self._connector == Connector.straight:
-                self._insert_filled_straight_tile(hex_data, base_tile_index)
+                self._insert_filled_straight_tile(hex_data)
             else:
-                self._insert_filled_curved_tile(hex_data, base_tile_index)
+                self._insert_filled_curved_tile(hex_data)
 
-    @staticmethod
-    def _neighbor_cell(_grid: list[list[int]], row: int, col: int) -> int:
-        if row == 0 and col == 0:
-            return _grid[row][col]
-        if col > 0:
-            return _grid[row][col - 1]
-        if row > 0:
-            return _grid[row - 1][col]
-        raise ValueError("Invalid row and column")
+    def _insert_filled_straight_tile(self, hex_data: HexGridData):
+        # tile_index = 2 * hex_data.value + self._tiling_color.value
+        tile_index = self.index_map[(self._tiling_color.value, hex_data.value)]
 
-    def _insert_filled_straight_tile(self, hex_data: HexGridData, tile_index: int):
         self._svg_top_group.append(
             dw.Use(
                 self._base_tiles[self._orientation_name][Filledness.filled][
-                    self._connector
+                    Connector.straight
                 ][tile_index],
                 hex_data.center.x,
                 hex_data.center.y,
             )
         )
 
-    def _insert_filled_curved_tile(self, x_offset: int, y_offset: int, tile_index: int):
+    index_map = {
+        (0, 0): 0,
+        (0, 1): 3,
+        (1, 0): 2,
+        (1, 1): 1,
+    }
+
+    def _insert_filled_curved_tile(self, hex_data: HexGridData):
+        tile_index = self.index_map[(self._tiling_color.value, hex_data.value)]
+        # self._svg_top_group.append(
+        #     dw.Use(
+        #         self._base_tiles[self._orientation_name][Filledness.filled][
+        #             Connector.curved
+        #         ][tile_index],
+        #         hex_data.center.x,
+        #         hex_data.center.y,
+        #     )
+        # )
+
         outside = tile_index < 2
         inside = tile_index > 1
         h_not_2 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_1)
@@ -360,37 +349,34 @@ class HexTilingDrawer:
         ):
             self._svg_top_group.append(
                 dw.Use(
-                    self._base_tiles[Filledness.filled][Connector.curved][tile_index],
-                    x_offset,
-                    y_offset,
+                    self._base_tiles[self._orientation_name][Filledness.filled][
+                        Connector.curved
+                    ][tile_index],
+                    hex_data.center.x,
+                    hex_data.center.y,
                 )
             )
         else:
             self._svg_top_group.append(
                 dw.Use(
-                    self._base_tiles[Filledness.filled][Connector.straight][tile_index],
-                    x_offset,
-                    y_offset,
+                    self._base_tiles[self._orientation_name][Filledness.filled][
+                        Connector.straight
+                    ][tile_index],
+                    hex_data.center.x,
+                    hex_data.center.y,
                 )
             )
 
     def _draw_grid_lines(self):
-        for i in range(self._grid_size + 1):
+        for hex_data in self._hex_grid.values():
+            points = []
+            for p in hex_data.corners:
+                points += [p.x, p.y]
+
             self._svg_top_group.append(
-                dw.Line(
-                    0,
-                    i * self._t_end,
-                    self._draw_size,
-                    i * self._t_end,
+                dw.Lines(
+                    *points,
                     stroke=Colors.SVG_RED,
-                )
-            )
-            self._svg_top_group.append(
-                dw.Line(
-                    i * self._t_end,
-                    0,
-                    i * self._t_end,
-                    self._draw_size,
-                    stroke=Colors.SVG_RED,
+                    close=True,
                 )
             )

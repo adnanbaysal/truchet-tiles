@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-# import math
+import math
 from typing import Any
 
 import drawsvg as dw  # type: ignore
@@ -71,7 +71,7 @@ class HexTileGenerator(dict):
 
     def _create_filled_base_tiles(self):
         self._create_filled_straight_base_tiles()
-        # self._create_filled_curved_base_tiles()
+        self._create_filled_curved_base_tiles()
         # self._create_filled_twoline_base_tiles()
 
     # LEVEL 2 base tile functions
@@ -96,14 +96,14 @@ class HexTileGenerator(dict):
         self._create_inside_filled_straight_base_tile(0)
         self._create_inside_filled_straight_base_tile(1)
 
-    # def _create_filled_curved_base_tiles(self):
-    #     # Fill area outside of arc lines
-    #     self._create_outside_filled_curved_base_tile(0)
-    #     self._create_outside_filled_curved_base_tile(1)
+    def _create_filled_curved_base_tiles(self):
+        # Fill area outside of arc lines
+        self._create_outside_filled_curved_base_tile(0)
+        self._create_outside_filled_curved_base_tile(1)
 
-    #     # Fill area between arc lines
-    #     self._create_inside_filled_curved_base_tile(0)
-    #     self._create_inside_filled_curved_base_tile(1)
+        # Fill area between arc lines
+        self._create_inside_filled_curved_base_tile(0)
+        self._create_inside_filled_curved_base_tile(1)
 
     # LEVEL 3 base tile functions
     def _create_linear_straight_base_tile(self, tile_type: int, line_width: int):
@@ -207,10 +207,10 @@ class HexTileGenerator(dict):
                 points += [
                     hex_geometry.edge_mids[2 * i + tile_type].x,
                     hex_geometry.edge_mids[2 * i + tile_type].y,
-                    hex_geometry.corners[(2 * i + 1 + tile_type) % 6].x,
-                    hex_geometry.corners[(2 * i + 1 + tile_type) % 6].y,
                     hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].x,
                     hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].y,
+                    hex_geometry.corners[(2 * i + 2 + tile_type) % 6].x,
+                    hex_geometry.corners[(2 * i + 2 + tile_type) % 6].y,
                 ]
 
             polygon = dw.Lines(
@@ -222,54 +222,60 @@ class HexTileGenerator(dict):
 
             self._base_tiles[hex_top][Filledness.filled][Connector.straight].append(fis)
 
-    # def _create_outside_filled_curved_base_tile(self, tile_type: int):
-    #     if tile_type == 1:
-    #         left_center = (0, 0)
-    #         right_center = (self._r_outer, self._r_outer)
-    #     else:
-    #         left_center = (0, self._r_outer)
-    #         right_center = (self._r_outer, 0)
+    def _create_outside_filled_curved_base_tile(self, tile_type: int):
+        for hex_top, hex_geometry in self._hex_geometries.items():
+            arcs = [
+                self._create_circle_pie(
+                    (
+                        hex_geometry.corners[(2 * i + 1 + tile_type) % 6].x,
+                        hex_geometry.corners[(2 * i + 1 + tile_type) % 6].y,
+                    ),
+                )
+                for i in range(3)
+            ]
 
-    #     pie_left = self._create_circle_pie(left_center)
-    #     pie_right = self._create_circle_pie(right_center)
+            foc = dw.Group(id=f"foc{hex_top.value}{tile_type}", fill="none")
+            for i in range(3):
+                foc.append(arcs[i])
 
-    #     foc = dw.Group(id=f"foc{tile_type}", fill="none")
-    #     foc.append(pie_left)
-    #     foc.append(pie_right)
+            self._base_tiles[hex_top][Filledness.filled][Connector.curved].append(foc)
 
-    #     self._base_tiles[Filledness.filled][Curvedness.curved].append(foc)
+    def _create_inside_filled_curved_base_tile(self, tile_type: int):
+        for hex_top, hex_geometry in self._hex_geometries.items():
+            hexagon_points = []
+            for p in hex_geometry.corners:
+                hexagon_points += [p.x, p.y]
 
-    # def _create_inside_filled_curved_base_tile(self, tile_type: int):
-    #     if tile_type == 1:
-    #         la_center = (0, 0)
-    #         ra_center = (self._r_outer, self._r_outer)
-    #     else:
-    #         la_center = (0, self._r_outer)
-    #         ra_center = (self._r_outer, 0)
+            black_hexagon = dw.Lines(
+                *hexagon_points,
+                stroke=Colors.SVG_BLACK,
+                fill=Colors.SVG_BLACK,
+                closed=True,
+            )
 
-    #     pie_left = self._create_circle_pie(la_center, color=Colors.SVG_WHITE)
-    #     pie_right = self._create_circle_pie(ra_center, color=Colors.SVG_WHITE)
+            arcs = [
+                self._create_circle_pie(
+                    (
+                        hex_geometry.corners[(2 * i + 1 + tile_type) % 6].x,
+                        hex_geometry.corners[(2 * i + 1 + tile_type) % 6].y,
+                    ),
+                    color=Colors.SVG_WHITE,
+                )
+                for i in range(3)
+            ]
 
-    #     hexagon_points = self._get_hexagon_points(tile_type)
-    #     black_hexagon = dw.Lines(
-    #         *hexagon_points,
-    #         stroke=Colors.SVG_BLACK,
-    #         fill=Colors.SVG_BLACK,
-    #         closed=True,
-    #     )
+            fic = dw.Group(id=f"fic{hex_top.value}{tile_type}", fill="none")
+            fic.append(black_hexagon)
+            for i in range(3):
+                fic.append(arcs[i])
 
-    #     fic = dw.Group(id=f"fic{tile_type}", fill="none")
-    #     fic.append(black_hexagon)
-    #     fic.append(pie_left)
-    #     fic.append(pie_right)
+            self._base_tiles[hex_top][Filledness.filled][Connector.curved].append(fic)
 
-    #     self._base_tiles[Filledness.filled][Curvedness.curved].append(fic)
-
-    # def _create_circle_pie(self, center, color=Colors.SVG_BLACK):
-    #     pie = dw.Circle(
-    #         *center,
-    #         self._mid,
-    #         fill=color,
-    #         path_length=math.pi * self._mid / 2,
-    #     )
-    #     return pie
+    def _create_circle_pie(self, center: tuple[float, float], color=Colors.SVG_BLACK):
+        pie = dw.Circle(
+            *center,
+            self._edge_length / 2,
+            fill=color,
+            path_length=math.pi * self._edge_length / 3,
+        )
+        return pie
