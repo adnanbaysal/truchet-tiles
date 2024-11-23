@@ -72,7 +72,7 @@ class HexTileGenerator(dict):
     def _create_filled_base_tiles(self):
         self._create_filled_straight_base_tiles()
         self._create_filled_curved_base_tiles()
-        # self._create_filled_twoline_base_tiles()
+        self._create_filled_twoline_base_tiles()
 
     # LEVEL 2 base tile functions
     def _create_linear_straight_base_tiles(self, line_width: int):
@@ -88,22 +88,25 @@ class HexTileGenerator(dict):
         self._create_linear_twoline_base_tile(1, line_width)
 
     def _create_filled_straight_base_tiles(self):
-        # Fill area out of diagonal lines
         self._create_outside_filled_straight_base_tile(0)
         self._create_outside_filled_straight_base_tile(1)
 
-        # Fill area beween diagonal lines
         self._create_inside_filled_straight_base_tile(0)
         self._create_inside_filled_straight_base_tile(1)
 
     def _create_filled_curved_base_tiles(self):
-        # Fill area outside of arc lines
         self._create_outside_filled_curved_base_tile(0)
         self._create_outside_filled_curved_base_tile(1)
 
-        # Fill area between arc lines
         self._create_inside_filled_curved_base_tile(0)
         self._create_inside_filled_curved_base_tile(1)
+
+    def _create_filled_twoline_base_tiles(self):
+        self._create_outside_filled_twoline_base_tile(0)
+        self._create_outside_filled_twoline_base_tile(1)
+
+        self._create_inside_filled_twoline_base_tile(0)
+        self._create_inside_filled_twoline_base_tile(1)
 
     # LEVEL 3 base tile functions
     def _create_linear_straight_base_tile(self, tile_type: int, line_width: int):
@@ -279,3 +282,52 @@ class HexTileGenerator(dict):
             path_length=math.pi * self._edge_length / 3,
         )
         return pie
+
+    def _create_outside_filled_twoline_base_tile(self, tile_type: int):
+        for hex_top, hex_geometry in self._hex_geometries.items():
+            parallelograms = [
+                dw.Lines(
+                    hex_geometry.edge_mids[2 * i + tile_type].x,
+                    hex_geometry.edge_mids[2 * i + tile_type].y,
+                    hex_geometry.corners[(2 * i + 1 + tile_type) % 6].x,
+                    hex_geometry.corners[(2 * i + 1 + tile_type) % 6].y,
+                    hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].x,
+                    hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].y,
+                    hex_geometry.half_hex_corners[(2 * i + 1 + tile_type) % 6].x,
+                    hex_geometry.half_hex_corners[(2 * i + 1 + tile_type) % 6].y,
+                    stroke=Colors.SVG_BLACK,
+                    fill=Colors.SVG_BLACK,
+                    close=True,
+                )
+                for i in range(3)
+            ]
+
+            fos = dw.Group(id=f"fot{hex_top.value}{tile_type}", fill="none")
+            for i in range(3):
+                fos.append(parallelograms[i])
+
+            self._base_tiles[hex_top][Filledness.filled][Connector.twoline].append(fos)
+
+    def _create_inside_filled_twoline_base_tile(self, tile_type: int):
+        for hex_top, hex_geometry in self._hex_geometries.items():
+            points = []
+            for i in range(3):
+                points += [
+                    hex_geometry.edge_mids[2 * i + tile_type].x,
+                    hex_geometry.edge_mids[2 * i + tile_type].y,
+                    hex_geometry.half_hex_corners[(2 * i + 1 + tile_type) % 6].x,  # ???
+                    hex_geometry.half_hex_corners[(2 * i + 1 + tile_type) % 6].y,
+                    hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].x,
+                    hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].y,
+                    hex_geometry.corners[(2 * i + 2 + tile_type) % 6].x,
+                    hex_geometry.corners[(2 * i + 2 + tile_type) % 6].y,
+                ]
+
+            polygon = dw.Lines(
+                *points, stroke=Colors.SVG_BLACK, fill=Colors.SVG_BLACK, close=True
+            )
+
+            fis = dw.Group(id=f"fit{hex_top.value}{tile_type}", fill="none")
+            fis.append(polygon)
+
+            self._base_tiles[hex_top][Filledness.filled][Connector.twoline].append(fis)

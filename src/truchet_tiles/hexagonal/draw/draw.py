@@ -25,6 +25,13 @@ class HexTilingDrawer:
     ANIMATION_DELAY = "0.000001s"
     ANIMATION_BEGIN = 1.0
 
+    filled_tile_index_map = {
+        (0, 0): 0,
+        (0, 1): 3,
+        (1, 0): 2,
+        (1, 1): 1,
+    }
+
     def __init__(
         self,
         grid_dimension: int,
@@ -299,12 +306,15 @@ class HexTilingDrawer:
         for hex_data in self._hex_grid.values():
             if self._connector == Connector.straight:
                 self._insert_filled_straight_tile(hex_data)
-            else:
+            elif self._connector == Connector.curved:
                 self._insert_filled_curved_tile(hex_data)
+            else:
+                self._insert_filled_twoline_tile(hex_data)
 
     def _insert_filled_straight_tile(self, hex_data: HexGridData):
-        # tile_index = 2 * hex_data.value + self._tiling_color.value
-        tile_index = self.index_map[(self._tiling_color.value, hex_data.value)]
+        tile_index = self.filled_tile_index_map[
+            (self._tiling_color.value, hex_data.value)
+        ]
 
         self._svg_top_group.append(
             dw.Use(
@@ -316,25 +326,10 @@ class HexTilingDrawer:
             )
         )
 
-    index_map = {
-        (0, 0): 0,
-        (0, 1): 3,
-        (1, 0): 2,
-        (1, 1): 1,
-    }
-
     def _insert_filled_curved_tile(self, hex_data: HexGridData):
-        tile_index = self.index_map[(self._tiling_color.value, hex_data.value)]
-        # self._svg_top_group.append(
-        #     dw.Use(
-        #         self._base_tiles[self._orientation_name][Filledness.filled][
-        #             Connector.curved
-        #         ][tile_index],
-        #         hex_data.center.x,
-        #         hex_data.center.y,
-        #     )
-        # )
-
+        tile_index = self.filled_tile_index_map[
+            (self._tiling_color.value, hex_data.value)
+        ]
         outside = tile_index < 2
         inside = tile_index > 1
         h_not_2 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_1)
@@ -366,6 +361,21 @@ class HexTilingDrawer:
                     hex_data.center.y,
                 )
             )
+
+    def _insert_filled_twoline_tile(self, hex_data: HexGridData):
+        tile_index = self.filled_tile_index_map[
+            (self._tiling_color.value, hex_data.value)
+        ]
+
+        self._svg_top_group.append(
+            dw.Use(
+                self._base_tiles[self._orientation_name][Filledness.filled][
+                    Connector.twoline
+                ][tile_index],
+                hex_data.center.x,
+                hex_data.center.y,
+            )
+        )
 
     def _draw_grid_lines(self):
         for hex_data in self._hex_grid.values():
