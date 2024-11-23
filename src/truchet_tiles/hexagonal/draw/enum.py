@@ -23,13 +23,6 @@ class HybridFill(Enum):
     hybrid_2 = 2
 
 
-class Colors:
-    SVG_BLACK = "#000000"
-    SVG_WHITE = "#FFFFFF"
-    SVG_RED = "#FF0000"
-    PYG_WHITE = (255, 255, 255)
-
-
 class AnimationMethod(str, Enum):
     # Defines how to rotate tiles from previous grid state
     # Previous grid state defaults to all zeros, but can be the grid of another tiling

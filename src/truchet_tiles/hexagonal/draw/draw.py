@@ -1,9 +1,9 @@
 import pathlib
 import drawsvg as dw  # type: ignore
 
+from truchet_tiles.common import Colors
 from truchet_tiles.hexagonal.draw.enum import (
     AnimationMethod,
-    Colors,
     HexTop,
     Connector,
     Filledness,
@@ -316,39 +316,13 @@ class HexTilingDrawer:
         self._svg_top_group.append(used_tile)
 
     def _draw_filled(self):
-        grid_of_fill_side = self._generate_fill_inside_grid()
+        for hex_data in self._hex_grid.values():
+            base_tile_index = 2 * hex_data.value + self._tiling_color.value
 
-        for grid_row in range(self._grid_size):
-            y_offset = grid_row * self._t_end
-            for grid_col in range(self._grid_size):
-                x_offset = grid_col * self._t_end
-
-                base_tile_index = (
-                    self._hex_grid[grid_row][grid_col]
-                    + 2 * grid_of_fill_side[grid_row][grid_col]
-                )
-
-                if self._connector == Connector.straight:
-                    self._insert_filled_straight_tile(
-                        x_offset, y_offset, base_tile_index
-                    )
-                else:
-                    self._insert_filled_curved_tile(x_offset, y_offset, base_tile_index)
-
-    def _generate_fill_inside_grid(self) -> list[list[int]]:
-        _grid: list[list[int]] = []
-        for grid_row in range(self._grid_size):
-            _grid.append([])
-            for grid_col in range(self._grid_size):
-                neighbor = self._neighbor_cell(self._hex_grid, grid_row, grid_col)
-                bit_changed = self._hex_grid[grid_row][grid_col] ^ neighbor
-                if grid_row == 0 and grid_col == 0:
-                    neighbor_fill = self._hex_grid[0][0] ^ self._tiling_color.value
-                else:
-                    neighbor_fill = self._neighbor_cell(_grid, grid_row, grid_col)
-                _grid[grid_row].append(neighbor_fill ^ bit_changed ^ 1)
-
-        return _grid
+            if self._connector == Connector.straight:
+                self._insert_filled_straight_tile(hex_data, base_tile_index)
+            else:
+                self._insert_filled_curved_tile(hex_data, base_tile_index)
 
     @staticmethod
     def _neighbor_cell(_grid: list[list[int]], row: int, col: int) -> int:
@@ -360,14 +334,14 @@ class HexTilingDrawer:
             return _grid[row - 1][col]
         raise ValueError("Invalid row and column")
 
-    def _insert_filled_straight_tile(
-        self, x_offset: int, y_offset: int, tile_index: int
-    ):
+    def _insert_filled_straight_tile(self, hex_data: HexGridData, tile_index: int):
         self._svg_top_group.append(
             dw.Use(
-                self._base_tiles[Filledness.filled][Connector.straight][tile_index],
-                x_offset,
-                y_offset,
+                self._base_tiles[self._orientation_name][Filledness.filled][
+                    self._connector
+                ][tile_index],
+                hex_data.center.x,
+                hex_data.center.y,
             )
         )
 

@@ -2,7 +2,7 @@ from enum import Enum
 from random import randint
 from typing import Callable
 
-from truchet_tiles.util import parity
+from truchet_tiles.common import parity
 
 
 class HexGridType(str, Enum):

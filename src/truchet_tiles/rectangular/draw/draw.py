@@ -3,7 +3,6 @@ import drawsvg as dw
 
 from truchet_tiles.rectangular.draw.enum import (
     AnimationMethod,
-    Colors,
     AxisAlignment,
     Curvedness,
     Filledness,
@@ -11,6 +10,7 @@ from truchet_tiles.rectangular.draw.enum import (
     TilingColor,
 )
 from truchet_tiles.rectangular.draw.tile_generator import RectTileGenerator
+from truchet_tiles.common import Colors
 
 
 class RectTilingDrawer:

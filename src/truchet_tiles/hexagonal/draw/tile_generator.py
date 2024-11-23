@@ -5,7 +5,7 @@ from typing import Any
 
 import drawsvg as dw  # type: ignore
 
-from truchet_tiles.hexagonal.draw.enum import Colors, Connector, Filledness, HexTop
+from truchet_tiles.hexagonal.draw.enum import Connector, Filledness, HexTop
 from truchet_tiles.hexagonal.hex_grid import (
     Hex,
     HexGeometry,
@@ -13,6 +13,7 @@ from truchet_tiles.hexagonal.hex_grid import (
     ORIENTATIONS,
     Point,
 )
+from truchet_tiles.common import Colors
 
 
 class HexTileGenerator(dict):
@@ -43,7 +44,7 @@ class HexTileGenerator(dict):
         for line_width in range(1, self._max_line_width + 1):
             self._create_linear_base_tiles(line_width)
 
-        # self._create_filled_base_tiles()
+        self._create_filled_base_tiles()
 
     def _calc_hex_geometries(self) -> dict[HexTop, HexGeometry]:
         hex_geometries: dict[HexTop, HexGeometry] = {}
@@ -68,9 +69,10 @@ class HexTileGenerator(dict):
         self._create_linear_curved_base_tiles(line_width)
         self._create_linear_twoline_base_tiles(line_width)
 
-    # def _create_filled_base_tiles(self):
-    #     self._create_filled_straight_base_tiles()
-    #     self._create_filled_curved_base_tiles()
+    def _create_filled_base_tiles(self):
+        self._create_filled_straight_base_tiles()
+        # self._create_filled_curved_base_tiles()
+        # self._create_filled_twoline_base_tiles()
 
     # LEVEL 2 base tile functions
     def _create_linear_straight_base_tiles(self, line_width: int):
@@ -85,14 +87,14 @@ class HexTileGenerator(dict):
         self._create_linear_twoline_base_tile(0, line_width)
         self._create_linear_twoline_base_tile(1, line_width)
 
-    # def _create_filled_straight_base_tiles(self):
-    #     # Fill area out of diagonal lines
-    #     self._create_outside_filled_straight_base_tile(0)
-    #     self._create_outside_filled_straight_base_tile(1)
+    def _create_filled_straight_base_tiles(self):
+        # Fill area out of diagonal lines
+        self._create_outside_filled_straight_base_tile(0)
+        self._create_outside_filled_straight_base_tile(1)
 
-    #     # Fill area beween diagonal lines
-    #     self._create_inside_filled_straight_base_tile(0)
-    #     self._create_inside_filled_straight_base_tile(1)
+        # Fill area beween diagonal lines
+        self._create_inside_filled_straight_base_tile(0)
+        self._create_inside_filled_straight_base_tile(1)
 
     # def _create_filled_curved_base_tiles(self):
     #     # Fill area outside of arc lines
@@ -131,7 +133,8 @@ class HexTileGenerator(dict):
             arcs = [
                 dw.Path(
                     d=f"""
-                        M {hex_geometry.edge_mids[2 * i + tile_type].x} {hex_geometry.edge_mids[2 * i + tile_type].y}
+                        M {hex_geometry.edge_mids[2 * i + tile_type].x} 
+                          {hex_geometry.edge_mids[2 * i + tile_type].y}
                         A {self._edge_length / 2} {self._edge_length / 2} 0 0 1 
                           {hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].x} 
                           {hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].y}
@@ -174,76 +177,50 @@ class HexTileGenerator(dict):
                 line_width
             ].append(ls)
 
-    # def _create_outside_filled_straight_base_tile(self, tile_type: int):
-    #     left0 = (0, self._mid)
-    #     right0 = (self._r_outer, self._mid)
+    def _create_outside_filled_straight_base_tile(self, tile_type: int):
+        for hex_top, hex_geometry in self._hex_geometries.items():
+            triangles = [
+                dw.Lines(
+                    hex_geometry.edge_mids[2 * i + tile_type].x,
+                    hex_geometry.edge_mids[2 * i + tile_type].y,
+                    hex_geometry.corners[(2 * i + 1 + tile_type) % 6].x,
+                    hex_geometry.corners[(2 * i + 1 + tile_type) % 6].y,
+                    hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].x,
+                    hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].y,
+                    stroke=Colors.SVG_BLACK,
+                    fill=Colors.SVG_BLACK,
+                    close=True,
+                )
+                for i in range(3)
+            ]
 
-    #     if tile_type == 0:
-    #         left1 = (self._mid, self._r_outer)
-    #         left2 = (0, self._r_outer)
-    #         right1 = (self._mid, 0)
-    #         right2 = (self._r_outer, 0)
-    #     else:
-    #         left1 = (self._mid, 0)
-    #         left2 = (0, 0)
-    #         right1 = (self._mid, self._r_outer)
-    #         right2 = (self._r_outer, self._r_outer)
+            fos = dw.Group(id=f"fos{hex_top.value}{tile_type}", fill="none")
+            for i in range(3):
+                fos.append(triangles[i])
 
-    #     triangle_left = dw.Lines(
-    #         *left0,
-    #         *left1,
-    #         *left2,
-    #         fill=Colors.SVG_BLACK,
-    #         stroke=Colors.SVG_BLACK,
-    #         close="true",
-    #     )
+            self._base_tiles[hex_top][Filledness.filled][Connector.straight].append(fos)
 
-    #     triangle_right = dw.Lines(
-    #         *right0,
-    #         *right1,
-    #         *right2,
-    #         fill=Colors.SVG_BLACK,
-    #         stroke=Colors.SVG_BLACK,
-    #         close="true",
-    #     )
+    def _create_inside_filled_straight_base_tile(self, tile_type: int):
+        for hex_top, hex_geometry in self._hex_geometries.items():
+            points = []
+            for i in range(3):
+                points += [
+                    hex_geometry.edge_mids[2 * i + tile_type].x,
+                    hex_geometry.edge_mids[2 * i + tile_type].y,
+                    hex_geometry.corners[(2 * i + 1 + tile_type) % 6].x,
+                    hex_geometry.corners[(2 * i + 1 + tile_type) % 6].y,
+                    hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].x,
+                    hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].y,
+                ]
 
-    #     fos = dw.Group(id=f"fos{tile_type}", fill="none")
-    #     fos.append(triangle_left)
-    #     fos.append(triangle_right)
+            polygon = dw.Lines(
+                *points, stroke=Colors.SVG_BLACK, fill=Colors.SVG_BLACK, close=True
+            )
 
-    #     self._base_tiles[Filledness.filled][Curvedness.straight].append(fos)
+            fis = dw.Group(id=f"fis{hex_top.value}{tile_type}", fill="none")
+            fis.append(polygon)
 
-    # def _get_hexagon_points(self, tile_type: int):
-    #     p0 = (0, self._mid)
-    #     p3 = (self._r_outer, self._mid)
-
-    #     if tile_type == 0:
-    #         p1 = (self._mid, self._r_outer)
-    #         p2 = (self._r_outer, self._r_outer)
-    #         p4 = (self._mid, 0)
-    #         p5 = (0, 0)
-    #     else:
-    #         p1 = (0, self._r_outer)
-    #         p2 = (self._mid, self._r_outer)
-    #         p4 = (self._r_outer, 0)
-    #         p5 = (self._mid, 0)
-
-    #     return (*p0, *p1, *p2, *p3, *p4, *p5)
-
-    # def _create_inside_filled_straight_base_tile(self, tile_type: int):
-    #     hexagon_points = self._get_hexagon_points(tile_type)
-
-    #     hexagon = dw.Lines(
-    #         *hexagon_points,
-    #         fill=Colors.SVG_BLACK,
-    #         stroke=Colors.SVG_BLACK,
-    #         close="true",
-    #     )
-
-    #     fis = dw.Group(id=f"fis{tile_type}", fill="none")
-    #     fis.append(hexagon)
-
-    #     self._base_tiles[Filledness.filled][Curvedness.straight].append(fis)
+            self._base_tiles[hex_top][Filledness.filled][Connector.straight].append(fis)
 
     # def _create_outside_filled_curved_base_tile(self, tile_type: int):
     #     if tile_type == 1:

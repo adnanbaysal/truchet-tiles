@@ -1,5 +1,5 @@
 * Complete hexagonal tiling (drawer class, pygame and web UIs)
-* Add hex-in hex tiling: Instead of a single line from mid to mid, draw two equal length lines with 120 degree angle
+* Implement hybrid linear tiling
 * Instead of straight lines and arcs, try using 2, 3, ... lines passing on (un)equally spaced points on the arg 
 * Support animating filled tilings
 * Show the 0-1 grid on the right side of the web page
