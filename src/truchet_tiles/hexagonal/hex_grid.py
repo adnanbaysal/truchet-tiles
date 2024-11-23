@@ -62,7 +62,8 @@ class HexGeometry:
 
         self.center = self._calc_center()
         self.corners = self._calc_corners()
-        self.mids = self._calc_mids()
+        self.edge_mids = self._calc_edge_mids()
+        self.half_hex_corners = self._calc_half_hex_corners()
 
     def _calc_center(self) -> Point:
         M = self._layout.orientation
@@ -86,7 +87,7 @@ class HexGeometry:
 
         return tuple(corners)  # type: ignore
 
-    def _calc_mids(self) -> tuple[Point, Point, Point, Point, Point, Point]:
+    def _calc_edge_mids(self) -> tuple[Point, Point, Point, Point, Point, Point]:
         mids = []
         for i in range(6):
             p1 = self.corners[i]
@@ -95,6 +96,15 @@ class HexGeometry:
             mids.append(mid_point)
 
         return tuple(mids)  # type: ignore
+
+    def _calc_half_hex_corners(self) -> tuple[Point, Point, Point, Point, Point, Point]:
+        half_hex_corners = []
+        for i in range(6):
+            p = self.corners[i]
+            mid_point = Point((p.x + self.center.x) / 2, (p.y + self.center.y) / 2)
+            half_hex_corners.append(mid_point)
+
+        return tuple(half_hex_corners)  # type: ignore
 
 
 @dataclass
@@ -140,7 +150,7 @@ class HexGrid(dict):
             hex_geometry = HexGeometry(self._layout, hex_)
             center = hex_geometry.center
             corners = hex_geometry.corners
-            mids = hex_geometry.mids
+            mids = hex_geometry.edge_mids
 
             self._hex_grid[Hex(q, r, s)] = HexGridData(
                 value=value,

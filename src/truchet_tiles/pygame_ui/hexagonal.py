@@ -68,7 +68,7 @@ class HexPygameViewer:
                         self._drawer.next_animation_mode()
                         self.show_svg()
                     elif event.key == pygame.K_c:
-                        self._drawer.invert_curved()
+                        self._drawer.next_connector()
                         self.show_svg()
                     elif event.key == pygame.K_i:
                         self._drawer.invert_color()

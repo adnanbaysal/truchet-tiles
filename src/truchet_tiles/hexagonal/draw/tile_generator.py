@@ -5,7 +5,7 @@ from typing import Any
 
 import drawsvg as dw  # type: ignore
 
-from truchet_tiles.hexagonal.draw.enum import Colors, Curvedness, Filledness, HexTop
+from truchet_tiles.hexagonal.draw.enum import Colors, Connector, Filledness, HexTop
 from truchet_tiles.hexagonal.hex_grid import (
     Hex,
     HexGeometry,
@@ -29,12 +29,14 @@ class HexTileGenerator(dict):
             self._base_tiles[key] = {
                 Filledness.linear: {
                     # keys are line_width, values are list of svg elements
-                    Curvedness.straight: defaultdict(list),
-                    Curvedness.curved: defaultdict(list),
+                    Connector.straight: defaultdict(list),
+                    Connector.curved: defaultdict(list),
+                    Connector.twoline: defaultdict(list),
                 },
                 Filledness.filled: {
-                    Curvedness.straight: [],  # list of svg elements
-                    Curvedness.curved: [],  # list of svg elements
+                    Connector.straight: [],  # list of svg elements
+                    Connector.curved: [],  # list of svg elements
+                    Connector.twoline: [],  # list of svg elements
                 },
             }
 
@@ -64,6 +66,7 @@ class HexTileGenerator(dict):
     def _create_linear_base_tiles(self, line_width: int):
         self._create_linear_straight_base_tiles(line_width)
         self._create_linear_curved_base_tiles(line_width)
+        self._create_linear_twoline_base_tiles(line_width)
 
     # def _create_filled_base_tiles(self):
     #     self._create_filled_straight_base_tiles()
@@ -77,6 +80,10 @@ class HexTileGenerator(dict):
     def _create_linear_curved_base_tiles(self, line_width: int):
         self._create_linear_curved_base_tile(0, line_width)
         self._create_linear_curved_base_tile(1, line_width)
+
+    def _create_linear_twoline_base_tiles(self, line_width: int):
+        self._create_linear_twoline_base_tile(0, line_width)
+        self._create_linear_twoline_base_tile(1, line_width)
 
     # def _create_filled_straight_base_tiles(self):
     #     # Fill area out of diagonal lines
@@ -101,10 +108,10 @@ class HexTileGenerator(dict):
         for hex_top, hex_geometry in self._hex_geometries.items():
             lines = [
                 dw.Line(
-                    hex_geometry.mids[2 * i + tile_type].x,
-                    hex_geometry.mids[2 * i + tile_type].y,
-                    hex_geometry.mids[(2 * i + 1 + tile_type) % 6].x,
-                    hex_geometry.mids[(2 * i + 1 + tile_type) % 6].y,
+                    hex_geometry.edge_mids[2 * i + tile_type].x,
+                    hex_geometry.edge_mids[2 * i + tile_type].y,
+                    hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].x,
+                    hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].y,
                     stroke_width=line_width,
                     stroke=Colors.SVG_BLACK,
                 )
@@ -115,7 +122,7 @@ class HexTileGenerator(dict):
             for i in range(3):
                 ls.append(lines[i])
 
-            self._base_tiles[hex_top][Filledness.linear][Curvedness.straight][
+            self._base_tiles[hex_top][Filledness.linear][Connector.straight][
                 line_width
             ].append(ls)
 
@@ -124,10 +131,10 @@ class HexTileGenerator(dict):
             arcs = [
                 dw.Path(
                     d=f"""
-                        M {hex_geometry.mids[2 * i + tile_type].x} {hex_geometry.mids[2 * i + tile_type].y}
+                        M {hex_geometry.edge_mids[2 * i + tile_type].x} {hex_geometry.edge_mids[2 * i + tile_type].y}
                         A {self._edge_length / 2} {self._edge_length / 2} 0 0 1 
-                          {hex_geometry.mids[(2 * i + 1 + tile_type) % 6].x} 
-                          {hex_geometry.mids[(2 * i + 1 + tile_type) % 6].y}
+                          {hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].x} 
+                          {hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].y}
                     """,
                     stroke_width=line_width,
                     stroke=Colors.SVG_BLACK,
@@ -139,7 +146,31 @@ class HexTileGenerator(dict):
             for i in range(3):
                 ls.append(arcs[i])
 
-            self._base_tiles[hex_top][Filledness.linear][Curvedness.curved][
+            self._base_tiles[hex_top][Filledness.linear][Connector.curved][
+                line_width
+            ].append(ls)
+
+    def _create_linear_twoline_base_tile(self, tile_type: int, line_width: int):
+        for hex_top, hex_geometry in self._hex_geometries.items():
+            lines = [
+                dw.Lines(
+                    hex_geometry.edge_mids[2 * i + tile_type].x,
+                    hex_geometry.edge_mids[2 * i + tile_type].y,
+                    hex_geometry.half_hex_corners[(2 * i + 1 + tile_type) % 6].x,
+                    hex_geometry.half_hex_corners[(2 * i + 1 + tile_type) % 6].y,
+                    hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].x,
+                    hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].y,
+                    stroke_width=line_width,
+                    stroke=Colors.SVG_BLACK,
+                )
+                for i in range(3)
+            ]
+
+            ls = dw.Group(id=f"ls{hex_top.value}{tile_type}", fill="none")
+            for i in range(3):
+                ls.append(lines[i])
+
+            self._base_tiles[hex_top][Filledness.linear][Connector.twoline][
                 line_width
             ].append(ls)
 

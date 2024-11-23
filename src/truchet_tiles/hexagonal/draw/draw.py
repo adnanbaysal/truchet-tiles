@@ -5,7 +5,7 @@ from truchet_tiles.hexagonal.draw.enum import (
     AnimationMethod,
     Colors,
     HexTop,
-    Curvedness,
+    Connector,
     Filledness,
     HybridFill,
     TilingColor,
@@ -34,7 +34,7 @@ class HexTilingDrawer:
         flat_top: bool = False,
         fill: bool = False,
         invert_colors: bool = False,
-        curved: bool = False,
+        connector: str = "straight",
         hybrid_mode: int = 0,
         animate: bool = False,
         animation_method: str = "at_once",
@@ -62,7 +62,7 @@ class HexTilingDrawer:
         self._line_width = line_width
 
         self._fill_style = Filledness.filled if fill else Filledness.linear
-        self._curve_style = Curvedness.curved if curved else Curvedness.straight
+        self._connector = Connector(connector)
         self._tiling_color = TilingColor(invert_colors)
         self._hybrid_fill = HybridFill(hybrid_mode)
 
@@ -160,11 +160,13 @@ class HexTilingDrawer:
         self._hex_grid = self._calculate_hex_grid()
         self.draw()
 
-    def invert_curved(self):
-        self._curve_style = (
-            Curvedness.curved
-            if self._curve_style == Curvedness.straight
-            else Curvedness.straight
+    def next_connector(self):
+        self._connector = (
+            Connector.curved
+            if self._connector == Connector.straight
+            else Connector.twoline
+            if self._connector == Connector.curved
+            else Connector.straight
         )
         self.draw()
 
@@ -184,7 +186,7 @@ class HexTilingDrawer:
         return (
             f"{self._grid_dimension}x{self._edge_length}px_"
             f"{'filled' if self._fill_style == Filledness.filled else 'line'}_"
-            f"{'curved' if self._curve_style == Curvedness.curved else 'straight'}_"
+            f"{self._connector.value}_"
             f"{'flat' if self._orientation_name == HexTop.flat else 'pointy'}_"
             f"w{self._line_width}_"
             f"{'hybrid' + str(self._hybrid_fill.value) + '_'}"
@@ -282,7 +284,7 @@ class HexTilingDrawer:
     def _insert_linear_tile(self, hex_: Hex, hex_data: HexGridData, anim_start: float):
         used_tile = dw.Use(
             self._base_tiles[self._orientation_name][Filledness.linear][
-                self._curve_style
+                self._connector
             ][self._line_width][hex_data.value],
             hex_data.center.x,
             hex_data.center.y,
@@ -326,7 +328,7 @@ class HexTilingDrawer:
                     + 2 * grid_of_fill_side[grid_row][grid_col]
                 )
 
-                if self._curve_style == Curvedness.straight:
+                if self._connector == Connector.straight:
                     self._insert_filled_straight_tile(
                         x_offset, y_offset, base_tile_index
                     )
@@ -363,7 +365,7 @@ class HexTilingDrawer:
     ):
         self._svg_top_group.append(
             dw.Use(
-                self._base_tiles[Filledness.filled][Curvedness.straight][tile_index],
+                self._base_tiles[Filledness.filled][Connector.straight][tile_index],
                 x_offset,
                 y_offset,
             )
@@ -384,7 +386,7 @@ class HexTilingDrawer:
         ):
             self._svg_top_group.append(
                 dw.Use(
-                    self._base_tiles[Filledness.filled][Curvedness.curved][tile_index],
+                    self._base_tiles[Filledness.filled][Connector.curved][tile_index],
                     x_offset,
                     y_offset,
                 )
@@ -392,9 +394,7 @@ class HexTilingDrawer:
         else:
             self._svg_top_group.append(
                 dw.Use(
-                    self._base_tiles[Filledness.filled][Curvedness.straight][
-                        tile_index
-                    ],
+                    self._base_tiles[Filledness.filled][Connector.straight][tile_index],
                     x_offset,
                     y_offset,
                 )

@@ -6,9 +6,10 @@ class Filledness(str, Enum):
     filled = "filled"
 
 
-class Curvedness(str, Enum):
+class Connector(str, Enum):
     straight = "straight"
     curved = "curved"
+    twoline = "twoline"
 
 
 class TilingColor(Enum):
