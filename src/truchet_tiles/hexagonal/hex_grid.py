@@ -20,6 +20,9 @@ class Hex:
         if self.q + self.r + self.s != 0:
             raise ValueError("q + r + s should be 0")
 
+    def __abs__(self) -> int:
+        return (abs(self.q) + abs(self.r) + abs(self.s)) // 2
+
 
 @dataclass
 class Orientation:

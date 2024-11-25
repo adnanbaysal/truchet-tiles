@@ -47,7 +47,7 @@ class HexTilingDrawer:
         animation_method: str = "at_once",
         show_grid: bool = False,
         line_width: int = 1,
-        animation_duration: float = 1.0,
+        animation_duration: float = 0.5,
     ) -> None:
         assert grid_dimension > 0, "grid_dimension must be positive"
         self._grid_dimension = grid_dimension
@@ -79,7 +79,7 @@ class HexTilingDrawer:
         self._animation_method = AnimationMethod(animation_method)
         self._animation_prev_grid = {
             key: 0 for key in grid
-        }  # TODO: Add hex grid versionæ
+        }  # TODO: Add hex grid version.
         self._animation_rotation_dur = animation_duration
 
         self._svg = dw.Drawing(
@@ -217,8 +217,8 @@ class HexTilingDrawer:
 
     def next_animation_mode(self):
         if self._animation_method == AnimationMethod.at_once:
-            self._animation_method = AnimationMethod.by_row
-        elif self._animation_method == AnimationMethod.by_row:
+            self._animation_method = AnimationMethod.by_ring
+        elif self._animation_method == AnimationMethod.by_ring:
             self._animation_method = AnimationMethod.by_tile
         else:
             self._animation_method = AnimationMethod.at_once
@@ -227,12 +227,24 @@ class HexTilingDrawer:
 
     def _draw_linear(self):
         anim_start = self.ANIMATION_BEGIN
+        hex_index = 0
         for hex_, hex_data in self._hex_grid.items():
+            coord = (hex_.q, hex_.r)
+            if self._animate and self._grid[coord] != self._animation_prev_grid[coord]:
+                if self._animation_method == AnimationMethod.by_tile:
+                    anim_start = (
+                        self.ANIMATION_BEGIN + hex_index * self._animation_rotation_dur
+                    )
+                elif self._animation_method == AnimationMethod.by_ring:
+                    anim_start = (
+                        self.ANIMATION_BEGIN + abs(hex_) * self._animation_rotation_dur
+                    )
+                elif self._animation_method == AnimationMethod.at_once:
+                    anim_start = self.ANIMATION_BEGIN
+
             self._insert_linear_tile(hex_, hex_data, anim_start)
 
-            if self._animation_method == AnimationMethod.by_tile:
-                if self._hex_grid[hex_].value != self._animation_prev_grid[hex_]:
-                    anim_start += self._animation_rotation_dur
+            hex_index += 1
 
     def _clear_screan(self):
         self._svg.clear()
@@ -287,17 +299,17 @@ class HexTilingDrawer:
                     dur=dur,
                     type="rotate",
                     from_or_values=f"{start_deg} {hex_data.center.x} {hex_data.center.y}",
-                    to=f"{end_deg} {hex_data.center.x} {hex_data.center.x}",
+                    to=f"{end_deg} {hex_data.center.x} {hex_data.center.y}",
                     fill="freeze",
                     repeatCount="1",
                 )
 
             # The following animation will make the svg appear to start from the prev state
             used_tile.append_anim(
-                _get_rotation(self.ANIMATION_DELAY, self.ANIMATION_DELAY, 0, 90)
+                _get_rotation(self.ANIMATION_DELAY, self.ANIMATION_DELAY, 0, 60)
             )
             used_tile.append_anim(
-                _get_rotation(anim_start, self._animation_rotation_dur, 90, 180)
+                _get_rotation(anim_start, self._animation_rotation_dur, 60, 120)
             )
 
         self._svg_top_group.append(used_tile)
