@@ -37,7 +37,6 @@ class HexTilingDrawer:
         grid_dimension: int,
         grid: dict[tuple[int, int], int],
         edge_length: int,
-        max_line_width: int = 32,
         flat_top: bool = False,
         fill: bool = False,
         invert_colors: bool = False,
@@ -45,9 +44,10 @@ class HexTilingDrawer:
         hybrid_mode: int = 0,
         animate: bool = False,
         animation_method: str = "at_once",
+        animation_duration: float = 0.5,
         show_grid: bool = False,
         line_width: int = 1,
-        animation_duration: float = 0.5,
+        max_line_width: int = 32,
     ) -> None:
         assert grid_dimension > 0, "grid_dimension must be positive"
         self._grid_dimension = grid_dimension

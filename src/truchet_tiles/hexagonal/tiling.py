@@ -3,13 +3,13 @@ import random
 from functools import cache
 
 from truchet_tiles.hexagonal.draw import HexTilingDrawer
-from truchet_tiles.rectangular.grid_generator import RectGridGenerator, RectGridType
+from truchet_tiles.hexagonal.grid_generator import HexGridGenerator, HexGridType
 
 
 @cache
 def get_hexagonal_tiling(
-    function: str = "XOR",
-    align_to_axis: bool = False,
+    function: str = "XSIGNMAG",
+    flat_top: bool = True,
     fill: bool = False,
     invert_colors: bool = False,
     connector: str = "straight",
@@ -18,8 +18,8 @@ def get_hexagonal_tiling(
     animation_method: str = "at_once",
     show_grid: bool = False,
     line_width: int = 1,
-    dimension: int = 8,
-    tile_size: int = 32,
+    grid_dimension: int = 8,
+    edge_length: int = 32,
     animation_duration: float = 1.0,
     rand_seed: int = 0,
 ) -> str:
@@ -27,22 +27,23 @@ def get_hexagonal_tiling(
     # Pass the same rand_seed to update visual settings of the existing random tiling
     random.seed(rand_seed)
 
-    grid_generator = RectGridGenerator(dimension, RectGridType(function.lower()))
+    grid_generator = HexGridGenerator(grid_dimension, HexGridType(function.lower()))
     grid = grid_generator.grid
 
     drawer = HexTilingDrawer(
+        grid_dimension=grid_dimension,
         grid=grid,
-        edge_length=tile_size,
-        flat_top=align_to_axis,
+        edge_length=edge_length,
+        flat_top=flat_top,
         fill=fill,
         invert_colors=invert_colors,
         connector=connector,
         hybrid_mode=hybrid_mode,
         animate=animate,
         animation_method=animation_method,
+        animation_duration=animation_duration,
         show_grid=show_grid,
         line_width=line_width,
-        animation_duration=animation_duration,
     )
 
     drawer.draw()
