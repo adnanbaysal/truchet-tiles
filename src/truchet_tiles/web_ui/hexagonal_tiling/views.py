@@ -18,7 +18,7 @@ def index(request: HttpRequest):
         rand_seed = int(request.COOKIES.get("X-TRUCHET-TILING-SEED"))
         svg_text = get_hexagonal_tiling(
             function=cleaned_data["function"],
-            flat_top=cleaned_data["flat_top"] ^ True,
+            flat_top=cleaned_data["flat_top"],
             fill=cleaned_data["fill"],
             invert_colors=int(cleaned_data["invert_colors"]),
             connector=cleaned_data["connector"].lower(),

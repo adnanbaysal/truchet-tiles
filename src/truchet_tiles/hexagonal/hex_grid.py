@@ -1,3 +1,5 @@
+# NOTE: Adapted from: https://www.redblobgames.com/grids/hexagons/
+
 from dataclasses import dataclass
 import math
 
@@ -34,14 +36,14 @@ class Orientation:
 
 
 ORIENTATIONS: dict[HexTop, Orientation] = {
-    HexTop.pointy: Orientation(
+    HexTop.flat: Orientation(
         math.sqrt(3.0),
         math.sqrt(3.0) / 2.0,
         0.0,
         3.0 / 2.0,
         0.5,
     ),
-    HexTop.flat: Orientation(
+    HexTop.pointy: Orientation(
         3.0 / 2.0,
         0.0,
         math.sqrt(3.0) / 2.0,
@@ -161,24 +163,3 @@ class HexGrid(dict):
                 corners=corners,
                 mids=mids,
             )
-
-
-# if __name__ == "__main__":
-#     layout = Layout(
-#         ORIENTATIONS[HexTop.flat],
-#         Point(10, 10),
-#         Point(0, 0),
-#     )
-#     hg = HexGrid(
-#         {
-#             (-1, 0): 1,
-#             (-1, 1): 0,
-#             (0, -1): 1,
-#             (0, 0): 0,
-#             (0, 1): 1,
-#             (1, 0): 1,
-#             (1, 1): 0,
-#         },
-#         layout,
-#     )
-#     print(hg)

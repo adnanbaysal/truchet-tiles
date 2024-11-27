@@ -66,14 +66,14 @@ class HexTilingForm(forms.Form):
         required=False,
     )
     grid_dimension = forms.IntegerField(
-        initial=4,
+        initial=8,
         min_value=1,
         max_value=64,
         widget=forms.NumberInput(attrs={"onchange": "submit();"}),
         required=False,
     )
     edge_length = forms.IntegerField(
-        initial=64,
+        initial=32,
         min_value=6,
         max_value=1024,
         widget=forms.NumberInput(attrs={"onchange": "submit();"}),
