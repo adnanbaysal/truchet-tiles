@@ -1,4 +1,4 @@
-* Complete hexagonal tiling (drawer class, pygame and web UIs)
+* Add control to fix the tiling image height and calculate tile edge length using that length and dimension information
 * Fix the curved filled tiling bug which draws full circle instead of a circle pie.
 * Implement hybrid linear tiling
 * Instead of straight lines and arcs, try using 2, 3, ... lines passing on equally spaced points on the arc
