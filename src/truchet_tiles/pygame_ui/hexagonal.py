@@ -112,12 +112,12 @@ if __name__ == "__main__":
     """ Usage: python main.py grid_dimension edge_length
                0, 1, or 2 arguments can be given.
         Arguments:
-            grid_dimension: positive integer, default 4
-            edge_length: positive integer, default 50
+            grid_dimension: positive integer, default 8
+            edge_length: positive integer, default 64
     """
     pygame.init()
 
-    grid_dimension = int(sys.argv[1]) if len(sys.argv) > 1 else 4
+    grid_dimension = int(sys.argv[1]) if len(sys.argv) > 1 else 8
     edge_length = int(sys.argv[2]) if len(sys.argv) > 2 else 64
 
     HexPygameViewer(
