@@ -19,5 +19,6 @@ from django.urls import include, path
 
 urlpatterns = [
     path("rect/", include("rectangular_tiling.urls")),
+    path("hex/", include("hexagonal_tiling.urls")),
     path("", include("main_page.urls")),
 ]

@@ -1,21 +1,22 @@
 from django import forms
 
-from truchet_tiles.rectangular.grid_generator import RectGridType
-from truchet_tiles.rectangular.draw.enum import AnimationMethod
+from truchet_tiles.hexagonal.grid_generator import HexGridType
+from truchet_tiles.hexagonal.draw.enum import AnimationMethod, Connector
 
-grid_types = [(gt.value.upper(), gt.value.upper()) for gt in RectGridType]
+connectors = [(con.value.upper(), con.value.upper()) for con in Connector]
+grid_types = [(gt.value.upper(), gt.value.upper()) for gt in HexGridType]
 animation_methods = [(m.value, m.value.replace("_", " ")) for m in AnimationMethod]
 
 
-class RectTilingForm(forms.Form):
+class HexTilingForm(forms.Form):
     function = forms.ChoiceField(
         choices=grid_types,
-        initial=RectGridType.XOR.value.upper(),
+        initial=HexGridType.XSIGNMAG.value.upper(),
         widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )
-    align_to_axis = forms.BooleanField(
-        initial=False,
+    flat_top = forms.BooleanField(
+        initial=True,
         widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
         required=False,
     )
@@ -29,9 +30,10 @@ class RectTilingForm(forms.Form):
         widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
         required=False,
     )
-    curved = forms.BooleanField(
-        initial=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
+    connector = forms.ChoiceField(
+        choices=connectors,
+        initial=Connector.straight.value,
+        widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )
     hybrid_mode = forms.ChoiceField(
@@ -63,17 +65,17 @@ class RectTilingForm(forms.Form):
         widget=forms.NumberInput(attrs={"onchange": "submit();"}),
         required=False,
     )
-    dimension = forms.IntegerField(
+    grid_dimension = forms.IntegerField(
         initial=8,
         min_value=1,
-        max_value=512,
+        max_value=64,
         widget=forms.NumberInput(attrs={"onchange": "submit();"}),
         required=False,
     )
-    tile_size = forms.IntegerField(
+    edge_length = forms.IntegerField(
         initial=32,
         min_value=6,
-        max_value=512,
+        max_value=1024,
         widget=forms.NumberInput(attrs={"onchange": "submit();"}),
         required=False,
     )

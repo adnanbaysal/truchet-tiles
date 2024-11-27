@@ -3,7 +3,6 @@ import drawsvg as dw
 
 from truchet_tiles.rectangular.draw.enum import (
     AnimationMethod,
-    Colors,
     AxisAlignment,
     Curvedness,
     Filledness,
@@ -11,6 +10,7 @@ from truchet_tiles.rectangular.draw.enum import (
     TilingColor,
 )
 from truchet_tiles.rectangular.draw.tile_generator import RectTileGenerator
+from truchet_tiles.common import Colors
 
 
 class RectTilingDrawer:
@@ -63,7 +63,7 @@ class RectTilingDrawer:
         self._animation_rotation_dur = animation_duration
 
         self._svg = dw.Drawing(
-            self._draw_size, self._draw_size, id_prefix="truchet_tiling"
+            self._draw_size, self._draw_size, id_prefix="rect_truchet_tiling"
         )
         self._svg_top_group = dw.Group(
             id="truchet_group", fill="none"

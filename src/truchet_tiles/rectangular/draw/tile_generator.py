@@ -4,7 +4,8 @@ from typing import Any
 
 import drawsvg as dw
 
-from truchet_tiles.rectangular.draw.enum import Colors, Curvedness, Filledness
+from truchet_tiles.rectangular.draw.enum import Curvedness, Filledness
+from truchet_tiles.common import Colors
 
 
 class RectTileGenerator(dict):
@@ -14,7 +15,7 @@ class RectTileGenerator(dict):
         self._mid = int(self._end / 2)
         self._max_line_width = max_line_width
 
-        self._base_tiles = {
+        self._base_tiles: dict[Filledness, dict[Curvedness, defaultdict | list]] = {
             Filledness.linear: {
                 # keys are line_width, values are list of svg elements
                 Curvedness.straight: defaultdict(list),
@@ -243,7 +244,7 @@ class RectTileGenerator(dict):
 
         self._base_tiles[Filledness.filled][Curvedness.curved].append(fic)
 
-    def _create_circle_pie(self, center, color=Colors.SVG_BLACK):
+    def _create_circle_pie(self, center: tuple[int, int], color=Colors.SVG_BLACK):
         pie = dw.Circle(
             *center,
             self._mid,

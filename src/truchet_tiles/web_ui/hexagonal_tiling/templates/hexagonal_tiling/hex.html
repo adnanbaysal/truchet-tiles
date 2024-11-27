@@ -1,0 +1,21 @@
+{% extends template %}
+
+{% block title %}Hexagonal Truchet Tiling{% endblock %}
+
+{% block content %}
+    <turbo-frame id="main" data-turbo-action="advance">
+        {% load static %}
+        <div class="page-container">
+            <!-- SVG Display Area -->
+            <div class="display-area" id="svg-container">
+                {{ svg_text|safe }}
+            </div>
+            <div class="controls-sidebar" id="form-container">
+                <form action="/hex/" method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                </form>
+            </div>
+        </div>
+    </turbo-frame>
+{% endblock %}
