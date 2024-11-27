@@ -37,8 +37,6 @@ def index(request: HttpRequest):
         form = HexTilingForm()
         svg_text = get_hexagonal_tiling(rand_seed=rand_seed)
 
-    # TODO: Create svg and put into the remplate context
-
     response = render(
         request,
         "hexagonal_tiling/hex.html",

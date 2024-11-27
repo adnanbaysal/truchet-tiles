@@ -37,8 +37,6 @@ def index(request: HttpRequest):
         form = RectTilingForm()
         svg_text = get_rectangular_tiling(rand_seed=rand_seed)
 
-    # TODO: Create svg and put into the remplate context
-
     response = render(
         request,
         "rectangular_tiling/rect.html",

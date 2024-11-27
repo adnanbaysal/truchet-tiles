@@ -1,3 +1,4 @@
+* Fix linting issues
 * Add control to fix the tiling image height and calculate tile edge length using that length and dimension information
 * Fix the curved filled tiling bug which draws full circle instead of a circle pie.
 * Implement hybrid linear tiling
