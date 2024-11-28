@@ -22,7 +22,7 @@ def get_hexagonal_tiling(
     edge_length: int = 32,
     animation_duration: float = 1.0,
     rand_seed: int = 0,
-) -> str:
+) -> str | None:
     # NOTE: Use rand_seed to control when to create new tiling in random mode
     # Pass the same rand_seed to update visual settings of the existing random tiling
     random.seed(rand_seed)

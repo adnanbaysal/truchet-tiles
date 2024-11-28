@@ -152,7 +152,7 @@ class RectTileGenerator(dict):
             *left2,
             fill=Colors.SVG_BLACK,
             stroke=Colors.SVG_BLACK,
-            close="true",
+            close=True,
         )
 
         triangle_right = dw.Lines(
@@ -161,14 +161,14 @@ class RectTileGenerator(dict):
             *right2,
             fill=Colors.SVG_BLACK,
             stroke=Colors.SVG_BLACK,
-            close="true",
+            close=True,
         )
 
         fos = dw.Group(id=f"fos{tile_type}", fill="none")
         fos.append(triangle_left)
         fos.append(triangle_right)
 
-        self._base_tiles[Filledness.filled][Connector.straight].append(fos)
+        self._base_tiles[Filledness.filled][Connector.straight].append(fos)  # type: ignore
 
     def _get_hexagon_points(self, tile_type: int):
         p0 = (0, self._mid)
@@ -194,13 +194,13 @@ class RectTileGenerator(dict):
             *hexagon_points,
             fill=Colors.SVG_BLACK,
             stroke=Colors.SVG_BLACK,
-            close="true",
+            close=True,
         )
 
         fis = dw.Group(id=f"fis{tile_type}", fill="none")
         fis.append(hexagon)
 
-        self._base_tiles[Filledness.filled][Connector.straight].append(fis)
+        self._base_tiles[Filledness.filled][Connector.straight].append(fis)  # type: ignore
 
     def _create_outside_filled_curved_base_tile(self, tile_type: int):
         if tile_type == 1:
@@ -217,7 +217,7 @@ class RectTileGenerator(dict):
         foc.append(pie_left)
         foc.append(pie_right)
 
-        self._base_tiles[Filledness.filled][Connector.curved].append(foc)
+        self._base_tiles[Filledness.filled][Connector.curved].append(foc)  # type: ignore
 
     def _create_inside_filled_curved_base_tile(self, tile_type: int):
         if tile_type == 1:
@@ -243,7 +243,7 @@ class RectTileGenerator(dict):
         fic.append(pie_left)
         fic.append(pie_right)
 
-        self._base_tiles[Filledness.filled][Connector.curved].append(fic)
+        self._base_tiles[Filledness.filled][Connector.curved].append(fic)  # type: ignore
 
     def _create_circle_pie(self, center: tuple[int, int], color=Colors.SVG_BLACK):
         pie = dw.Circle(
