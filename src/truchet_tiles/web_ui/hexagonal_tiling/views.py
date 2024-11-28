@@ -1,7 +1,7 @@
 from random import randint
 
-from django.shortcuts import render
-from django.http.request import HttpRequest
+from django.shortcuts import render  # type: ignore
+from django.http.request import HttpRequest  # type: ignore
 
 from truchet_tiles.web_ui.hexagonal_tiling.forms import HexTilingForm
 from truchet_tiles.hexagonal.tiling import get_hexagonal_tiling

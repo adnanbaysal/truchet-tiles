@@ -1,11 +1,12 @@
-from django import forms
+from django import forms  # type: ignore
 
+from truchet_tiles.common.enum import Connector
 from truchet_tiles.hexagonal.grid_generator import HexGridType
-from truchet_tiles.hexagonal.draw.enum import AnimationMethod, Connector
+from truchet_tiles.hexagonal.draw.enum import HexAnimationMethod
 
 connectors = [(con.value.upper(), con.value.upper()) for con in Connector]
 grid_types = [(gt.value.upper(), gt.value.upper()) for gt in HexGridType]
-animation_methods = [(m.value, m.value.replace("_", " ")) for m in AnimationMethod]
+animation_methods = [(m.value, m.value.replace("_", " ")) for m in HexAnimationMethod]
 
 
 class HexTilingForm(forms.Form):
@@ -49,7 +50,7 @@ class HexTilingForm(forms.Form):
     )
     animation_method = forms.ChoiceField(
         choices=animation_methods,
-        initial=AnimationMethod.at_once.value,
+        initial=HexAnimationMethod.at_once.value,
         widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )

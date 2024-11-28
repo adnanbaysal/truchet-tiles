@@ -1,7 +1,7 @@
 from random import randint
 
-from django.shortcuts import render
-from django.http.request import HttpRequest
+from django.shortcuts import render  # type: ignore
+from django.http.request import HttpRequest  # type: ignore
 
 from truchet_tiles.web_ui.rectangular_tiling.forms import RectTilingForm
 from truchet_tiles.rectangular.tiling import get_rectangular_tiling

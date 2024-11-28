@@ -1,15 +1,14 @@
 import pathlib
 import drawsvg as dw  # type: ignore
 
-from truchet_tiles.common import Colors
-from truchet_tiles.hexagonal.draw.enum import (
-    AnimationMethod,
-    HexTop,
+from truchet_tiles.common.enum import (
+    Colors,
     Connector,
     Filledness,
     HybridFill,
     TilingColor,
 )
+from truchet_tiles.hexagonal.draw.enum import HexAnimationMethod, HexTop
 from truchet_tiles.hexagonal.draw.tile_generator import HexTileGenerator
 from truchet_tiles.hexagonal.hex_grid import (
     ORIENTATIONS,
@@ -76,7 +75,7 @@ class HexTilingDrawer:
         self._show_grid_lines = show_grid
 
         self._animate = animate
-        self._animation_method = AnimationMethod(animation_method)
+        self._animation_method = HexAnimationMethod(animation_method)
         self._animation_prev_grid = {
             key: 0 for key in grid
         }  # TODO: Add hex grid version.
@@ -212,16 +211,16 @@ class HexTilingDrawer:
         self.draw()
 
     def set_animation_method(self, method: str):
-        self._animation_method = AnimationMethod(method)
+        self._animation_method = HexAnimationMethod(method)
         self.draw()
 
     def next_animation_mode(self):
-        if self._animation_method == AnimationMethod.at_once:
-            self._animation_method = AnimationMethod.by_ring
-        elif self._animation_method == AnimationMethod.by_ring:
-            self._animation_method = AnimationMethod.by_tile
+        if self._animation_method == HexAnimationMethod.at_once:
+            self._animation_method = HexAnimationMethod.by_ring
+        elif self._animation_method == HexAnimationMethod.by_ring:
+            self._animation_method = HexAnimationMethod.by_tile
         else:
-            self._animation_method = AnimationMethod.at_once
+            self._animation_method = HexAnimationMethod.at_once
 
         self.draw()
 
@@ -231,15 +230,15 @@ class HexTilingDrawer:
         for hex_, hex_data in self._hex_grid.items():
             coord = (hex_.q, hex_.r)
             if self._animate and self._grid[coord] != self._animation_prev_grid[coord]:
-                if self._animation_method == AnimationMethod.by_tile:
+                if self._animation_method == HexAnimationMethod.by_tile:
                     anim_start = (
                         self.ANIMATION_BEGIN + hex_index * self._animation_rotation_dur
                     )
-                elif self._animation_method == AnimationMethod.by_ring:
+                elif self._animation_method == HexAnimationMethod.by_ring:
                     anim_start = (
                         self.ANIMATION_BEGIN + abs(hex_) * self._animation_rotation_dur
                     )
-                elif self._animation_method == AnimationMethod.at_once:
+                elif self._animation_method == HexAnimationMethod.at_once:
                     anim_start = self.ANIMATION_BEGIN
 
             self._insert_linear_tile(hex_, hex_data, anim_start)

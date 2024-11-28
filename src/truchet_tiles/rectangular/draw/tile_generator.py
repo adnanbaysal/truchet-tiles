@@ -2,10 +2,9 @@ from collections import defaultdict
 import math
 from typing import Any
 
-import drawsvg as dw
+import drawsvg as dw  # type: ignore
 
-from truchet_tiles.rectangular.draw.enum import Curvedness, Filledness
-from truchet_tiles.common import Colors
+from truchet_tiles.common.enum import Colors, Connector, Filledness
 
 
 class RectTileGenerator(dict):
@@ -15,15 +14,17 @@ class RectTileGenerator(dict):
         self._mid = int(self._end / 2)
         self._max_line_width = max_line_width
 
-        self._base_tiles: dict[Filledness, dict[Curvedness, defaultdict | list]] = {
+        self._base_tiles: dict[
+            Filledness, dict[Connector, defaultdict[int, list] | list]
+        ] = {
             Filledness.linear: {
                 # keys are line_width, values are list of svg elements
-                Curvedness.straight: defaultdict(list),
-                Curvedness.curved: defaultdict(list),
+                Connector.straight: defaultdict(list),
+                Connector.curved: defaultdict(list),
             },
             Filledness.filled: {
-                Curvedness.straight: [],  # list of svg elements
-                Curvedness.curved: [],  # list of svg elements
+                Connector.straight: [],  # list of svg elements
+                Connector.curved: [],  # list of svg elements
             },
         }
 
@@ -94,7 +95,7 @@ class RectTileGenerator(dict):
         ls.append(line_left)
         ls.append(line_right)
 
-        self._base_tiles[Filledness.linear][Curvedness.straight][line_width].append(ls)
+        self._base_tiles[Filledness.linear][Connector.straight][line_width].append(ls)
 
     def _create_linear_curved_base_tile(self, tile_type: int, line_width: int):
         if tile_type == 1:
@@ -128,7 +129,7 @@ class RectTileGenerator(dict):
         lc.append(curve_left)
         lc.append(curve_right)
 
-        self._base_tiles[Filledness.linear][Curvedness.curved][line_width].append(lc)
+        self._base_tiles[Filledness.linear][Connector.curved][line_width].append(lc)
 
     def _create_outside_filled_straight_base_tile(self, tile_type: int):
         left0 = (0, self._mid)
@@ -167,7 +168,7 @@ class RectTileGenerator(dict):
         fos.append(triangle_left)
         fos.append(triangle_right)
 
-        self._base_tiles[Filledness.filled][Curvedness.straight].append(fos)
+        self._base_tiles[Filledness.filled][Connector.straight].append(fos)
 
     def _get_hexagon_points(self, tile_type: int):
         p0 = (0, self._mid)
@@ -199,7 +200,7 @@ class RectTileGenerator(dict):
         fis = dw.Group(id=f"fis{tile_type}", fill="none")
         fis.append(hexagon)
 
-        self._base_tiles[Filledness.filled][Curvedness.straight].append(fis)
+        self._base_tiles[Filledness.filled][Connector.straight].append(fis)
 
     def _create_outside_filled_curved_base_tile(self, tile_type: int):
         if tile_type == 1:
@@ -216,7 +217,7 @@ class RectTileGenerator(dict):
         foc.append(pie_left)
         foc.append(pie_right)
 
-        self._base_tiles[Filledness.filled][Curvedness.curved].append(foc)
+        self._base_tiles[Filledness.filled][Connector.curved].append(foc)
 
     def _create_inside_filled_curved_base_tile(self, tile_type: int):
         if tile_type == 1:
@@ -242,7 +243,7 @@ class RectTileGenerator(dict):
         fic.append(pie_left)
         fic.append(pie_right)
 
-        self._base_tiles[Filledness.filled][Curvedness.curved].append(fic)
+        self._base_tiles[Filledness.filled][Connector.curved].append(fic)
 
     def _create_circle_pie(self, center: tuple[int, int], color=Colors.SVG_BLACK):
         pie = dw.Circle(

@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from django.http.request import HttpRequest
+from django.shortcuts import render  # type: ignore
+from django.http.request import HttpRequest  # type: ignore
 
 
 def index(request: HttpRequest):
