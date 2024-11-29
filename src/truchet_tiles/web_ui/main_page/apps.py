@@ -1,6 +1,6 @@
-from django.apps import AppConfig
+from django.apps import AppConfig  # type: ignore
 
 
 class MainPageConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'main_page'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "main_page"

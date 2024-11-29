@@ -1,10 +1,10 @@
-from django import forms
+from django import forms  # type: ignore
 
 from truchet_tiles.rectangular.grid_generator import RectGridType
-from truchet_tiles.rectangular.draw.enum import AnimationMethod
+from truchet_tiles.rectangular.draw.enum import RectAnimationMethod
 
 grid_types = [(gt.value.upper(), gt.value.upper()) for gt in RectGridType]
-animation_methods = [(m.value, m.value.replace("_", " ")) for m in AnimationMethod]
+animation_methods = [(m.value, m.value.replace("_", " ")) for m in RectAnimationMethod]
 
 
 class RectTilingForm(forms.Form):
@@ -47,7 +47,7 @@ class RectTilingForm(forms.Form):
     )
     animation_method = forms.ChoiceField(
         choices=animation_methods,
-        initial=AnimationMethod.at_once.value,
+        initial=RectAnimationMethod.at_once.value,
         widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )

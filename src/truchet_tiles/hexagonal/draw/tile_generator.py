@@ -5,7 +5,8 @@ from typing import Any
 
 import drawsvg as dw  # type: ignore
 
-from truchet_tiles.hexagonal.draw.enum import Connector, Filledness, HexTop
+from truchet_tiles.common.enum import Colors, Connector, Filledness
+from truchet_tiles.hexagonal.draw.enum import HexTop
 from truchet_tiles.hexagonal.hex_grid import (
     Hex,
     HexGeometry,
@@ -13,7 +14,6 @@ from truchet_tiles.hexagonal.hex_grid import (
     ORIENTATIONS,
     Point,
 )
-from truchet_tiles.common import Colors
 
 
 class HexTileGenerator(dict):

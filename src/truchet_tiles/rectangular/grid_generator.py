@@ -1,7 +1,7 @@
 from enum import Enum
 from random import randint
 
-from truchet_tiles.common import parity
+from truchet_tiles.common.math import parity
 
 
 class RectGridType(str, Enum):

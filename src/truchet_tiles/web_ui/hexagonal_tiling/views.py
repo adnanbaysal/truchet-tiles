@@ -1,7 +1,7 @@
 from random import randint
 
-from django.shortcuts import render
-from django.http.request import HttpRequest
+from django.shortcuts import render  # type: ignore
+from django.http.request import HttpRequest  # type: ignore
 
 from truchet_tiles.web_ui.hexagonal_tiling.forms import HexTilingForm
 from truchet_tiles.hexagonal.tiling import get_hexagonal_tiling
@@ -39,7 +39,7 @@ def index(request: HttpRequest):
 
     response = render(
         request,
-        "hexagonal_tiling/hex.html",
+        "hexagonal_tiling/viewer.html",
         context={
             "template": _base_template(request),
             "form": form,
@@ -53,8 +53,8 @@ def index(request: HttpRequest):
 
 def _base_template(request):
     return (
-        "hexagonal_tiling/base_empty.html"
+        "base_empty.html"
         if "X-Requested-With" in request.headers
         and request.headers["X-Requested-With"] == "XMLHttpRequest"
-        else "hexagonal_tiling/base.html"
+        else "base.html"
     )
