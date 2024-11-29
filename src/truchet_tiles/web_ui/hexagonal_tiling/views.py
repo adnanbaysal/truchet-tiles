@@ -39,7 +39,7 @@ def index(request: HttpRequest):
 
     response = render(
         request,
-        "hexagonal_tiling/hex.html",
+        "hexagonal_tiling/viewer.html",
         context={
             "template": _base_template(request),
             "form": form,
@@ -53,8 +53,8 @@ def index(request: HttpRequest):
 
 def _base_template(request):
     return (
-        "hexagonal_tiling/base_empty.html"
+        "base_empty.html"
         if "X-Requested-With" in request.headers
         and request.headers["X-Requested-With"] == "XMLHttpRequest"
-        else "hexagonal_tiling/base.html"
+        else "base.html"
     )
