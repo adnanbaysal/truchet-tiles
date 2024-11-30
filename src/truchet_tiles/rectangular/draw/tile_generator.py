@@ -21,10 +21,12 @@ class RectTileGenerator(dict):
                 # keys are line_width, values are list of svg elements
                 Connector.straight: defaultdict(list),
                 Connector.curved: defaultdict(list),
+                Connector.twoline: defaultdict(list),
             },
             Filledness.filled: {
                 Connector.straight: [],  # list of svg elements
                 Connector.curved: [],  # list of svg elements
+                Connector.twoline: [],  # list of svg elements
             },
         }
 
@@ -40,10 +42,12 @@ class RectTileGenerator(dict):
     def _create_linear_base_tiles(self, line_width: int):
         self._create_linear_straight_base_tiles(line_width)
         self._create_linear_curved_base_tiles(line_width)
+        self._create_linear_twoline_base_tiles(line_width)
 
     def _create_filled_base_tiles(self):
         self._create_filled_straight_base_tiles()
         self._create_filled_curved_base_tiles()
+        self._create_filled_twoline_base_tiles()
 
     # LEVEL 2 base tile functions
     def _create_linear_straight_base_tiles(self, line_width: int):
@@ -53,6 +57,10 @@ class RectTileGenerator(dict):
     def _create_linear_curved_base_tiles(self, line_width: int):
         self._create_linear_curved_base_tile(0, line_width)
         self._create_linear_curved_base_tile(1, line_width)
+
+    def _create_linear_twoline_base_tiles(self, line_width: int):
+        self._create_linear_twoline_base_tile(0, line_width)
+        self._create_linear_twoline_base_tile(1, line_width)
 
     def _create_filled_straight_base_tiles(self):
         # Fill area out of diagonal lines
@@ -71,6 +79,15 @@ class RectTileGenerator(dict):
         # Fill area between arc lines
         self._create_inside_filled_curved_base_tile(0)
         self._create_inside_filled_curved_base_tile(1)
+
+    def _create_filled_twoline_base_tiles(self):
+        # Fill area outside of arc lines
+        self._create_outside_filled_twoline_base_tile(0)
+        self._create_outside_filled_twoline_base_tile(1)
+
+        # Fill area between arc lines
+        self._create_inside_filled_twoline_base_tile(0)
+        self._create_inside_filled_twoline_base_tile(1)
 
     # LEVEL 3 base tile functions
     def _create_linear_straight_base_tile(self, tile_type: int, line_width: int):
@@ -130,6 +147,35 @@ class RectTileGenerator(dict):
         lc.append(curve_right)
 
         self._base_tiles[Filledness.linear][Connector.curved][line_width].append(lc)
+
+    def _create_linear_twoline_base_tile(self, tile_type: int, line_width: int):
+        left1 = (0, self._mid)
+        right1 = (self._end, self._mid)
+        arcMid = self._end * math.sqrt(2) / 4
+
+        if tile_type == 0:
+            leftM = (arcMid, self._end - arcMid)
+            left2 = (self._mid, self._end)
+            rightM = (self._end - arcMid, arcMid)
+            right2 = (self._mid, 0)
+        else:
+            leftM = (arcMid, arcMid)
+            left2 = (self._mid, 0)
+            rightM = (self._end - arcMid, self._end - arcMid)
+            right2 = (self._mid, self._end)
+
+        lines_left = dw.Lines(
+            *left1, *leftM, *left2, stroke_width=line_width, stroke=Colors.SVG_BLACK
+        )
+        lines_right = dw.Lines(
+            *right1, *rightM, *right2, stroke_width=line_width, stroke=Colors.SVG_BLACK
+        )
+
+        lt = dw.Group(id=f"lt{tile_type}", fill="none")
+        lt.append(lines_left)
+        lt.append(lines_right)
+
+        self._base_tiles[Filledness.linear][Connector.twoline][line_width].append(lt)
 
     def _create_outside_filled_straight_base_tile(self, tile_type: int):
         left0 = (0, self._mid)
@@ -253,3 +299,90 @@ class RectTileGenerator(dict):
             path_length=math.pi * self._mid / 2,
         )
         return pie
+
+    def _create_outside_filled_twoline_base_tile(self, tile_type: int):
+        left0 = (0, self._mid)
+        right0 = (self._end, self._mid)
+        arcMid = self._end * math.sqrt(2) / 4
+
+        if tile_type == 0:
+            left1 = (arcMid, self._end - arcMid)
+            left2 = (self._mid, self._end)
+            left3 = (0, self._end)
+            right1 = (self._end - arcMid, arcMid)
+            right2 = (self._mid, 0)
+            right3 = (self._end, 0)
+        else:
+            left1 = (arcMid, arcMid)
+            left2 = (self._mid, 0)
+            left3 = (0, 0)
+            right1 = (self._end - arcMid, self._end - arcMid)
+            right2 = (self._mid, self._end)
+            right3 = (self._end, self._end)
+
+        poly_left = dw.Lines(
+            *left0,
+            *left1,
+            *left2,
+            *left3,
+            fill=Colors.SVG_BLACK,
+            stroke=Colors.SVG_BLACK,
+            close=True,
+        )
+
+        poly_right = dw.Lines(
+            *right0,
+            *right1,
+            *right2,
+            *right3,
+            fill=Colors.SVG_BLACK,
+            stroke=Colors.SVG_BLACK,
+            close=True,
+        )
+
+        fot = dw.Group(id=f"fot{tile_type}", fill="none")
+        fot.append(poly_left)
+        fot.append(poly_right)
+
+        self._base_tiles[Filledness.filled][Connector.twoline].append(fot)  # type: ignore
+
+    def _create_inside_filled_twoline_base_tile(self, tile_type: int):
+        octagon_points = self._get_hexagon_points(tile_type)
+
+        octagon = dw.Lines(
+            *octagon_points,
+            fill=Colors.SVG_BLACK,
+            stroke=Colors.SVG_BLACK,
+            close=True,
+        )
+
+        fit = dw.Group(id=f"fit{tile_type}", fill="none")
+        fit.append(octagon)
+
+        self._base_tiles[Filledness.filled][Connector.twoline].append(fit)  # type: ignore
+
+    def _get_octagon_points(self, tile_type: int) -> list[float]:
+        points: list[tuple[float, float]] = [(0, 0)] * 8
+        points[0] = (0, self._mid)
+        points[2] = (self._mid, self._end)
+        points[4] = (self._end, self._mid)
+        points[6] = (self._mid, 0)
+
+        arcMid = self._end * math.sqrt(2) / 4
+
+        if tile_type == 0:
+            points[1] = (arcMid, self._end - arcMid)
+            points[3] = (self._end, self._end)
+            points[5] = (self._end - arcMid, arcMid)
+            points[7] = (0, 0)
+        else:
+            points[1] = (0, self._end)
+            points[3] = (self._end - arcMid, self._end - arcMid)
+            points[5] = (self._end, 0)
+            points[7] = (arcMid, arcMid)
+
+        unpacked_points: list[float] = []
+        for point in points:
+            unpacked_points.extend(point)
+
+        return unpacked_points

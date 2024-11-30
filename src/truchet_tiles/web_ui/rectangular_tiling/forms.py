@@ -1,8 +1,10 @@
 from django import forms  # type: ignore
 
+from truchet_tiles.common.enum import Connector
 from truchet_tiles.rectangular.grid_generator import RectGridType
 from truchet_tiles.rectangular.draw.enum import RectAnimationMethod
 
+connectors = [(con.value.upper(), con.value.upper()) for con in Connector]
 grid_types = [(gt.value.upper(), gt.value.upper()) for gt in RectGridType]
 animation_methods = [(m.value, m.value.replace("_", " ")) for m in RectAnimationMethod]
 
@@ -29,9 +31,10 @@ class RectTilingForm(forms.Form):
         widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
         required=False,
     )
-    curved = forms.BooleanField(
-        initial=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
+    connector = forms.ChoiceField(
+        choices=connectors,
+        initial=Connector.straight.value,
+        widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )
     hybrid_mode = forms.ChoiceField(
