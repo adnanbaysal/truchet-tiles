@@ -21,7 +21,7 @@ def index(request: HttpRequest):
             align_to_axis=cleaned_data["align_to_axis"],
             fill=cleaned_data["fill"],
             invert_colors=int(cleaned_data["invert_colors"]),
-            curved=cleaned_data["curved"],
+            connector=cleaned_data["connector"].lower(),
             hybrid_mode=int(cleaned_data["hybrid_mode"]),
             animate=cleaned_data["animate"],
             animation_method=cleaned_data["animation_method"],

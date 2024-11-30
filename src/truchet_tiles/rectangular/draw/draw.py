@@ -27,7 +27,7 @@ class RectTilingDrawer:
         align_to_axis: bool = False,
         fill: bool = False,
         invert_colors: bool = False,
-        curved: bool = False,
+        connector: str = "straight",
         hybrid_mode: int = 0,
         animate: bool = False,
         animation_method: str = "at_once",
@@ -50,7 +50,7 @@ class RectTilingDrawer:
         self._line_width = line_width
 
         self._fill_style = Filledness.filled if fill else Filledness.linear
-        self._curve_style = Connector.curved if curved else Connector.straight
+        self._connector = Connector(connector)
         self._alignment_style = (
             AxisAlignment.aligned if align_to_axis else AxisAlignment.rotated
         )
@@ -137,10 +137,12 @@ class RectTilingDrawer:
         )
         self.draw()
 
-    def invert_curved(self):
-        self._curve_style = (
+    def next_connector(self):
+        self._connector = (
             Connector.curved
-            if self._curve_style == Connector.straight
+            if self._connector == Connector.straight
+            else Connector.twoline
+            if self._connector == Connector.curved
             else Connector.straight
         )
         self.draw()
@@ -161,7 +163,7 @@ class RectTilingDrawer:
         return (
             f"{self._grid_size}x{self._t_end}px_"
             f"{'filled' if self._fill_style == Filledness.filled else 'line'}_"
-            f"{'curved' if self._curve_style == Connector.curved else 'straight'}_"
+            f"{self._connector.value}_"
             f"{'aligned' if self._alignment_style == AxisAlignment.aligned else 'rotated'}_"
             f"w{self._line_width}_"
             f"{'hybrid' + str(self._hybrid_fill.value) + '_'}"
@@ -257,7 +259,7 @@ class RectTilingDrawer:
         x_offset = col * self._t_end
 
         used_tile = dw.Use(
-            self._base_tiles[Filledness.linear][self._curve_style][self._line_width][
+            self._base_tiles[Filledness.linear][self._connector][self._line_width][
                 self._grid[row][col]
             ],
             x_offset,
@@ -302,12 +304,16 @@ class RectTilingDrawer:
                     + 2 * grid_of_fill_side[grid_row][grid_col]
                 )
 
-                if self._curve_style == Connector.straight:
+                if self._connector == Connector.straight:
                     self._insert_filled_straight_tile(
                         x_offset, y_offset, base_tile_index
                     )
-                else:
+                elif self._connector == Connector.curved:
                     self._insert_filled_curved_tile(x_offset, y_offset, base_tile_index)
+                else:
+                    self._insert_filled_twoline_tile(
+                        x_offset, y_offset, base_tile_index
+                    )
 
     def _generate_fill_inside_grid(self) -> list[list[int]]:
         _grid: list[list[int]] = []
@@ -373,6 +379,17 @@ class RectTilingDrawer:
                     y_offset,
                 )
             )
+
+    def _insert_filled_twoline_tile(
+        self, x_offset: int, y_offset: int, tile_index: int
+    ):
+        self._svg_top_group.append(
+            dw.Use(
+                self._base_tiles[Filledness.filled][Connector.twoline][tile_index],
+                x_offset,
+                y_offset,
+            )
+        )
 
     def _draw_grid_lines(self):
         for i in range(self._grid_size + 1):
