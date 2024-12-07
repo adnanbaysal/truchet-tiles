@@ -1,9 +1,13 @@
+import copy
 from random import randint
 
 from django.shortcuts import render  # type: ignore
 from django.http.request import HttpRequest  # type: ignore
 
-from truchet_tiles.web_ui.rectangular_tiling.forms import RectTilingForm
+from truchet_tiles.web_ui.rectangular_tiling.forms import (
+    INITIAL_TILING_VALUES,
+    RectTilingForm,
+)
 from truchet_tiles.rectangular.tiling import get_rectangular_tiling
 
 
@@ -14,6 +18,10 @@ def index(request: HttpRequest):
             raise Exception(f"Invalid form: {form.errors}")
 
         cleaned_data = form.cleaned_data
+
+        image_height = cleaned_data["image_height"]
+        dimension = cleaned_data["dimension"]
+        tile_size = image_height / dimension
 
         rand_seed = int(request.COOKIES.get("X-TRUCHET-TILING-SEED"))
         svg_text = get_rectangular_tiling(
@@ -28,14 +36,19 @@ def index(request: HttpRequest):
             show_grid=cleaned_data["show_grid"],
             line_width=cleaned_data["line_width"],
             dimension=cleaned_data["dimension"],
-            tile_size=cleaned_data["tile_size"],
+            tile_size=tile_size,
             animation_duration=float(cleaned_data["animation_duration"]),
             rand_seed=rand_seed,
         )
     else:
         rand_seed = randint(0, 1 << 32)
         form = RectTilingForm()
-        svg_text = get_rectangular_tiling(rand_seed=rand_seed)
+        tiling_initial_values = copy.copy(INITIAL_TILING_VALUES)
+        image_height = tiling_initial_values.pop("image_height")
+        dimension = tiling_initial_values["dimension"]
+        tile_size = image_height / dimension
+        tiling_initial_values["tile_size"] = tile_size
+        svg_text = get_rectangular_tiling(rand_seed=rand_seed, **tiling_initial_values)
 
     response = render(
         request,

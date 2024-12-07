@@ -33,7 +33,7 @@ class HexTilingDrawer:
 
     def __init__(
         self,
-        grid_dimension: int,
+        dimension: int,
         grid: dict[tuple[int, int], int],
         edge_length: int,
         flat_top: bool = False,
@@ -48,14 +48,14 @@ class HexTilingDrawer:
         line_width: int = 1,
         max_line_width: int = 32,
     ) -> None:
-        assert grid_dimension > 0, "grid_dimension must be positive"
-        self._grid_dimension = grid_dimension
+        assert dimension > 0, "dimension must be positive"
+        self._dimension = dimension
 
-        assert len(grid) == 1 + sum(6 * i for i in range(grid_dimension))
+        assert len(grid) == 1 + sum(6 * i for i in range(dimension))
 
         assert edge_length > 0, "edge_length must be positive"
         self._edge_length = edge_length
-        self._draw_size = 2 * (2 * self._grid_dimension - 1) * self._edge_length
+        self._draw_size = 2 * (2 * self._dimension - 1) * self._edge_length
 
         self._orientation_name = HexTop.flat if flat_top else HexTop.pointy
         self._orientation = ORIENTATIONS[self._orientation_name]
@@ -190,7 +190,7 @@ class HexTilingDrawer:
 
     def tiling_identifier(self) -> str:
         return (
-            f"{self._grid_dimension}x{self._edge_length}px_"
+            f"{self._dimension}x{self._edge_length}_"
             f"{'filled' if self._fill_style == Filledness.filled else 'line'}_"
             f"{self._connector.value}_"
             f"{'flat' if self._orientation_name == HexTop.flat else 'pointy'}_"
