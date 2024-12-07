@@ -1,9 +1,13 @@
+import copy
 from random import randint
 
 from django.shortcuts import render  # type: ignore
 from django.http.request import HttpRequest  # type: ignore
 
-from truchet_tiles.web_ui.hexagonal_tiling.forms import HexTilingForm
+from truchet_tiles.web_ui.hexagonal_tiling.forms import (
+    INITIAL_TILING_VALUES,
+    HexTilingForm,
+)
 from truchet_tiles.hexagonal.tiling import get_hexagonal_tiling
 
 
@@ -16,6 +20,10 @@ def index(request: HttpRequest):
         cleaned_data = form.cleaned_data
 
         rand_seed = int(request.COOKIES.get("X-TRUCHET-TILING-SEED"))
+        image_height = cleaned_data["image_height"]
+        dimension = cleaned_data["dimension"]
+        edge_length = image_height / (2 * (2 * dimension - 1))
+
         svg_text = get_hexagonal_tiling(
             function=cleaned_data["function"],
             flat_top=cleaned_data["flat_top"],
@@ -27,15 +35,20 @@ def index(request: HttpRequest):
             animation_method=cleaned_data["animation_method"],
             show_grid=cleaned_data["show_grid"],
             line_width=cleaned_data["line_width"],
-            grid_dimension=cleaned_data["grid_dimension"],
-            edge_length=cleaned_data["edge_length"],
+            dimension=cleaned_data["dimension"],
+            edge_length=edge_length,
             animation_duration=float(cleaned_data["animation_duration"]),
             rand_seed=rand_seed,
         )
     else:
         rand_seed = randint(0, 1 << 32)
         form = HexTilingForm()
-        svg_text = get_hexagonal_tiling(rand_seed=rand_seed)
+        tiling_initial_values = copy.copy(INITIAL_TILING_VALUES)
+        image_height = tiling_initial_values.pop("image_height")
+        dimension = tiling_initial_values["dimension"]
+        edge_length = image_height / (2 * (2 * dimension - 1))
+        tiling_initial_values["edge_length"] = edge_length
+        svg_text = get_hexagonal_tiling(rand_seed=rand_seed, **tiling_initial_values)
 
     response = render(
         request,

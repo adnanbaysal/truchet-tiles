@@ -18,7 +18,7 @@ def get_hexagonal_tiling(
     animation_method: str = "at_once",
     show_grid: bool = False,
     line_width: int = 1,
-    grid_dimension: int = 8,
+    dimension: int = 8,
     edge_length: int = 32,
     animation_duration: float = 1.0,
     rand_seed: int = 0,
@@ -27,11 +27,11 @@ def get_hexagonal_tiling(
     # Pass the same rand_seed to update visual settings of the existing random tiling
     random.seed(rand_seed)
 
-    grid_generator = HexGridGenerator(grid_dimension, HexGridType(function.lower()))
+    grid_generator = HexGridGenerator(dimension, HexGridType(function.lower()))
     grid = grid_generator.grid
 
     drawer = HexTilingDrawer(
-        grid_dimension=grid_dimension,
+        dimension=dimension,
         grid=grid,
         edge_length=edge_length,
         flat_top=flat_top,
