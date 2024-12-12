@@ -4,7 +4,7 @@ from typing import Any
 
 import drawsvg as dw  # type: ignore
 
-from truchet_tiles.common.enum import Colors, Connector, Filledness
+from truchet_tiles.common.enum import SvgColors, Connector, Filledness
 from truchet_tiles.hexagonal.draw.enum import HexTop
 from truchet_tiles.hexagonal.hex_grid import (
     Hex,
@@ -20,9 +20,9 @@ class HexTileGenerator(dict):
         self,
         edge_length: int,
         max_line_width: int = 32,
-        line_color: str = Colors.SVG_BLACK,
-        fill_color: str = Colors.SVG_BLACK,
-        bg_color: str = Colors.SVG_BLACK,
+        line_color: str = SvgColors.BLACK,
+        fill_color: str = SvgColors.BLACK,
+        bg_color: str = SvgColors.BLACK,
     ) -> None:
         assert edge_length > 0, "edge_length must be positive"
 
@@ -295,7 +295,7 @@ class HexTileGenerator(dict):
         center: tuple[float, float],
         end: tuple[float, float],
         fill_color: str,
-    ):
+    ) -> dw.Path:
         r = self._edge_length / 2
         pie = dw.Path(
             d=(

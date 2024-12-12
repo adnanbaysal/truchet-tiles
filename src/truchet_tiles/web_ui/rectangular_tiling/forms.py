@@ -12,12 +12,16 @@ INITIAL_TILING_VALUES = {
     "function": RectGridType.XOR.value.upper(),
     "align_to_axis": False,
     "fill": False,
-    "invert_colors": False,
+    "fill_color": "#000000",
+    "line_color": "#000000",
+    "bg_color": "#FFFFFF",
     "connector": Connector.straight.value,
     "hybrid_mode": 0,
     "animate": False,
     "animation_method": RectAnimationMethod.at_once.value,
     "show_grid": False,
+    "grid_line_width": 0.5,
+    "grid_color": "#FF0000",
     "line_width": 1,
     "dimension": 8,
     "animation_duration": 0.5,
@@ -42,9 +46,22 @@ class RectTilingForm(forms.Form):
         widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
         required=False,
     )
-    invert_colors = forms.BooleanField(
-        initial=INITIAL_TILING_VALUES["invert_colors"],
-        widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
+    fill_color = forms.CharField(
+        initial=INITIAL_TILING_VALUES["fill_color"],
+        max_length=20,
+        widget=forms.TextInput(attrs={"onchange": "submit();"}),
+        required=False,
+    )
+    line_color = forms.CharField(
+        initial=INITIAL_TILING_VALUES["line_color"],
+        max_length=20,
+        widget=forms.TextInput(attrs={"onchange": "submit();"}),
+        required=False,
+    )
+    bg_color = forms.CharField(
+        initial=INITIAL_TILING_VALUES["bg_color"],
+        max_length=20,
+        widget=forms.TextInput(attrs={"onchange": "submit();"}),
         required=False,
     )
     connector = forms.ChoiceField(
@@ -73,6 +90,19 @@ class RectTilingForm(forms.Form):
     show_grid = forms.BooleanField(
         initial=INITIAL_TILING_VALUES["show_grid"],
         widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
+        required=False,
+    )
+    grid_line_width = forms.FloatField(
+        initial=INITIAL_TILING_VALUES["grid_line_width"],
+        min_value=0.01,
+        max_value=5.0,
+        widget=forms.NumberInput(attrs={"onchange": "submit();", "step": "0.1"}),
+        required=False,
+    )
+    grid_color = forms.CharField(
+        initial=INITIAL_TILING_VALUES["grid_color"],
+        max_length=20,
+        widget=forms.TextInput(attrs={"onchange": "submit();"}),
         required=False,
     )
     line_width = forms.IntegerField(

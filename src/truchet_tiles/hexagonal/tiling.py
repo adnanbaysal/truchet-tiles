@@ -2,7 +2,7 @@ import random
 
 from functools import cache
 
-from truchet_tiles.common.enum import Colors
+from truchet_tiles.common.enum import SvgColors
 from truchet_tiles.hexagonal.draw import HexTilingDrawer
 from truchet_tiles.hexagonal.grid_generator import HexGridGenerator, HexGridType
 
@@ -23,10 +23,10 @@ def get_hexagonal_tiling(
     animation_duration: float = 1.0,
     rand_seed: int = 0,
     grid_line_width: float = 0.5,
-    line_color: str = Colors.SVG_BLACK,
-    bg_color: str = Colors.SVG_WHITE,
-    fill_color: str = Colors.SVG_BLACK,
-    grid_color: str = Colors.SVG_RED,
+    line_color: str = SvgColors.BLACK,
+    bg_color: str = SvgColors.WHITE,
+    fill_color: str = SvgColors.BLACK,
+    grid_color: str = SvgColors.RED,
 ) -> str | None:
     # NOTE: Use rand_seed to control when to create new tiling in random mode
     # Pass the same rand_seed to update visual settings of the existing random tiling

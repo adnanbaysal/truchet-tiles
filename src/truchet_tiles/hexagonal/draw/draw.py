@@ -1,8 +1,7 @@
-import pathlib
 import drawsvg as dw  # type: ignore
 
 from truchet_tiles.common.enum import (
-    Colors,
+    SvgColors,
     Connector,
     Filledness,
     HybridFill,
@@ -39,10 +38,10 @@ class HexTilingDrawer:
         line_width: int = 1,
         max_line_width: int = 32,
         grid_line_width: float = 0.5,
-        line_color: str = Colors.SVG_BLACK,
-        bg_color: str = Colors.SVG_WHITE,
-        fill_color: str = Colors.SVG_BLACK,
-        grid_color: str = Colors.SVG_RED,
+        line_color: str = SvgColors.BLACK,
+        bg_color: str = SvgColors.WHITE,
+        fill_color: str = SvgColors.BLACK,
+        grid_color: str = SvgColors.RED,
     ) -> None:
         assert dimension > 0, "dimension must be positive"
         self._dimension = dimension
@@ -127,92 +126,6 @@ class HexTilingDrawer:
 
         self._update_svg()
 
-    def update_grid(
-        self, grid: dict[tuple[int, int], int], set_current_to_prev: bool = False
-    ):
-        if set_current_to_prev:
-            self._animation_prev_grid = self._grid
-
-        self._grid = grid
-        self._hex_grid = self._calculate_hex_grid()
-        self.draw()
-
-    def next_hybrid_mode(self):
-        hybrid_before = self._hybrid_fill.value
-        hybrid_after = (hybrid_before + 1) % 3
-        self._hybrid_fill = HybridFill(hybrid_after)
-        self.draw()
-
-    def increase_line_width(self):
-        self._line_width = (
-            self._line_width + 1 if self._line_width != self._max_line_width else 1
-        )
-        self.draw()
-
-    def decrease_line_width(self):
-        self._line_width = (
-            self._line_width - 1 if self._line_width != 1 else self._max_line_width
-        )
-        self.draw()
-
-    def invert_orientation(self):
-        self._orientation_name = (
-            HexTop.flat if self._orientation_name == HexTop.pointy else HexTop.pointy
-        )
-        self._orientation = ORIENTATIONS[self._orientation_name]
-        self._hex_grid = self._calculate_hex_grid()
-        self.draw()
-
-    def next_connector(self):
-        self._connector = (
-            Connector.curved
-            if self._connector == Connector.straight
-            else Connector.twoline
-            if self._connector == Connector.curved
-            else Connector.straight
-        )
-        self.draw()
-
-    def invert_filled(self):
-        self._fill_style = (
-            Filledness.filled
-            if self._fill_style == Filledness.linear
-            else Filledness.linear
-        )
-        self.draw()
-
-    def invert_show_grid_lines(self):
-        self._show_grid_lines = self._show_grid_lines ^ True
-        self.draw()
-
-    def tiling_identifier(self) -> str:
-        return (
-            f"{self._dimension}x{self._edge_length}_"
-            f"{'filled' if self._fill_style == Filledness.filled else 'line'}_"
-            f"{self._connector.value}_"
-            f"{'flat' if self._orientation_name == HexTop.flat else 'pointy'}_"
-            f"w{self._line_width}_"
-            f"{'hybrid' + str(self._hybrid_fill.value) + '_'}"
-            f"{'anim_' + str(self._animation_method.value)}"
-        )
-
-    def save_svg(self, filepath: str | pathlib.Path):
-        self._svg.save_svg(filepath)
-
-    def invert_animate(self):
-        self._animate ^= True
-        self.draw()
-
-    def next_animation_mode(self):
-        if self._animation_method == HexAnimationMethod.at_once:
-            self._animation_method = HexAnimationMethod.by_ring
-        elif self._animation_method == HexAnimationMethod.by_ring:
-            self._animation_method = HexAnimationMethod.by_tile
-        else:
-            self._animation_method = HexAnimationMethod.at_once
-
-        self.draw()
-
     def _draw_linear(self):
         anim_start = self.ANIMATION_BEGIN
         hex_index = 0
@@ -240,21 +153,6 @@ class HexTilingDrawer:
             self._draw_size, self._draw_size, id_prefix="truchet_tiling"
         )
         self._svg_top_group = dw.Group(id="truchet_group", fill="none")
-        # The following is the background for svg
-        self._svg_top_group.append(
-            dw.Lines(
-                -self._draw_size / 2,
-                -self._draw_size / 2,
-                -self._draw_size / 2,
-                +self._draw_size / 2,
-                +self._draw_size / 2,
-                +self._draw_size / 2,
-                +self._draw_size / 2,
-                -self._draw_size / 2,
-                # fill=self._bg_color,
-                close=True,
-            )
-        )
 
     def _update_svg(self):
         self._svg.view_box = (

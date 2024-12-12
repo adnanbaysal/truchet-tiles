@@ -1,12 +1,10 @@
-import pathlib
 import drawsvg as dw  # type: ignore
 
 from truchet_tiles.common.enum import (
-    Colors,
+    SvgColors,
     Connector,
     Filledness,
     HybridFill,
-    TilingColor,
 )
 from truchet_tiles.rectangular.draw.enum import (
     RectAnimationMethod,
@@ -22,26 +20,30 @@ class RectTilingDrawer:
     def __init__(
         self,
         grid: list[list[int]],
-        tile_size: int,
-        max_line_width: int = 32,
+        edge_length: int,
         align_to_axis: bool = False,
         fill: bool = False,
-        invert_colors: bool = False,
         connector: str = "straight",
         hybrid_mode: int = 0,
         animate: bool = False,
+        animation_duration: float = 1.0,
         animation_method: str = "at_once",
         show_grid: bool = False,
         line_width: int = 1,
-        animation_duration: float = 1.0,
+        max_line_width: int = 32,
+        grid_line_width: float = 0.5,
+        line_color: str = SvgColors.BLACK,
+        bg_color: str = SvgColors.WHITE,
+        fill_color: str = SvgColors.BLACK,
+        grid_color: str = SvgColors.RED,
     ) -> None:
         assert all(
             len(row) == len(grid) for row in grid
         ), "grid should have the same number of rows as the number of columns"
         self._grid = grid
 
-        assert tile_size > 0, "tile_size must be positive"
-        self._t_end = tile_size
+        assert edge_length > 0, "eldge_length must be positive"
+        self._t_end = edge_length
         self._t_mid = int(self._t_end / 2)
         self._grid_size = len(self._grid)
         self._draw_size = self._grid_size * self._t_end
@@ -54,10 +56,15 @@ class RectTilingDrawer:
         self._alignment_style = (
             AxisAlignment.aligned if align_to_axis else AxisAlignment.rotated
         )
-        self._tiling_color = TilingColor(invert_colors)
         self._hybrid_fill = HybridFill(hybrid_mode)
 
         self._show_grid_lines = show_grid
+        self._grid_line_width = grid_line_width
+        self._grid_color = grid_color
+
+        self._line_color = line_color
+        self._bg_color = bg_color
+        self._fill_color = fill_color
 
         self._animate = animate
         self._animation_method = RectAnimationMethod(animation_method)
@@ -72,7 +79,11 @@ class RectTilingDrawer:
         )  # To handle translations
 
         self._base_tiles = RectTileGenerator(
-            tile_size, max_line_width=self._max_line_width
+            edge_length,
+            max_line_width=self._max_line_width,
+            line_color=self._line_color,
+            fill_color=self._fill_color,
+            bg_color=self._bg_color,
         )
 
     @property
@@ -93,108 +104,6 @@ class RectTilingDrawer:
 
         self._update_svg()
 
-    def update_grid(self, grid: list[list[int]], set_current_to_prev: bool = False):
-        assert all(
-            len(row) == len(grid) for row in grid
-        ), "grid should have the same number of rows as the number of columns"
-        if set_current_to_prev:
-            self._animation_prev_grid = self._grid
-
-        self._grid = grid
-        self.draw()
-
-    def next_hybrid_mode(self):
-        hybrid_before = self._hybrid_fill.value
-        hybrid_after = (hybrid_before + 1) % 3
-        self._hybrid_fill = HybridFill(hybrid_after)
-        self.draw()
-
-    def invert_color(self):
-        self._tiling_color = (
-            TilingColor.base
-            if self._tiling_color == TilingColor.inverted
-            else TilingColor.inverted
-        )
-        self.draw()
-
-    def increase_line_width(self):
-        self._line_width = (
-            self._line_width + 1 if self._line_width != self._max_line_width else 1
-        )
-        self.draw()
-
-    def decrease_line_width(self):
-        self._line_width = (
-            self._line_width - 1 if self._line_width != 1 else self._max_line_width
-        )
-        self.draw()
-
-    def invert_aligned(self):
-        self._alignment_style = (
-            AxisAlignment.aligned
-            if self._alignment_style == AxisAlignment.rotated
-            else AxisAlignment.rotated
-        )
-        self.draw()
-
-    def next_connector(self):
-        self._connector = (
-            Connector.curved
-            if self._connector == Connector.straight
-            else Connector.twoline
-            if self._connector == Connector.curved
-            else Connector.straight
-        )
-        self.draw()
-
-    def invert_filled(self):
-        self._fill_style = (
-            Filledness.filled
-            if self._fill_style == Filledness.linear
-            else Filledness.linear
-        )
-        self.draw()
-
-    def invert_show_grid_lines(self):
-        self._show_grid_lines = self._show_grid_lines ^ True
-        self.draw()
-
-    def tiling_identifier(self) -> str:
-        return (
-            f"{self._grid_size}x{self._t_end}px_"
-            f"{'filled' if self._fill_style == Filledness.filled else 'line'}_"
-            f"{self._connector.value}_"
-            f"{'aligned' if self._alignment_style == AxisAlignment.aligned else 'rotated'}_"
-            f"w{self._line_width}_"
-            f"{'hybrid' + str(self._hybrid_fill.value) + '_'}"
-            f"{'anim_' + str(self._animation_method.value)}"
-        )
-
-    def save_svg(self, filepath: str | pathlib.Path):
-        self._svg.save_svg(filepath)
-
-    def invert_animate(self):
-        self._animate ^= True
-        self.draw()
-
-    def set_rotation_duration(self, dur: float):
-        self._animation_rotation_dur = dur
-        self.draw()
-
-    def set_animation_method(self, method: str):
-        self._animation_method = RectAnimationMethod(method)
-        self.draw()
-
-    def next_animation_mode(self):
-        if self._animation_method == RectAnimationMethod.at_once:
-            self._animation_method = RectAnimationMethod.by_row
-        elif self._animation_method == RectAnimationMethod.by_row:
-            self._animation_method = RectAnimationMethod.by_tile
-        else:
-            self._animation_method = RectAnimationMethod.at_once
-
-        self.draw()
-
     def _draw_linear(self):
         anim_start = self.ANIMATION_BEGIN
         for row in range(self._grid_size):
@@ -214,22 +123,6 @@ class RectTilingDrawer:
             self._draw_size, self._draw_size, id_prefix="truchet_tiling"
         )
         self._svg_top_group = dw.Group(id="truchet_group", fill="none")
-        # The following is the white background for svg
-        self._svg_top_group.append(
-            dw.Lines(
-                0,
-                0,
-                self._draw_size,
-                0,
-                self._draw_size,
-                self._draw_size,
-                0,
-                self._draw_size,
-                stroke=Colors.SVG_WHITE,
-                fill=Colors.SVG_WHITE,
-                close=True,
-            )
-        )
 
     def _get_transform(self):
         return (
@@ -323,7 +216,7 @@ class RectTilingDrawer:
                 neighbor = self._neighbor_cell(self._grid, grid_row, grid_col)
                 bit_changed = self._grid[grid_row][grid_col] ^ neighbor
                 if grid_row == 0 and grid_col == 0:
-                    neighbor_fill = self._grid[0][0] ^ self._tiling_color.value
+                    neighbor_fill = self._grid[0][0]
                 else:
                     neighbor_fill = self._neighbor_cell(_grid, grid_row, grid_col)
                 _grid[grid_row].append(neighbor_fill ^ bit_changed ^ 1)
@@ -345,7 +238,9 @@ class RectTilingDrawer:
     ):
         self._svg_top_group.append(
             dw.Use(
-                self._base_tiles[Filledness.filled][Connector.straight][tile_index],
+                self._base_tiles[Filledness.filled][Connector.straight][
+                    self._line_width
+                ][tile_index],
                 x_offset,
                 y_offset,
             )
@@ -356,17 +251,13 @@ class RectTilingDrawer:
         inside = tile_index > 1
         h_not_2 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_1)
         h_not_1 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_2)
-        inverted = self._tiling_color == TilingColor.base
 
-        if (
-            (inside and h_not_2 and inverted)
-            or (outside and h_not_1 and inverted)
-            or (inside and h_not_1 and not inverted)
-            or (outside and h_not_2 and not inverted)
-        ):
+        if (inside and h_not_2) or (outside and h_not_1):
             self._svg_top_group.append(
                 dw.Use(
-                    self._base_tiles[Filledness.filled][Connector.curved][tile_index],
+                    self._base_tiles[Filledness.filled][Connector.curved][
+                        self._line_width
+                    ][tile_index],
                     x_offset,
                     y_offset,
                 )
@@ -374,7 +265,9 @@ class RectTilingDrawer:
         else:
             self._svg_top_group.append(
                 dw.Use(
-                    self._base_tiles[Filledness.filled][Connector.straight][tile_index],
+                    self._base_tiles[Filledness.filled][Connector.straight][
+                        self._line_width
+                    ][tile_index],
                     x_offset,
                     y_offset,
                 )
@@ -385,7 +278,9 @@ class RectTilingDrawer:
     ):
         self._svg_top_group.append(
             dw.Use(
-                self._base_tiles[Filledness.filled][Connector.twoline][tile_index],
+                self._base_tiles[Filledness.filled][Connector.twoline][
+                    self._line_width
+                ][tile_index],
                 x_offset,
                 y_offset,
             )
@@ -399,7 +294,8 @@ class RectTilingDrawer:
                     i * self._t_end,
                     self._draw_size,
                     i * self._t_end,
-                    stroke=Colors.SVG_RED,
+                    stroke=self._grid_color,
+                    stroke_width=self._grid_line_width,
                 )
             )
             self._svg_top_group.append(
@@ -408,6 +304,7 @@ class RectTilingDrawer:
                     0,
                     i * self._t_end,
                     self._draw_size,
-                    stroke=Colors.SVG_RED,
+                    stroke=self._grid_color,
+                    stroke_width=self._grid_line_width,
                 )
             )

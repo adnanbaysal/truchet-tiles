@@ -14,19 +14,6 @@
             "django": true,
             "autoStartBrowser": true,
             "program": "${workspaceFolder}/src/truchet_tiles/web_ui/manage.py"
-        },
-        {
-            "name": "Pygame Rectangular",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/src/truchet_tiles/pygame_ui/rectangular.py"
-        },
-        {
-            "name": "Pygame Hexagonal",
-            "type": "debugpy",
-            "request": "launch",
-            "args": ["16", "16"],
-            "program": "${workspaceFolder}/src/truchet_tiles/pygame_ui/hexagonal.py"
         }
     ]
 }
