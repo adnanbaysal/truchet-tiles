@@ -281,9 +281,9 @@ class HexTileGenerator(dict):
             fis.append(
                 self._bg_hexagons[hex_top][self._bg_color]
             )  # since the polygon is already filled
+            fis.append(polygon)
             for i in range(3):
                 fis.append(lines[i])
-            fis.append(polygon)
 
             self._base_tiles[hex_top][Filledness.filled][Connector.straight][
                 line_width
@@ -426,9 +426,9 @@ class HexTileGenerator(dict):
             fit.append(
                 self._bg_hexagons[hex_top][self._bg_color]
             )  # since polygon is already filled
+            fit.append(polygon)
             for i in range(3):
                 fit.append(twolines[i])
-            fit.append(polygon)
 
             self._base_tiles[hex_top][Filledness.filled][Connector.twoline][
                 line_width
