@@ -41,7 +41,6 @@ Run `python pygame_ui/hexagonal.py`, or use the `Pygame Hexagonal` debug config 
 * **LEFT-RIGHT Arrows:** Regenerate an image in the random function mode.
 * **F:** Switch between Filled and linear versions.
 * **G:** Switch between showig and not showing grid lines.
-* **I:** Invert the colors in filled version.
 * **O:** Switch between pointy-top and flat-top hexagon modes.
 * **W:** Increase the width of the line in linear version.
 * **S:** Decrease the width of the line in linear version.

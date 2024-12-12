@@ -6,7 +6,6 @@ from truchet_tiles.common.enum import (
     Connector,
     Filledness,
     HybridFill,
-    TilingColor,
 )
 from truchet_tiles.hexagonal.draw.enum import HexAnimationMethod, HexTop
 from truchet_tiles.hexagonal.draw.tile_generator import HexTileGenerator
@@ -24,13 +23,6 @@ class HexTilingDrawer:
     ANIMATION_DELAY = "0.000001s"
     ANIMATION_BEGIN = 1.0
 
-    filled_tile_index_map = {
-        (0, 0): 0,
-        (0, 1): 3,
-        (1, 0): 2,
-        (1, 1): 1,
-    }
-
     def __init__(
         self,
         dimension: int,
@@ -38,8 +30,7 @@ class HexTilingDrawer:
         edge_length: int,
         flat_top: bool = False,
         fill: bool = False,
-        invert_colors: bool = False,
-        connector: str = "straight",
+        connector: str = "twoline",
         hybrid_mode: int = 0,
         animate: bool = False,
         animation_method: str = "at_once",
@@ -47,6 +38,11 @@ class HexTilingDrawer:
         show_grid: bool = False,
         line_width: int = 1,
         max_line_width: int = 32,
+        grid_line_width: float = 0.5,
+        line_color: str = Colors.SVG_BLACK,
+        bg_color: str = Colors.SVG_WHITE,
+        fill_color: str = Colors.SVG_BLACK,
+        grid_color: str = Colors.SVG_RED,
     ) -> None:
         assert dimension > 0, "dimension must be positive"
         self._dimension = dimension
@@ -69,10 +65,15 @@ class HexTilingDrawer:
 
         self._fill_style = Filledness.filled if fill else Filledness.linear
         self._connector = Connector(connector)
-        self._tiling_color = TilingColor(invert_colors)
         self._hybrid_fill = HybridFill(hybrid_mode)
 
         self._show_grid_lines = show_grid
+        self._grid_line_width = grid_line_width
+        self._grid_color = grid_color
+
+        self._line_color = line_color
+        self._bg_color = bg_color
+        self._fill_color = fill_color
 
         self._animate = animate
         self._animation_method = HexAnimationMethod(animation_method)
@@ -92,7 +93,11 @@ class HexTilingDrawer:
         )  # To handle translations
 
         self._base_tiles = HexTileGenerator(
-            edge_length, max_line_width=self._max_line_width
+            edge_length,
+            max_line_width=self._max_line_width,
+            line_color=self._line_color,
+            fill_color=self._fill_color,
+            bg_color=self._bg_color,
         )
 
     def _calculate_hex_grid(self) -> HexGrid:
@@ -136,14 +141,6 @@ class HexTilingDrawer:
         hybrid_before = self._hybrid_fill.value
         hybrid_after = (hybrid_before + 1) % 3
         self._hybrid_fill = HybridFill(hybrid_after)
-        self.draw()
-
-    def invert_color(self):
-        self._tiling_color = (
-            TilingColor.base
-            if self._tiling_color == TilingColor.inverted
-            else TilingColor.inverted
-        )
         self.draw()
 
     def increase_line_width(self):
@@ -206,14 +203,6 @@ class HexTilingDrawer:
         self._animate ^= True
         self.draw()
 
-    def set_rotation_duration(self, dur: float):
-        self._animation_rotation_dur = dur
-        self.draw()
-
-    def set_animation_method(self, method: str):
-        self._animation_method = HexAnimationMethod(method)
-        self.draw()
-
     def next_animation_mode(self):
         if self._animation_method == HexAnimationMethod.at_once:
             self._animation_method = HexAnimationMethod.by_ring
@@ -251,7 +240,7 @@ class HexTilingDrawer:
             self._draw_size, self._draw_size, id_prefix="truchet_tiling"
         )
         self._svg_top_group = dw.Group(id="truchet_group", fill="none")
-        # The following is the white background for svg
+        # The following is the background for svg
         self._svg_top_group.append(
             dw.Lines(
                 -self._draw_size / 2,
@@ -262,8 +251,7 @@ class HexTilingDrawer:
                 +self._draw_size / 2,
                 +self._draw_size / 2,
                 -self._draw_size / 2,
-                stroke=Colors.SVG_WHITE,
-                fill=Colors.SVG_WHITE,
+                # fill=self._bg_color,
                 close=True,
             )
         )
@@ -323,41 +311,26 @@ class HexTilingDrawer:
                 self._insert_filled_twoline_tile(hex_data)
 
     def _insert_filled_straight_tile(self, hex_data: HexGridData):
-        tile_index = self.filled_tile_index_map[
-            (self._tiling_color.value, hex_data.value)
-        ]
-
         self._svg_top_group.append(
             dw.Use(
                 self._base_tiles[self._orientation_name][Filledness.filled][
                     Connector.straight
-                ][tile_index],
+                ][self._line_width][hex_data.value],
                 hex_data.center.x,
                 hex_data.center.y,
             )
         )
 
     def _insert_filled_curved_tile(self, hex_data: HexGridData):
-        tile_index = self.filled_tile_index_map[
-            (self._tiling_color.value, hex_data.value)
-        ]
-        outside = tile_index < 2
-        inside = tile_index > 1
         h_not_2 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_1)
         h_not_1 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_2)
-        inverted = self._tiling_color == TilingColor.base
 
-        if (
-            (inside and h_not_2 and inverted)
-            or (outside and h_not_1 and inverted)
-            or (inside and h_not_1 and not inverted)
-            or (outside and h_not_2 and not inverted)
-        ):
+        if (hex_data.value == 1 and h_not_2) or (hex_data.value == 0 and h_not_1):
             self._svg_top_group.append(
                 dw.Use(
                     self._base_tiles[self._orientation_name][Filledness.filled][
                         Connector.curved
-                    ][tile_index],
+                    ][self._line_width][hex_data.value],
                     hex_data.center.x,
                     hex_data.center.y,
                 )
@@ -367,22 +340,18 @@ class HexTilingDrawer:
                 dw.Use(
                     self._base_tiles[self._orientation_name][Filledness.filled][
                         Connector.straight
-                    ][tile_index],
+                    ][self._line_width][hex_data.value],
                     hex_data.center.x,
                     hex_data.center.y,
                 )
             )
 
     def _insert_filled_twoline_tile(self, hex_data: HexGridData):
-        tile_index = self.filled_tile_index_map[
-            (self._tiling_color.value, hex_data.value)
-        ]
-
         self._svg_top_group.append(
             dw.Use(
                 self._base_tiles[self._orientation_name][Filledness.filled][
                     Connector.twoline
-                ][tile_index],
+                ][self._line_width][hex_data.value],
                 hex_data.center.x,
                 hex_data.center.y,
             )
@@ -397,7 +366,8 @@ class HexTilingDrawer:
             self._svg_top_group.append(
                 dw.Lines(
                     *points,
-                    stroke=Colors.SVG_RED,
+                    stroke=self._grid_color,
+                    stroke_width=self._grid_line_width,
                     close=True,
                 )
             )

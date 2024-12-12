@@ -70,9 +70,6 @@ class HexPygameViewer:
                     elif event.key == pygame.K_c:
                         self._drawer.next_connector()
                         self.show_svg()
-                    elif event.key == pygame.K_i:
-                        self._drawer.invert_color()
-                        self.show_svg()
                     elif event.key == pygame.K_o:
                         self._drawer.invert_orientation()
                         self.show_svg()
