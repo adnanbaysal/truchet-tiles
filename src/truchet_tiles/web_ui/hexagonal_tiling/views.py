@@ -27,7 +27,6 @@ def index(request: HttpRequest):
         svg_text = get_hexagonal_tiling(
             function=cleaned_data["function"],
             flat_top=cleaned_data["flat_top"],
-            fill=cleaned_data["fill"],
             fill_color=cleaned_data["fill_color"],
             line_color=cleaned_data["line_color"],
             bg_color=cleaned_data["bg_color"],

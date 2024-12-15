@@ -4,7 +4,7 @@ from typing import Any
 
 import drawsvg as dw  # type: ignore
 
-from truchet_tiles.common.enum import SvgColors, Connector, Filledness
+from truchet_tiles.common.enum import SvgColors, Connector
 from truchet_tiles.hexagonal.draw.enum import HexTop
 from truchet_tiles.hexagonal.hex_grid import (
     Hex,
@@ -43,13 +43,13 @@ class HexTileGenerator(dict):
             self._base_tiles[key] = {
                 Filledness.linear: {
                     # keys are line_width, values are list of svg elements
-                    Connector.straight: defaultdict(list),
+                    Connector.line: defaultdict(list),
                     Connector.curved: defaultdict(list),
                     Connector.twoline: defaultdict(list),
                 },
                 Filledness.filled: {
                     # keys are line_width, values are list of svg elements
-                    Connector.straight: defaultdict(list),
+                    Connector.line: defaultdict(list),
                     Connector.curved: defaultdict(list),
                     Connector.twoline: defaultdict(list),
                 },
@@ -160,7 +160,7 @@ class HexTileGenerator(dict):
             for i in range(3):
                 ls.append(lines[i])
 
-            self._base_tiles[hex_top][Filledness.linear][Connector.straight][
+            self._base_tiles[hex_top][Filledness.linear][Connector.line][
                 line_width
             ].append(ls)
 
@@ -257,7 +257,7 @@ class HexTileGenerator(dict):
             for i in range(3):
                 fos.append(lines[i])
 
-            self._base_tiles[hex_top][Filledness.filled][Connector.straight][
+            self._base_tiles[hex_top][Filledness.filled][Connector.line][
                 line_width
             ].append(fos)
 
@@ -285,7 +285,7 @@ class HexTileGenerator(dict):
             for i in range(3):
                 fis.append(lines[i])
 
-            self._base_tiles[hex_top][Filledness.filled][Connector.straight][
+            self._base_tiles[hex_top][Filledness.filled][Connector.line][
                 line_width
             ].append(fis)
 

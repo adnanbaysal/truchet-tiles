@@ -4,18 +4,21 @@ from truchet_tiles.common.enum import Connector
 from truchet_tiles.rectangular.grid_generator import RectGridType
 from truchet_tiles.rectangular.draw.enum import RectAnimationMethod
 
-connectors = [(con.value.upper(), con.value.upper()) for con in Connector]
+connectors = [
+    ("LINE", "LINE"),
+    ("CURVED", "CURVED"),
+    ("TWOLINE", "TWOLINE"),
+]  # NOTE: Manually done to set the order
 grid_types = [(gt.value.upper(), gt.value.upper()) for gt in RectGridType]
 animation_methods = [(m.value, m.value.replace("_", " ")) for m in RectAnimationMethod]
 
 INITIAL_TILING_VALUES = {
     "function": RectGridType.XOR.value.upper(),
     "align_to_axis": False,
-    "fill": False,
-    "fill_color": "#000000",
+    "fill_color": "#FFFFFF",
     "line_color": "#000000",
-    "bg_color": "#FFFFFF",
-    "connector": Connector.straight.value,
+    "bg_color": "#FFFF00",
+    "connector": Connector.line.value,
     "hybrid_mode": 0,
     "animate": False,
     "animation_method": RectAnimationMethod.at_once.value,
@@ -23,7 +26,7 @@ INITIAL_TILING_VALUES = {
     "grid_line_width": 0.5,
     "grid_color": "#FF0000",
     "line_width": 1,
-    "dimension": 8,
+    "dimension": 5,
     "animation_duration": 0.5,
     "image_height": 720,
 }
@@ -38,11 +41,6 @@ class RectTilingForm(forms.Form):
     )
     align_to_axis = forms.BooleanField(
         initial=INITIAL_TILING_VALUES["align_to_axis"],
-        widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
-        required=False,
-    )
-    fill = forms.BooleanField(
-        initial=INITIAL_TILING_VALUES["fill"],
         widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
         required=False,
     )

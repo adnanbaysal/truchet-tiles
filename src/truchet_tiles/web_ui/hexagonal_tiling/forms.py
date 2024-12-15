@@ -12,7 +12,6 @@ animation_methods = [(m.value, m.value.replace("_", " ")) for m in HexAnimationM
 INITIAL_TILING_VALUES = {
     "function": HexGridType.XSIGNMAG.value.upper(),
     "flat_top": True,
-    "fill": False,
     "fill_color": "#000000",
     "line_color": "#000000",
     "bg_color": "#FFFFFF",
@@ -39,11 +38,6 @@ class HexTilingForm(forms.Form):
     )
     flat_top = forms.BooleanField(
         initial=INITIAL_TILING_VALUES["flat_top"],
-        widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
-        required=False,
-    )
-    fill = forms.BooleanField(
-        initial=INITIAL_TILING_VALUES["fill"],
         widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
         required=False,
     )

@@ -27,7 +27,6 @@ def index(request: HttpRequest):
         svg_text = get_rectangular_tiling(
             function=cleaned_data["function"],
             align_to_axis=cleaned_data["align_to_axis"],
-            fill=cleaned_data["fill"],
             fill_color=cleaned_data["fill_color"],
             line_color=cleaned_data["line_color"],
             bg_color=cleaned_data["bg_color"],

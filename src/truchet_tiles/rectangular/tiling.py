@@ -11,8 +11,7 @@ from truchet_tiles.rectangular.grid_generator import RectGridGenerator, RectGrid
 def get_rectangular_tiling(
     function: str = "XOR",
     align_to_axis: bool = False,
-    fill: bool = False,
-    connector: str = "straight",
+    connector: str = "line",
     hybrid_mode: int = 0,
     animate: bool = False,
     animation_method: str = "at_once",
@@ -39,7 +38,6 @@ def get_rectangular_tiling(
         grid=grid,
         edge_length=edge_length,
         align_to_axis=align_to_axis,
-        fill=fill,
         connector=connector,
         hybrid_mode=hybrid_mode,
         animate=animate,
@@ -55,4 +53,4 @@ def get_rectangular_tiling(
     )
 
     drawer.draw()
-    return drawer.svg.as_html()
+    return drawer.svg.as_svg()

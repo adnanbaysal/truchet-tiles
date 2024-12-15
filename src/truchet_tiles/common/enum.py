@@ -1,15 +1,10 @@
 from enum import Enum
 
 
-class Filledness(str, Enum):
-    linear = "linear"
-    filled = "filled"
-
-
 class Connector(str, Enum):
     twoline = "twoline"
     curved = "curved"
-    straight = "straight"
+    line = "line"
 
 
 class HybridFill(Enum):

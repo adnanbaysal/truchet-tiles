@@ -11,7 +11,6 @@ from truchet_tiles.hexagonal.grid_generator import HexGridGenerator, HexGridType
 def get_hexagonal_tiling(
     function: str = "XSIGNMAG",
     flat_top: bool = True,
-    fill: bool = False,
     connector: str = "twoline",
     hybrid_mode: int = 0,
     animate: bool = False,
@@ -40,7 +39,6 @@ def get_hexagonal_tiling(
         grid=grid,
         edge_length=edge_length,
         flat_top=flat_top,
-        fill=fill,
         connector=connector,
         hybrid_mode=hybrid_mode,
         animate=animate,

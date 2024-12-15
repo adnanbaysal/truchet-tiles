@@ -3,7 +3,6 @@ import drawsvg as dw  # type: ignore
 from truchet_tiles.common.enum import (
     SvgColors,
     Connector,
-    Filledness,
     HybridFill,
 )
 from truchet_tiles.hexagonal.draw.enum import HexAnimationMethod, HexTop
@@ -28,7 +27,6 @@ class HexTilingDrawer:
         grid: dict[tuple[int, int], int],
         edge_length: int,
         flat_top: bool = False,
-        fill: bool = False,
         connector: str = "twoline",
         hybrid_mode: int = 0,
         animate: bool = False,
@@ -62,7 +60,7 @@ class HexTilingDrawer:
         self._max_line_width = max_line_width
         self._line_width = line_width
 
-        self._fill_style = Filledness.filled if fill else Filledness.linear
+        self._fill_style = Filledness.filled
         self._connector = Connector(connector)
         self._hybrid_fill = HybridFill(hybrid_mode)
 
@@ -113,7 +111,6 @@ class HexTilingDrawer:
         return self._svg
 
     def draw(self):
-        # TODO: Fix svg to png issue on windows
         self._clear_screan()
 
         if self._fill_style == Filledness.linear:
@@ -201,7 +198,7 @@ class HexTilingDrawer:
 
     def _draw_filled(self):
         for hex_data in self._hex_grid.values():
-            if self._connector == Connector.straight:
+            if self._connector == Connector.line:
                 self._insert_filled_straight_tile(hex_data)
             elif self._connector == Connector.curved:
                 self._insert_filled_curved_tile(hex_data)
@@ -212,7 +209,7 @@ class HexTilingDrawer:
         self._svg_top_group.append(
             dw.Use(
                 self._base_tiles[self._orientation_name][Filledness.filled][
-                    Connector.straight
+                    Connector.line
                 ][self._line_width][hex_data.value],
                 hex_data.center.x,
                 hex_data.center.y,
@@ -237,7 +234,7 @@ class HexTilingDrawer:
             self._svg_top_group.append(
                 dw.Use(
                     self._base_tiles[self._orientation_name][Filledness.filled][
-                        Connector.straight
+                        Connector.line
                     ][self._line_width][hex_data.value],
                     hex_data.center.x,
                     hex_data.center.y,
