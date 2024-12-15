@@ -14,21 +14,21 @@ animation_methods = [(m.value, m.value.replace("_", " ")) for m in RectAnimation
 
 INITIAL_TILING_VALUES = {
     "function": RectGridType.XOR.value.upper(),
-    "align_to_axis": False,
-    "fill_color": "#FFFFFF",
-    "line_color": "#000000",
-    "bg_color": "#FFFF00",
+    "dimension": 16,
     "connector": Connector.line.value,
     "hybrid_mode": 0,
+    "align_to_axis": False,
+    "line_width": 1,
+    "line_color": "#0000FF",
+    "fill_color": "#FFFF00",
+    "bg_color": "#00FFFF",
     "animate": False,
     "animation_method": RectAnimationMethod.at_once.value,
     "animation_duration": 0.5,
     "show_grid": False,
     "grid_line_width": 0.5,
     "grid_color": "#FF0000",
-    "line_width": 1,
-    "dimension": 5,
-    "image_height": 720,
+    "image_height": 800,
 }
 
 

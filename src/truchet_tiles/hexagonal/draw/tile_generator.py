@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 from typing import Any
 
 import drawsvg as dw  # type: ignore

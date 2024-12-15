@@ -11,21 +11,21 @@ animation_methods = [(m.value, m.value.replace("_", " ")) for m in HexAnimationM
 
 INITIAL_TILING_VALUES = {
     "function": HexGridType.XSIGNMAG.value.upper(),
-    "flat_top": True,
-    "fill_color": "#FFFF00",
-    "line_color": "#000000",
-    "bg_color": "#FFFFFF",
+    "dimension": 8,
     "connector": Connector.twoline.value,
     "hybrid_mode": 0,
+    "flat_top": True,
+    "line_width": 1,
+    "line_color": "#0000FF",
+    "fill_color": "#FFFF00",
+    "bg_color": "#00FFFF",
     "animate": False,
     "animation_method": HexAnimationMethod.at_once.value,
+    "animation_duration": 0.5,
     "show_grid": False,
     "grid_line_width": 0.5,
     "grid_color": "#FF0000",
-    "line_width": 1,
-    "dimension": 8,
-    "animation_duration": 0.5,
-    "image_height": 720,
+    "image_height": 800,
 }
 
 

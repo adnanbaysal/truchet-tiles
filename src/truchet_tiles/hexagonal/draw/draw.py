@@ -133,7 +133,7 @@ class HexTilingDrawer:
         )
 
         self._svg.set_render_size()
-        self._svg.append(dw.Use(self._svg_top_group, 0, 0))
+        self._svg.append(dw.Use(self._svg_top_group, 0, 0, transform="scale(1.1)"))
 
     def _draw(self):
         anim_start = self.ANIMATION_BEGIN

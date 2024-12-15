@@ -15,7 +15,7 @@ class RectTileGenerator(dict):
         fill_color: str = SvgColors.WHITE,
         bg_color: str = SvgColors.WHITE,
     ) -> None:
-        assert edge_length > 0, "tile_size must be positive"
+        assert edge_length > 0, "edge_length must be positive"
         self._end = edge_length
         self._mid = int(self._end / 2)
         self._line_width = line_width
