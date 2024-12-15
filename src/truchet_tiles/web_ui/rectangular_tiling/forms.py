@@ -4,24 +4,31 @@ from truchet_tiles.common.enum import Connector
 from truchet_tiles.rectangular.grid_generator import RectGridType
 from truchet_tiles.rectangular.draw.enum import RectAnimationMethod
 
-connectors = [(con.value.upper(), con.value.upper()) for con in Connector]
+connectors = [
+    ("LINE", "LINE"),
+    ("CURVED", "CURVED"),
+    ("TWOLINE", "TWOLINE"),
+]  # NOTE: Manually done to set the order
 grid_types = [(gt.value.upper(), gt.value.upper()) for gt in RectGridType]
 animation_methods = [(m.value, m.value.replace("_", " ")) for m in RectAnimationMethod]
 
 INITIAL_TILING_VALUES = {
     "function": RectGridType.XOR.value.upper(),
-    "align_to_axis": False,
-    "fill": False,
-    "invert_colors": False,
-    "connector": Connector.straight.value,
+    "dimension": 16,
+    "connector": Connector.line.value,
     "hybrid_mode": 0,
+    "align_to_axis": False,
+    "line_width": 1,
+    "line_color": "#0000FF",
+    "fill_color": "#FFFF00",
+    "bg_color": "#00FFFF",
     "animate": False,
     "animation_method": RectAnimationMethod.at_once.value,
-    "show_grid": False,
-    "line_width": 1,
-    "dimension": 8,
     "animation_duration": 0.5,
-    "image_height": 720,
+    "show_grid": False,
+    "grid_line_width": 0.5,
+    "grid_color": "#FF0000",
+    "image_height": 800,
 }
 
 
@@ -32,19 +39,11 @@ class RectTilingForm(forms.Form):
         widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )
-    align_to_axis = forms.BooleanField(
-        initial=INITIAL_TILING_VALUES["align_to_axis"],
-        widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
-        required=False,
-    )
-    fill = forms.BooleanField(
-        initial=INITIAL_TILING_VALUES["fill"],
-        widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
-        required=False,
-    )
-    invert_colors = forms.BooleanField(
-        initial=INITIAL_TILING_VALUES["invert_colors"],
-        widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
+    dimension = forms.IntegerField(
+        initial=INITIAL_TILING_VALUES["dimension"],
+        min_value=1,
+        max_value=512,
+        widget=forms.NumberInput(attrs={"onchange": "submit();"}),
         required=False,
     )
     connector = forms.ChoiceField(
@@ -59,6 +58,36 @@ class RectTilingForm(forms.Form):
         widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )
+    align_to_axis = forms.BooleanField(
+        initial=INITIAL_TILING_VALUES["align_to_axis"],
+        widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
+        required=False,
+    )
+    line_width = forms.IntegerField(
+        initial=INITIAL_TILING_VALUES["line_width"],
+        min_value=1,
+        max_value=32,
+        widget=forms.NumberInput(attrs={"onchange": "submit();"}),
+        required=False,
+    )
+    line_color = forms.CharField(
+        initial=INITIAL_TILING_VALUES["line_color"],
+        max_length=20,
+        widget=forms.TextInput(attrs={"onchange": "submit();"}),
+        required=False,
+    )
+    fill_color = forms.CharField(
+        initial=INITIAL_TILING_VALUES["fill_color"],
+        max_length=20,
+        widget=forms.TextInput(attrs={"onchange": "submit();"}),
+        required=False,
+    )
+    bg_color = forms.CharField(
+        initial=INITIAL_TILING_VALUES["bg_color"],
+        max_length=20,
+        widget=forms.TextInput(attrs={"onchange": "submit();"}),
+        required=False,
+    )
     animate = forms.BooleanField(
         initial=INITIAL_TILING_VALUES["animate"],
         widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
@@ -70,30 +99,29 @@ class RectTilingForm(forms.Form):
         widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )
-    show_grid = forms.BooleanField(
-        initial=INITIAL_TILING_VALUES["show_grid"],
-        widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
-        required=False,
-    )
-    line_width = forms.IntegerField(
-        initial=INITIAL_TILING_VALUES["line_width"],
-        min_value=1,
-        max_value=32,
-        widget=forms.NumberInput(attrs={"onchange": "submit();"}),
-        required=False,
-    )
-    dimension = forms.IntegerField(
-        initial=INITIAL_TILING_VALUES["dimension"],
-        min_value=1,
-        max_value=512,
-        widget=forms.NumberInput(attrs={"onchange": "submit();"}),
-        required=False,
-    )
     animation_duration = forms.FloatField(
         initial=INITIAL_TILING_VALUES["animation_duration"],
         min_value=0.01,
         max_value=10.0,
         widget=forms.NumberInput(attrs={"onchange": "submit();", "step": "0.1"}),
+        required=False,
+    )
+    show_grid = forms.BooleanField(
+        initial=INITIAL_TILING_VALUES["show_grid"],
+        widget=forms.CheckboxInput(attrs={"onchange": "submit();"}),
+        required=False,
+    )
+    grid_line_width = forms.FloatField(
+        initial=INITIAL_TILING_VALUES["grid_line_width"],
+        min_value=0.01,
+        max_value=5.0,
+        widget=forms.NumberInput(attrs={"onchange": "submit();", "step": "0.1"}),
+        required=False,
+    )
+    grid_color = forms.CharField(
+        initial=INITIAL_TILING_VALUES["grid_color"],
+        max_length=20,
+        widget=forms.TextInput(attrs={"onchange": "submit();"}),
         required=False,
     )
     image_height = forms.IntegerField(

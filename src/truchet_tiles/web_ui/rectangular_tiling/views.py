@@ -21,23 +21,26 @@ def index(request: HttpRequest):
 
         image_height = cleaned_data["image_height"]
         dimension = cleaned_data["dimension"]
-        tile_size = image_height / dimension
+        edge_length = image_height / dimension
 
         rand_seed = int(request.COOKIES.get("X-TRUCHET-TILING-SEED"))
         svg_text = get_rectangular_tiling(
             function=cleaned_data["function"],
-            align_to_axis=cleaned_data["align_to_axis"],
-            fill=cleaned_data["fill"],
-            invert_colors=int(cleaned_data["invert_colors"]),
+            dimension=cleaned_data["dimension"],
             connector=cleaned_data["connector"].lower(),
             hybrid_mode=int(cleaned_data["hybrid_mode"]),
+            align_to_axis=cleaned_data["align_to_axis"],
+            line_width=cleaned_data["line_width"],
+            line_color=cleaned_data["line_color"],
+            fill_color=cleaned_data["fill_color"],
+            bg_color=cleaned_data["bg_color"],
             animate=cleaned_data["animate"],
             animation_method=cleaned_data["animation_method"],
-            show_grid=cleaned_data["show_grid"],
-            line_width=cleaned_data["line_width"],
-            dimension=cleaned_data["dimension"],
-            tile_size=tile_size,
             animation_duration=float(cleaned_data["animation_duration"]),
+            show_grid=cleaned_data["show_grid"],
+            grid_line_width=cleaned_data["grid_line_width"],
+            grid_color=cleaned_data["grid_color"],
+            edge_length=edge_length,
             rand_seed=rand_seed,
         )
     else:
@@ -46,8 +49,8 @@ def index(request: HttpRequest):
         tiling_initial_values = copy.copy(INITIAL_TILING_VALUES)
         image_height = tiling_initial_values.pop("image_height")
         dimension = tiling_initial_values["dimension"]
-        tile_size = image_height / dimension
-        tiling_initial_values["tile_size"] = tile_size
+        edge_length = image_height / dimension
+        tiling_initial_values["edge_length"] = edge_length
         svg_text = get_rectangular_tiling(rand_seed=rand_seed, **tiling_initial_values)
 
     response = render(
