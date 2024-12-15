@@ -135,14 +135,17 @@ class RectTilingDrawer:
 
                 base_tile_index = self._grid[row][col] + 2 * grid_of_fill_side[row][col]
 
-                if self._connector == Connector.line:
-                    tile_getter = self._get_straight_tile
-                elif self._connector == Connector.curved:
-                    tile_getter = self._get_curved_tile
+                if self._connector == Connector.curved:
+                    used_tile = self._get_curved_tile(
+                        x_offset, y_offset, base_tile_index
+                    )
                 else:
-                    tile_getter = self._get_twoline_tile
+                    used_tile = dw.Use(
+                        self._base_tiles[self._connector][base_tile_index],
+                        x_offset,
+                        y_offset,
+                    )
 
-                used_tile = tile_getter(x_offset, y_offset, base_tile_index)
                 self._append_anims_to_tile(row, col, used_tile, anim_start)
 
                 self._svg_top_group.append(used_tile)
@@ -216,13 +219,6 @@ class RectTilingDrawer:
             return _grid[row - 1][col]
         raise ValueError("Invalid row and column")
 
-    def _get_straight_tile(self, x_offset: int, y_offset: int, tile_index: int):
-        return dw.Use(
-            self._base_tiles[Connector.line][tile_index],
-            x_offset,
-            y_offset,
-        )
-
     def _get_curved_tile(self, x_offset: int, y_offset: int, tile_index: int):
         outside = tile_index < 2
         inside = tile_index > 1
@@ -241,13 +237,6 @@ class RectTilingDrawer:
                 x_offset,
                 y_offset,
             )
-
-    def _get_twoline_tile(self, x_offset: int, y_offset: int, tile_index: int):
-        return dw.Use(
-            self._base_tiles[Connector.twoline][tile_index],
-            x_offset,
-            y_offset,
-        )
 
     def _draw_grid_lines(self):
         for i in range(self._grid_size + 1):
