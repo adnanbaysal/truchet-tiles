@@ -206,7 +206,7 @@ class RectTileGenerator(dict):
         ift = dw.Group(id=f"ift{tile_type}", fill="none")
         ift.append(self._get_bg_square(self._bg_color))
 
-        octagon_points = self._get_hexagon_points(tile_type)
+        octagon_points = self._get_octagon_points(tile_type)
         octagon = dw.Lines(
             *octagon_points,
             fill=self._fill_color,
