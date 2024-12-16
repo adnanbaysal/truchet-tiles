@@ -9,12 +9,27 @@ from truchet_tiles.rectangular.draw.enum import (
     RectAnimationMethod,
     AxisAlignment,
 )
-from truchet_tiles.rectangular.draw.tile_generator import RectTileGenerator
+from truchet_tiles.rectangular.draw.tile_generator import (
+    create_inside_filled_curved_base_tile,
+    create_inside_filled_line_base_tile,
+    create_inside_filled_twoline_base_tile,
+    create_outside_filled_curved_base_tile,
+    create_outside_filled_line_base_tile,
+    create_outside_filled_twoline_base_tile,
+)
 
 
 class RectTilingDrawer:
     ANIMATION_DELAY = "0.000001s"
     ANIMATION_BEGIN = 1.0
+    tile_function_map = {
+        (Connector.curved, 0): create_outside_filled_curved_base_tile,
+        (Connector.curved, 1): create_inside_filled_curved_base_tile,
+        (Connector.line, 0): create_outside_filled_line_base_tile,
+        (Connector.line, 1): create_inside_filled_line_base_tile,
+        (Connector.twoline, 0): create_outside_filled_twoline_base_tile,
+        (Connector.twoline, 1): create_inside_filled_twoline_base_tile,
+    }
 
     def __init__(
         self,
@@ -73,14 +88,6 @@ class RectTilingDrawer:
             id="truchet_group", fill="none"
         )  # To handle translations
 
-        self._base_tiles = RectTileGenerator(
-            edge_length,
-            line_width=self._line_width,
-            line_color=self._line_color,
-            fill_color=self._fill_color,
-            bg_color=self._bg_color,
-        )
-
     @property
     def svg(self):
         return self._svg
@@ -133,15 +140,27 @@ class RectTilingDrawer:
             for col in range(self._grid_size):
                 x_offset = col * self._t_end
 
-                base_tile_index = self._grid[row][col] + 2 * grid_of_fill_side[row][col]
+                tile_type = self._grid[row][col]
+                inside_filled = grid_of_fill_side[row][col]
 
                 if self._connector == Connector.curved:
                     used_tile = self._get_curved_tile(
-                        x_offset, y_offset, base_tile_index
+                        x_offset, y_offset, tile_type, inside_filled, anim_start
                     )
                 else:
+                    func = self.tile_function_map[(self._connector, inside_filled)]
+                    base_tile = func(
+                        tile_type,
+                        self._t_end,
+                        self._line_width,
+                        self._line_color,
+                        self._fill_color,
+                        self._bg_color,
+                        self._animate,
+                        anim_start,
+                    )
                     used_tile = dw.Use(
-                        self._base_tiles[self._connector][base_tile_index],
+                        base_tile,
                         x_offset,
                         y_offset,
                     )
@@ -219,24 +238,34 @@ class RectTilingDrawer:
             return _grid[row - 1][col]
         raise ValueError("Invalid row and column")
 
-    def _get_curved_tile(self, x_offset: int, y_offset: int, tile_index: int):
-        outside = tile_index < 2
-        inside = tile_index > 1
+    def _get_curved_tile(
+        self,
+        x_offset: int,
+        y_offset: int,
+        tile_type: int,
+        inside_filled: int,
+        anim_start: float,
+    ):
         h_not_2 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_1)
         h_not_1 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_2)
 
-        if (inside and h_not_2) or (outside and h_not_1):
-            return dw.Use(
-                self._base_tiles[Connector.curved][tile_index],
-                x_offset,
-                y_offset,
-            )
+        if (inside_filled and h_not_2) or (not inside_filled and h_not_1):
+            func = self.tile_function_map[(Connector.curved, inside_filled)]
         else:
-            return dw.Use(
-                self._base_tiles[Connector.line][tile_index],
-                x_offset,
-                y_offset,
-            )
+            func = self.tile_function_map[(Connector.line, inside_filled)]
+
+        base_tile = func(
+            tile_type,
+            self._t_end,
+            self._line_width,
+            self._line_color,
+            self._fill_color,
+            self._bg_color,
+            self._animate,
+            anim_start,
+        )
+
+        return dw.Use(base_tile, x_offset, y_offset)
 
     def _draw_grid_lines(self):
         for i in range(self._grid_size + 1):
