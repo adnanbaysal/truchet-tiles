@@ -54,4 +54,4 @@ def get_hexagonal_tiling(
     )
 
     drawer.draw()
-    return drawer.svg.as_html()
+    return drawer.svg.as_svg()
