@@ -2,6 +2,8 @@ from functools import cache
 import math
 import drawsvg as dw  # type: ignore
 
+from truchet_tiles.common.constants import ANIMATION_DELAY
+
 
 # Helper functions
 def _get_bg_square(color: str, edge_length: float) -> dw.Lines:
@@ -219,6 +221,26 @@ def _get_octagon_points(tile_type: int, edge_length: float) -> list[float]:
     return unpacked_points
 
 
+def _append_color_fade(
+    element: dw.Path, from_color: str, to_color: str, anim_start: float, anim_dur: float
+):
+    def _get_color_fade(begin, dur, start, end):
+        return dw.Animate(
+            attributeName="fill",
+            begin=begin,
+            dur=dur,
+            type="rotate",
+            from_or_values=f"{start};{end}",
+            fill="freeze",
+            repeatCount="1",
+        )
+
+    element.append_anim(
+        _get_color_fade(ANIMATION_DELAY, ANIMATION_DELAY, to_color, from_color)
+    )
+    element.append_anim(_get_color_fade(anim_start, anim_dur, from_color, to_color))
+
+
 # Tile generation functions
 @cache
 def create_outside_filled_line_base_tile(
@@ -230,9 +252,14 @@ def create_outside_filled_line_base_tile(
     bg_color: str,
     animate_colors: bool,
     anim_start: float,
+    anim_dur: float,
 ) -> dw.Group:
     ofl = dw.Group(id=f"ofl{tile_type}", fill="none")
-    ofl.append(_get_bg_square(bg_color, edge_length))
+    bg_square = _get_bg_square(bg_color, edge_length)
+    if animate_colors:
+        _append_color_fade(bg_square, fill_color, bg_color, anim_start, anim_dur)
+
+    ofl.append(bg_square)
 
     left0, left1, left2, right0, right1, right2 = _get_line_points(
         tile_type, edge_length
@@ -251,6 +278,10 @@ def create_outside_filled_line_base_tile(
         fill=fill_color,
         close=True,
     )
+    if animate_colors:
+        _append_color_fade(triangle_left, bg_color, fill_color, anim_start, anim_dur)
+        _append_color_fade(triangle_right, bg_color, fill_color, anim_start, anim_dur)
+
     ofl.append(triangle_left)
     ofl.append(triangle_right)
 
@@ -271,9 +302,14 @@ def create_inside_filled_line_base_tile(
     bg_color: str,
     animate_colors: bool,
     anim_start: float,
+    anim_dur: float,
 ) -> dw.Group:
     ifl = dw.Group(id=f"ifl{tile_type}", fill="none")
-    ifl.append(_get_bg_square(bg_color, edge_length))
+    bg_square = _get_bg_square(bg_color, edge_length)
+    if animate_colors:
+        _append_color_fade(bg_square, fill_color, bg_color, anim_start, anim_dur)
+
+    ifl.append(bg_square)
 
     hexagon_points = _get_hexagon_points(tile_type, edge_length)
     hexagon = dw.Lines(
@@ -281,6 +317,9 @@ def create_inside_filled_line_base_tile(
         fill=fill_color,
         close=True,
     )
+    if animate_colors:
+        _append_color_fade(hexagon, bg_color, fill_color, anim_start, anim_dur)
+
     ifl.append(hexagon)
 
     line_left, line_right = _get_lines(tile_type, edge_length, line_width, line_color)
@@ -300,9 +339,14 @@ def create_outside_filled_curved_base_tile(
     bg_color: str,
     animate_colors: bool,
     anim_start: float,
+    anim_dur: float,
 ) -> dw.Group:
     ofc = dw.Group(id=f"ofc{tile_type}", fill="none")
-    ofc.append(_get_bg_square(bg_color, edge_length))
+    bg_square = _get_bg_square(bg_color, edge_length)
+    if animate_colors:
+        _append_color_fade(bg_square, fill_color, bg_color, anim_start, anim_dur)
+
+    ofc.append(bg_square)
 
     left_start, left_center, left_end, right_start, right_center, right_end = (
         _get_arc_points(tile_type, edge_length)
@@ -313,6 +357,10 @@ def create_outside_filled_curved_base_tile(
     pie_right = _create_circle_pie(
         edge_length, right_start, right_center, right_end, fill_color
     )
+    if animate_colors:
+        _append_color_fade(pie_left, bg_color, fill_color, anim_start, anim_dur)
+        _append_color_fade(pie_right, bg_color, fill_color, anim_start, anim_dur)
+
     ofc.append(pie_left)
     ofc.append(pie_right)
 
@@ -333,9 +381,14 @@ def create_inside_filled_curved_base_tile(
     bg_color: str,
     animate_colors: bool,
     anim_start: float,
+    anim_dur: float,
 ) -> dw.Group:
     ifc = dw.Group(id=f"ifc{tile_type}", fill="none")
-    ifc.append(_get_bg_square(fill_color, edge_length))
+    bg_square = _get_bg_square(bg_color, edge_length)
+    if animate_colors:
+        _append_color_fade(bg_square, fill_color, bg_color, anim_start, anim_dur)
+
+    ifc.append(bg_square)
 
     left_start, left_center, left_end, right_start, right_center, right_end = (
         _get_arc_points(tile_type, edge_length)
@@ -346,6 +399,10 @@ def create_inside_filled_curved_base_tile(
     pie_right = _create_circle_pie(
         edge_length, right_start, right_center, right_end, bg_color
     )
+    if animate_colors:
+        _append_color_fade(pie_left, bg_color, fill_color, anim_start, anim_dur)
+        _append_color_fade(pie_right, bg_color, fill_color, anim_start, anim_dur)
+
     ifc.append(pie_left)
     ifc.append(pie_right)
 
@@ -366,9 +423,14 @@ def create_outside_filled_twoline_base_tile(
     bg_color: str,
     animate_colors: bool,
     anim_start: float,
+    anim_dur: float,
 ):
     oft = dw.Group(id=f"oft{tile_type}", fill="none")
-    oft.append(_get_bg_square(bg_color, edge_length))
+    bg_square = _get_bg_square(bg_color, edge_length)
+    if animate_colors:
+        _append_color_fade(bg_square, fill_color, bg_color, anim_start, anim_dur)
+
+    oft.append(bg_square)
 
     left0, left1, left2, left3, right0, right1, right2, right3 = _get_twoline_points(
         tile_type, edge_length
@@ -389,6 +451,10 @@ def create_outside_filled_twoline_base_tile(
         fill=fill_color,
         close=True,
     )
+    if animate_colors:
+        _append_color_fade(poly_left, bg_color, fill_color, anim_start, anim_dur)
+        _append_color_fade(poly_right, bg_color, fill_color, anim_start, anim_dur)
+
     oft.append(poly_left)
     oft.append(poly_right)
 
@@ -411,9 +477,14 @@ def create_inside_filled_twoline_base_tile(
     bg_color: str,
     animate_colors: bool,
     anim_start: float,
+    anim_dur: float,
 ):
     ift = dw.Group(id=f"ift{tile_type}", fill="none")
-    ift.append(_get_bg_square(bg_color, edge_length))
+    bg_square = _get_bg_square(bg_color, edge_length)
+    if animate_colors:
+        _append_color_fade(bg_square, fill_color, bg_color, anim_start, anim_dur)
+
+    ift.append(bg_square)
 
     octagon_points = _get_octagon_points(tile_type, edge_length)
     octagon = dw.Lines(
@@ -422,6 +493,8 @@ def create_inside_filled_twoline_base_tile(
         close=True,
     )
     ift.append(octagon)
+    if animate_colors:
+        _append_color_fade(octagon, bg_color, fill_color, anim_start, anim_dur)
 
     lines_left, lines_right = _get_twolines(
         tile_type, edge_length, line_width, line_color

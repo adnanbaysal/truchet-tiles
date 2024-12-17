@@ -1,5 +1,6 @@
 import drawsvg as dw  # type: ignore
 
+from truchet_tiles.common.constants import ANIMATION_BEGIN, ANIMATION_DELAY
 from truchet_tiles.common.enum import (
     SvgColors,
     Connector,
@@ -20,8 +21,6 @@ from truchet_tiles.rectangular.draw.tile_generator import (
 
 
 class RectTilingDrawer:
-    ANIMATION_DELAY = "0.000001s"
-    ANIMATION_BEGIN = 1.0
     tile_function_map = {
         (Connector.curved, 0): create_outside_filled_curved_base_tile,
         (Connector.curved, 1): create_inside_filled_curved_base_tile,
@@ -132,7 +131,7 @@ class RectTilingDrawer:
         self._svg.append(dw.Use(self._svg_top_group, 0, 0, **kwargs))
 
     def _draw(self):
-        anim_start = self.ANIMATION_BEGIN
+        anim_start = ANIMATION_BEGIN
         grid_of_fill_side = self._generate_fill_inside_grid()
 
         for row in range(self._grid_size):
@@ -156,8 +155,12 @@ class RectTilingDrawer:
                         self._line_color,
                         self._fill_color,
                         self._bg_color,
-                        self._animate,
+                        self._animate
+                        and (
+                            self._animation_prev_grid[row][col] != self._grid[row][col]
+                        ),
                         anim_start,
+                        self._animation_duration,
                     )
                     used_tile = dw.Use(
                         base_tile,
@@ -183,7 +186,6 @@ class RectTilingDrawer:
             self._animation_prev_grid[row][col] != self._grid[row][col]
         ):
             self._append_rotation(row, col, used_tile, anim_start)
-            # TODO: Add color animation
 
     def _append_rotation(
         self, row: int, col: int, used_tile: dw.Use, anim_start: float
@@ -204,14 +206,10 @@ class RectTilingDrawer:
             )
 
         # The following animation will make the svg appear to start from the prev state
-        used_tile.append_anim(
-            _get_rotation(self.ANIMATION_DELAY, self.ANIMATION_DELAY, 0, 90)
-        )
+        used_tile.append_anim(_get_rotation(ANIMATION_DELAY, ANIMATION_DELAY, 0, 90))
         used_tile.append_anim(
             _get_rotation(anim_start, self._animation_duration, 90, 180)
         )
-
-    # TODO: Implement color animations
 
     def _generate_fill_inside_grid(self) -> list[list[int]]:
         _grid: list[list[int]] = []
@@ -263,6 +261,7 @@ class RectTilingDrawer:
             self._bg_color,
             self._animate,
             anim_start,
+            self._animation_duration,
         )
 
         return dw.Use(base_tile, x_offset, y_offset)
