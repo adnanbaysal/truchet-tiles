@@ -1,4 +1,4 @@
-* Fix coloring issue in curved tiling
+* Fix coloring issue in by row animation
 * Fix the rotation animation bug for rectangular + dimensin > 20
 * Implement and use a cached function instead of a class for base tile generation
 * Support color fading in animation

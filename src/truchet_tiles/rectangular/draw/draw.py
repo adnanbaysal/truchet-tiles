@@ -142,9 +142,18 @@ class RectTilingDrawer:
                 tile_type = self._grid[row][col]
                 inside_filled = grid_of_fill_side[row][col]
 
+                animate = self._animate and (
+                    self._animation_prev_grid[row][col] != self._grid[row][col]
+                )
+
                 if self._connector == Connector.curved:
                     used_tile = self._get_curved_tile(
-                        x_offset, y_offset, tile_type, inside_filled, anim_start
+                        x_offset,
+                        y_offset,
+                        tile_type,
+                        inside_filled,
+                        anim_start,
+                        animate,
                     )
                 else:
                     func = self.tile_function_map[(self._connector, inside_filled)]
@@ -155,10 +164,7 @@ class RectTilingDrawer:
                         self._line_color,
                         self._fill_color,
                         self._bg_color,
-                        self._animate
-                        and (
-                            self._animation_prev_grid[row][col] != self._grid[row][col]
-                        ),
+                        animate,
                         anim_start,
                         self._animation_duration,
                     )
@@ -243,6 +249,7 @@ class RectTilingDrawer:
         tile_type: int,
         inside_filled: int,
         anim_start: float,
+        animate: bool,
     ):
         h_not_2 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_1)
         h_not_1 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_2)
@@ -259,7 +266,7 @@ class RectTilingDrawer:
             self._line_color,
             self._fill_color,
             self._bg_color,
-            self._animate,
+            animate,
             anim_start,
             self._animation_duration,
         )

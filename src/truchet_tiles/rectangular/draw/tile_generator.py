@@ -384,9 +384,9 @@ def create_inside_filled_curved_base_tile(
     anim_dur: float,
 ) -> dw.Group:
     ifc = dw.Group(id=f"ifc{tile_type}", fill="none")
-    bg_square = _get_bg_square(bg_color, edge_length)
+    bg_square = _get_bg_square(fill_color, edge_length)
     if animate_colors:
-        _append_color_fade(bg_square, fill_color, bg_color, anim_start, anim_dur)
+        _append_color_fade(bg_square, bg_color, fill_color, anim_start, anim_dur)
 
     ifc.append(bg_square)
 
@@ -400,8 +400,8 @@ def create_inside_filled_curved_base_tile(
         edge_length, right_start, right_center, right_end, bg_color
     )
     if animate_colors:
-        _append_color_fade(pie_left, bg_color, fill_color, anim_start, anim_dur)
-        _append_color_fade(pie_right, bg_color, fill_color, anim_start, anim_dur)
+        _append_color_fade(pie_left, fill_color, bg_color, anim_start, anim_dur)
+        _append_color_fade(pie_right, fill_color, bg_color, anim_start, anim_dur)
 
     ifc.append(pie_left)
     ifc.append(pie_right)
