@@ -229,7 +229,6 @@ def _append_color_fade(
             attributeName="fill",
             begin=begin,
             dur=dur,
-            type="rotate",
             from_or_values=f"{start};{end}",
             fill="freeze",
             repeatCount="1",
@@ -254,7 +253,7 @@ def create_outside_filled_line_base_tile(
     anim_start: float,
     anim_dur: float,
 ) -> dw.Group:
-    ofl = dw.Group(id=f"ofl{tile_type}", fill="none")
+    ofl = dw.Group(fill="none")
     bg_square = _get_bg_square(bg_color, edge_length)
     if animate_colors:
         _append_color_fade(bg_square, fill_color, bg_color, anim_start, anim_dur)
@@ -304,7 +303,7 @@ def create_inside_filled_line_base_tile(
     anim_start: float,
     anim_dur: float,
 ) -> dw.Group:
-    ifl = dw.Group(id=f"ifl{tile_type}", fill="none")
+    ifl = dw.Group(fill="none")
     bg_square = _get_bg_square(bg_color, edge_length)
     if animate_colors:
         _append_color_fade(bg_square, fill_color, bg_color, anim_start, anim_dur)
@@ -341,7 +340,7 @@ def create_outside_filled_curved_base_tile(
     anim_start: float,
     anim_dur: float,
 ) -> dw.Group:
-    ofc = dw.Group(id=f"ofc{tile_type}", fill="none")
+    ofc = dw.Group(fill="none")
     bg_square = _get_bg_square(bg_color, edge_length)
     if animate_colors:
         _append_color_fade(bg_square, fill_color, bg_color, anim_start, anim_dur)
@@ -383,7 +382,7 @@ def create_inside_filled_curved_base_tile(
     anim_start: float,
     anim_dur: float,
 ) -> dw.Group:
-    ifc = dw.Group(id=f"ifc{tile_type}", fill="none")
+    ifc = dw.Group(fill="none")
     bg_square = _get_bg_square(fill_color, edge_length)
     if animate_colors:
         _append_color_fade(bg_square, bg_color, fill_color, anim_start, anim_dur)
@@ -425,7 +424,7 @@ def create_outside_filled_twoline_base_tile(
     anim_start: float,
     anim_dur: float,
 ):
-    oft = dw.Group(id=f"oft{tile_type}", fill="none")
+    oft = dw.Group(fill="none")
     bg_square = _get_bg_square(bg_color, edge_length)
     if animate_colors:
         _append_color_fade(bg_square, fill_color, bg_color, anim_start, anim_dur)
@@ -479,7 +478,7 @@ def create_inside_filled_twoline_base_tile(
     anim_start: float,
     anim_dur: float,
 ):
-    ift = dw.Group(id=f"ift{tile_type}", fill="none")
+    ift = dw.Group(fill="none")
     bg_square = _get_bg_square(bg_color, edge_length)
     if animate_colors:
         _append_color_fade(bg_square, fill_color, bg_color, anim_start, anim_dur)

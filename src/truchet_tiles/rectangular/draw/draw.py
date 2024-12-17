@@ -174,7 +174,8 @@ class RectTilingDrawer:
                         y_offset,
                     )
 
-                self._append_anims_to_tile(row, col, used_tile, anim_start)
+                if animate:
+                    self._append_rotation(row, col, used_tile, anim_start)
 
                 self._svg_top_group.append(used_tile)
 
@@ -184,14 +185,6 @@ class RectTilingDrawer:
 
             if self._animation_method == RectAnimationMethod.by_row:
                 anim_start += self._animation_duration
-
-    def _append_anims_to_tile(
-        self, row: int, col: int, used_tile: dw.Use, anim_start: float
-    ):
-        if self._animate and (
-            self._animation_prev_grid[row][col] != self._grid[row][col]
-        ):
-            self._append_rotation(row, col, used_tile, anim_start)
 
     def _append_rotation(
         self, row: int, col: int, used_tile: dw.Use, anim_start: float
