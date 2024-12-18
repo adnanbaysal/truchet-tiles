@@ -202,13 +202,18 @@ class HexTilingDrawer:
         )
 
     def _get_curved_tile(self, hex_data: HexGridData, anim_start: float, animate: bool):
-        h_not_2 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_1)
-        h_not_1 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_2)
-
-        if (hex_data.value == 1 and h_not_2) or (hex_data.value == 0 and h_not_1):
-            func = self.tile_function_map[(Connector.curved, hex_data.value)]
+        if self._hybrid_fill == HybridFill.none:
+            func = func = self.tile_function_map[(Connector.curved, hex_data.value)]
+        elif self._hybrid_fill == HybridFill.hybrid_1:
+            if hex_data.value == 0:
+                func = func = self.tile_function_map[(Connector.line, 0)]
+            else:
+                func = func = self.tile_function_map[(Connector.curved, 1)]
         else:
-            func = self.tile_function_map[(Connector.line, hex_data.value)]
+            if hex_data.value == 0:
+                func = func = self.tile_function_map[(Connector.curved, 0)]
+            else:
+                func = func = self.tile_function_map[(Connector.twoline, 1)]
 
         base_tile = func(
             self._edge_length,
