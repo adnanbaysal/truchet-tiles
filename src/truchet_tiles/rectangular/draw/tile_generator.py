@@ -243,6 +243,7 @@ def _append_color_fade(
 # Tile generation functions
 @cache
 def create_outside_filled_line_base_tile(
+    tile_type: int,
     edge_length: float,
     line_width: int,
     line_color: str,
@@ -259,7 +260,9 @@ def create_outside_filled_line_base_tile(
 
     ofl.append(bg_square)
 
-    left0, left1, left2, right0, right1, right2 = _get_line_points(0, edge_length)
+    left0, left1, left2, right0, right1, right2 = _get_line_points(
+        tile_type, edge_length
+    )
     triangle_left = dw.Lines(
         *left0,
         *left1,
@@ -281,7 +284,7 @@ def create_outside_filled_line_base_tile(
     ofl.append(triangle_left)
     ofl.append(triangle_right)
 
-    line_left, line_right = _get_lines(0, edge_length, line_width, line_color)
+    line_left, line_right = _get_lines(tile_type, edge_length, line_width, line_color)
     ofl.append(line_left)
     ofl.append(line_right)
 
@@ -290,6 +293,7 @@ def create_outside_filled_line_base_tile(
 
 @cache
 def create_inside_filled_line_base_tile(
+    tile_type: int,
     edge_length: float,
     line_width: int,
     line_color: str,
@@ -306,7 +310,7 @@ def create_inside_filled_line_base_tile(
 
     ifl.append(bg_square)
 
-    hexagon_points = _get_hexagon_points(1, edge_length)
+    hexagon_points = _get_hexagon_points(tile_type, edge_length)
     hexagon = dw.Lines(
         *hexagon_points,
         fill=fill_color,
@@ -317,7 +321,7 @@ def create_inside_filled_line_base_tile(
 
     ifl.append(hexagon)
 
-    line_left, line_right = _get_lines(1, edge_length, line_width, line_color)
+    line_left, line_right = _get_lines(tile_type, edge_length, line_width, line_color)
     ifl.append(line_left)
     ifl.append(line_right)
 
@@ -326,6 +330,7 @@ def create_inside_filled_line_base_tile(
 
 @cache
 def create_outside_filled_curved_base_tile(
+    tile_type: int,
     edge_length: float,
     line_width: int,
     line_color: str,
@@ -343,7 +348,7 @@ def create_outside_filled_curved_base_tile(
     ofc.append(bg_square)
 
     left_start, left_center, left_end, right_start, right_center, right_end = (
-        _get_arc_points(0, edge_length)
+        _get_arc_points(tile_type, edge_length)
     )
     pie_left = _create_circle_pie(
         edge_length, left_start, left_center, left_end, fill_color
@@ -358,7 +363,7 @@ def create_outside_filled_curved_base_tile(
     ofc.append(pie_left)
     ofc.append(pie_right)
 
-    curve_left, curve_right = _get_arcs(0, edge_length, line_width, line_color)
+    curve_left, curve_right = _get_arcs(tile_type, edge_length, line_width, line_color)
     ofc.append(curve_left)
     ofc.append(curve_right)
 
@@ -367,6 +372,7 @@ def create_outside_filled_curved_base_tile(
 
 @cache
 def create_inside_filled_curved_base_tile(
+    tile_type: int,
     edge_length: float,
     line_width: int,
     line_color: str,
@@ -384,7 +390,7 @@ def create_inside_filled_curved_base_tile(
     ifc.append(bg_square)
 
     left_start, left_center, left_end, right_start, right_center, right_end = (
-        _get_arc_points(1, edge_length)
+        _get_arc_points(tile_type, edge_length)
     )
     pie_left = _create_circle_pie(
         edge_length, left_start, left_center, left_end, bg_color
@@ -399,7 +405,7 @@ def create_inside_filled_curved_base_tile(
     ifc.append(pie_left)
     ifc.append(pie_right)
 
-    curve_left, curve_right = _get_arcs(1, edge_length, line_width, line_color)
+    curve_left, curve_right = _get_arcs(tile_type, edge_length, line_width, line_color)
     ifc.append(curve_left)
     ifc.append(curve_right)
 
@@ -408,6 +414,7 @@ def create_inside_filled_curved_base_tile(
 
 @cache
 def create_outside_filled_twoline_base_tile(
+    tile_type: int,
     edge_length: float,
     line_width: int,
     line_color: str,
@@ -425,7 +432,7 @@ def create_outside_filled_twoline_base_tile(
     oft.append(bg_square)
 
     left0, left1, left2, left3, right0, right1, right2, right3 = _get_twoline_points(
-        0, edge_length
+        tile_type, edge_length
     )
     poly_left = dw.Lines(
         *left0,
@@ -450,7 +457,9 @@ def create_outside_filled_twoline_base_tile(
     oft.append(poly_left)
     oft.append(poly_right)
 
-    lines_left, lines_right = _get_twolines(0, edge_length, line_width, line_color)
+    lines_left, lines_right = _get_twolines(
+        tile_type, edge_length, line_width, line_color
+    )
     oft.append(lines_left)
     oft.append(lines_right)
 
@@ -459,6 +468,7 @@ def create_outside_filled_twoline_base_tile(
 
 @cache
 def create_inside_filled_twoline_base_tile(
+    tile_type: int,
     edge_length: float,
     line_width: int,
     line_color: str,
@@ -475,7 +485,7 @@ def create_inside_filled_twoline_base_tile(
 
     ift.append(bg_square)
 
-    octagon_points = _get_octagon_points(1, edge_length)
+    octagon_points = _get_octagon_points(tile_type, edge_length)
     octagon = dw.Lines(
         *octagon_points,
         fill=fill_color,
@@ -485,7 +495,9 @@ def create_inside_filled_twoline_base_tile(
     if animate_colors:
         _append_color_fade(octagon, bg_color, fill_color, anim_start, anim_dur)
 
-    lines_left, lines_right = _get_twolines(1, edge_length, line_width, line_color)
+    lines_left, lines_right = _get_twolines(
+        tile_type, edge_length, line_width, line_color
+    )
     ift.append(lines_left)
     ift.append(lines_right)
 
