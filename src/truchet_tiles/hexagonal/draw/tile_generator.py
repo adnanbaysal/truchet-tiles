@@ -1,10 +1,8 @@
 from functools import cache
-from typing import Any
 
 import drawsvg as dw  # type: ignore
 
 from truchet_tiles.common.constants import ANIMATION_DELAY
-from truchet_tiles.common.enum import SvgColors, Connector
 from truchet_tiles.hexagonal.draw.enum import HexTop
 from truchet_tiles.hexagonal.hex_grid import (
     Hex,

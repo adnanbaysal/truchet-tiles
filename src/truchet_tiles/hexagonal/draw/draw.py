@@ -1,15 +1,22 @@
 import drawsvg as dw  # type: ignore
 
+from truchet_tiles.common.constants import ANIMATION_BEGIN, ANIMATION_DELAY
 from truchet_tiles.common.enum import (
     SvgColors,
     Connector,
     HybridFill,
 )
 from truchet_tiles.hexagonal.draw.enum import HexAnimationMethod, HexTop
-from truchet_tiles.hexagonal.draw.tile_generator import HexTileGenerator
+from truchet_tiles.hexagonal.draw.tile_generator import (
+    create_inside_filled_curved_base_tile,
+    create_inside_filled_line_base_tile,
+    create_inside_filled_twoline_base_tile,
+    create_outside_filled_curved_base_tile,
+    create_outside_filled_line_base_tile,
+    create_outside_filled_twoline_base_tile,
+)
 from truchet_tiles.hexagonal.hex_grid import (
     ORIENTATIONS,
-    Hex,
     HexGrid,
     HexGridData,
     Layout,
@@ -18,8 +25,14 @@ from truchet_tiles.hexagonal.hex_grid import (
 
 
 class HexTilingDrawer:
-    ANIMATION_DELAY = "0.000001s"
-    ANIMATION_BEGIN = 1.0
+    tile_function_map = {
+        (Connector.curved, 0): create_outside_filled_curved_base_tile,
+        (Connector.curved, 1): create_inside_filled_curved_base_tile,
+        (Connector.line, 0): create_outside_filled_line_base_tile,
+        (Connector.line, 1): create_inside_filled_line_base_tile,
+        (Connector.twoline, 0): create_outside_filled_twoline_base_tile,
+        (Connector.twoline, 1): create_inside_filled_twoline_base_tile,
+    }
 
     def __init__(
         self,
@@ -74,7 +87,7 @@ class HexTilingDrawer:
         self._animation_prev_grid = {
             key: 0 for key in grid
         }  # TODO: Add hex grid version.
-        self._animation_rotation_dur = animation_duration
+        self._animation_duration = animation_duration
 
         self._svg = dw.Drawing(
             self._draw_size,
@@ -85,15 +98,6 @@ class HexTilingDrawer:
         self._svg_top_group = dw.Group(
             id="truchet_group", fill="none"
         )  # To handle translations
-
-        self._base_tiles = HexTileGenerator(
-            edge_length,
-            line_width=self._line_width,
-            line_color=self._line_color,
-            fill_color=self._fill_color,
-            bg_color=self._bg_color,
-            hex_top=self._orientation_name,
-        )
 
     def _calculate_hex_grid(self) -> HexGrid:
         layout = Layout(
@@ -136,44 +140,45 @@ class HexTilingDrawer:
         self._svg.append(dw.Use(self._svg_top_group, 0, 0, transform="scale(1.1)"))
 
     def _draw(self):
-        anim_start = self.ANIMATION_BEGIN
+        anim_start = ANIMATION_BEGIN
         hex_index = 0
 
         for hex_, hex_data in self._hex_grid.items():
             coord = (hex_.q, hex_.r)
+            animate = self._animate and (
+                self._animation_prev_grid[coord] != self._grid[coord]
+            )
 
-            if self._animate and self._grid[coord] != self._animation_prev_grid[coord]:
+            if animate:
                 if self._animation_method == HexAnimationMethod.by_tile:
-                    anim_start = (
-                        self.ANIMATION_BEGIN + hex_index * self._animation_rotation_dur
-                    )
+                    anim_start = ANIMATION_BEGIN + hex_index * self._animation_duration
                 elif self._animation_method == HexAnimationMethod.by_ring:
-                    anim_start = (
-                        self.ANIMATION_BEGIN + abs(hex_) * self._animation_rotation_dur
-                    )
+                    anim_start = ANIMATION_BEGIN + abs(hex_) * self._animation_duration
                 elif self._animation_method == HexAnimationMethod.at_once:
-                    anim_start = self.ANIMATION_BEGIN
+                    anim_start = ANIMATION_BEGIN
 
             if self._connector == Connector.curved:
-                used_tile = self._get_curved_tile(hex_data)
+                used_tile = self._get_curved_tile(hex_data, anim_start, animate)
             else:
-                used_tile = dw.Use(
-                    self._base_tiles[self._connector][hex_data.value],
-                    hex_data.center.x,
-                    hex_data.center.y,
+                func = self.tile_function_map[(self._connector, hex_data.value)]
+                base_tile = func(
+                    self._edge_length,
+                    self._orientation_name,
+                    self._line_width,
+                    self._line_color,
+                    self._fill_color,
+                    self._bg_color,
+                    animate,
+                    anim_start,
+                    self._animation_duration,
                 )
+                used_tile = dw.Use(base_tile, hex_data.center.x, hex_data.center.y)
 
-            self._append_anims_to_tile(hex_, hex_data, used_tile, anim_start)
+            if animate:
+                self._append_rotation(hex_data, used_tile, anim_start)
+
             self._svg_top_group.append(used_tile)
-
-    def _append_anims_to_tile(
-        self, hex_: Hex, hex_data: HexGridData, used_tile: dw.Use, anim_start: float
-    ):
-        if self._animate and (
-            self._animation_prev_grid[(hex_.q, hex_.r)] != self._grid[(hex_.q, hex_.r)]
-        ):
-            self._append_rotation(hex_data, used_tile, anim_start)
-            # TODO: Add color animation
+            hex_index += 1
 
     def _append_rotation(
         self, hex_data: HexGridData, used_tile: dw.Use, anim_start: float
@@ -191,31 +196,32 @@ class HexTilingDrawer:
             )
 
         # The following animation will make the svg appear to start from the prev state
+        used_tile.append_anim(_get_rotation(ANIMATION_DELAY, ANIMATION_DELAY, 0, 60))
         used_tile.append_anim(
-            _get_rotation(self.ANIMATION_DELAY, self.ANIMATION_DELAY, 0, 60)
-        )
-        used_tile.append_anim(
-            _get_rotation(anim_start, self._animation_rotation_dur, 60, 120)
+            _get_rotation(anim_start, self._animation_duration, 60, 120)
         )
 
-    # TODO: Implement color animations
-
-    def _get_curved_tile(self, hex_data: HexGridData):
+    def _get_curved_tile(self, hex_data: HexGridData, anim_start: float, animate: bool):
         h_not_2 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_1)
         h_not_1 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_2)
 
         if (hex_data.value == 1 and h_not_2) or (hex_data.value == 0 and h_not_1):
-            return dw.Use(
-                self._base_tiles[Connector.curved][hex_data.value],
-                hex_data.center.x,
-                hex_data.center.y,
-            )
+            func = self.tile_function_map[(Connector.curved, hex_data.value)]
         else:
-            return dw.Use(
-                self._base_tiles[Connector.line][hex_data.value],
-                hex_data.center.x,
-                hex_data.center.y,
-            )
+            func = self.tile_function_map[(Connector.line, hex_data.value)]
+
+        base_tile = func(
+            self._edge_length,
+            self._orientation_name,
+            self._line_width,
+            self._line_color,
+            self._fill_color,
+            self._bg_color,
+            animate,
+            anim_start,
+            self._animation_duration,
+        )
+        return dw.Use(base_tile, hex_data.center.x, hex_data.center.y)
 
     def _draw_grid_lines(self):
         for hex_data in self._hex_grid.values():
