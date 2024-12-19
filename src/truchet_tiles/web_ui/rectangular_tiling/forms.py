@@ -18,10 +18,10 @@ INITIAL_TILING_VALUES = {
     "connector": Connector.line.value,
     "hybrid_mode": 0,
     "align_to_axis": False,
-    "line_width": 1,
-    "line_color": "#0000FF",
-    "fill_color": "#FFFF00",
-    "bg_color": "#00FFFF",
+    "line_width": 2,
+    "line_color": "#264653",
+    "fill_color": "#F4A261",
+    "bg_color": "#A8DADC",
     "animate": False,
     "animation_method": RectAnimationMethod.at_once.value,
     "animation_duration": 0.5,
@@ -126,7 +126,7 @@ class RectTilingForm(forms.Form):
     )
     image_height = forms.IntegerField(
         initial=INITIAL_TILING_VALUES["image_height"],
-        min_value=128,
+        min_value=200,
         max_value=10000,
         widget=forms.NumberInput(attrs={"onchange": "submit();"}),
         required=False,

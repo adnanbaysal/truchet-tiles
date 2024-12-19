@@ -14,9 +14,12 @@
                 <form action="/rect/" method="post">
                     {% csrf_token %}
                     {{ form }}
+                    {% include "preset_colors.html" %}
                     <a href="data:text/plain;charset=utf-8,{{svg_text | urlencode}}" download="file.svg">Download SVG</a>
                 </form>
             </div>
         </div>
+
+        {% include "scripts.html" %}
     </turbo-frame>
 {% endblock %}
