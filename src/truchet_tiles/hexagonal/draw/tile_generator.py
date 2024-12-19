@@ -194,13 +194,13 @@ def create_inside_filled_line_base_tile(
     anim_dur: float,
 ) -> dw.Group:
     hex_geometry = _get_hex_geometry(hex_top, edge_length)
-    lines = _get_lines(0, hex_geometry, line_width, line_color)
+    lines = _get_lines(1, hex_geometry, line_width, line_color)
 
     points = []
     for i in range(3):
         points += [
-            hex_geometry.edge_mids[2 * i + 1].x,
-            hex_geometry.edge_mids[2 * i + 1].y,
+            hex_geometry.edge_mids[(2 * i + 1) % 6].x,
+            hex_geometry.edge_mids[(2 * i + 1) % 6].y,
             hex_geometry.edge_mids[(2 * i + 2) % 6].x,
             hex_geometry.edge_mids[(2 * i + 2) % 6].y,
             hex_geometry.corners[(2 * i + 3) % 6].x,

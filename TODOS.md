@@ -1,3 +1,4 @@
+* Improve hybrid mode
 * Show the 0-1 grid on the right side of the web page
 * Support user custom grid: User provide a grid of 0-1s from web-ui and app creates the corresponding tiling
 * Support updating the custom grid with click-on-tile

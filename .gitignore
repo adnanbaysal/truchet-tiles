@@ -162,6 +162,3 @@ cython_debug/
 #.idea/
 
 *.DS_Store
-output/*
-**/temp
-**/truchet.png
