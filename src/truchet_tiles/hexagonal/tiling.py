@@ -4,7 +4,7 @@ from functools import cache
 
 from truchet_tiles.common.enum import SvgColors
 from truchet_tiles.hexagonal.draw import HexTilingDrawer
-from truchet_tiles.hexagonal.grid_generator import HexGridGenerator, HexGridType
+from truchet_tiles.hexagonal.grid_generator import HexGridType, get_hex_grid
 
 
 @cache
@@ -31,8 +31,7 @@ def get_hexagonal_tiling(
     # Pass the same rand_seed to update visual settings of the existing random tiling
     random.seed(rand_seed)
 
-    grid_generator = HexGridGenerator(dimension, HexGridType(function.lower()))
-    grid = grid_generator.grid
+    grid = get_hex_grid(dimension, HexGridType(function.lower()))
 
     drawer = HexTilingDrawer(
         dimension=dimension,

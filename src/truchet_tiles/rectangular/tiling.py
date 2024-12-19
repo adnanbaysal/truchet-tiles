@@ -4,7 +4,7 @@ from functools import cache
 
 from truchet_tiles.common.enum import SvgColors
 from truchet_tiles.rectangular.draw import RectTilingDrawer
-from truchet_tiles.rectangular.grid_generator import RectGridGenerator, RectGridType
+from truchet_tiles.rectangular.grid_generator import RectGridType, get_rect_grid
 
 
 @cache
@@ -31,8 +31,7 @@ def get_rectangular_tiling(
     # Pass the same rand_seed to update visual settings of the existing random tiling
     random.seed(rand_seed)
 
-    grid_generator = RectGridGenerator(dimension, RectGridType(function.lower()))
-    grid = grid_generator.grid
+    grid = get_rect_grid(dimension, RectGridType(function.lower()))
 
     drawer = RectTilingDrawer(
         grid=grid,
