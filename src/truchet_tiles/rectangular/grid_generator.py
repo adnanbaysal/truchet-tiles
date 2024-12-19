@@ -15,6 +15,8 @@ class RectGridType(str, Enum):
     MOD = "mod"
     RANDOM = "random"
     THUESHIFT = "thueshift"
+    ZEROS = "zeros"
+    ONES = "ones"
 
 
 class RectGridGenerator:
@@ -57,6 +59,10 @@ class RectGridGenerator:
                 grid_func = lambda x, y: 0 if (y + 1) % (x + 1) == 0 else 1  # noqa: E731
             case RectGridType.THUESHIFT:
                 grid_func = lambda x, y: parity(x) ^ parity(x + y)  # noqa: E731
+            case RectGridType.ZEROS:
+                grid_func = lambda x, y: 0  # noqa: E731
+            case RectGridType.ONES:
+                grid_func = lambda x, y: 1  # noqa: E731
             case _:
                 grid_func = lambda x, y: randint(0, 1)  # noqa: E731
 

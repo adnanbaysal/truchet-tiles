@@ -1,3 +1,5 @@
+# noqa: E731
+
 from enum import Enum
 from random import randint
 from typing import Callable
@@ -15,6 +17,8 @@ class HexGridType(str, Enum):
     XONESCOMPQR = "xonescompqr"  # Like xonescomp, but only q and r coordinates are used
     XTWOSCOMPQR = "xtwoscompqr"  # Like xtwoscomp, but only q and r coordinates are used
     RANDOM = "random"
+    ZEROS = "zeros"
+    ONES = "ones"
 
 
 def parity_if_positive(func: Callable) -> Callable:
@@ -73,6 +77,10 @@ class HexGridGenerator:
                 grid_func = lambda q, r: oc_parity(q) ^ oc_parity(r)  # noqa: E731
             case HexGridType.XTWOSCOMPQR:
                 grid_func = lambda q, r: tc_parity(q) ^ tc_parity(r)  # noqa: E731
+            case HexGridType.ZEROS:
+                grid_func = lambda q, r: 0  # noqa: E731
+            case HexGridType.ONES:
+                grid_func = lambda q, r: 1  # noqa: E731
             case _:
                 grid_func = lambda q, r: randint(0, 1)  # noqa: E731
 
