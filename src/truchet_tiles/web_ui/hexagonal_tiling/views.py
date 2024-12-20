@@ -31,7 +31,7 @@ def index(request: HttpRequest):
             line_color=cleaned_data["line_color"],
             bg_color=cleaned_data["bg_color"],
             connector=cleaned_data["connector"].lower(),
-            hybrid_mode=int(cleaned_data["hybrid_mode"]),
+            hybrid_connector=cleaned_data["hybrid_connector"].lower(),
             animate=cleaned_data["animate"],
             animation_method=cleaned_data["animation_method"],
             show_grid=cleaned_data["show_grid"],

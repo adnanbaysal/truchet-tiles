@@ -1,11 +1,7 @@
 import drawsvg as dw  # type: ignore
 
 from truchet_tiles.common.constants import ANIMATION_BEGIN, ANIMATION_DELAY
-from truchet_tiles.common.enum import (
-    SvgColors,
-    Connector,
-    HybridFill,
-)
+from truchet_tiles.common.enum import SvgColors, Connector
 from truchet_tiles.rectangular.draw.enum import (
     RectAnimationMethod,
     AxisAlignment,
@@ -36,7 +32,7 @@ class RectTilingDrawer:
         edge_length: int,
         align_to_axis: bool = False,
         connector: str = "line",
-        hybrid_mode: int = 0,
+        hybrid_connector: str | None = None,
         animate: bool = False,
         animation_duration: float = 1.0,
         animation_method: str = "at_once",
@@ -62,10 +58,14 @@ class RectTilingDrawer:
         self._line_width = line_width
 
         self._connector = Connector(connector)
+        if hybrid_connector:
+            self._hybrid_connector = Connector(hybrid_connector)
+        else:
+            self._hybrid_connector = self._connector
+
         self._alignment_style = (
             AxisAlignment.aligned if align_to_axis else AxisAlignment.rotated
         )
-        self._hybrid_fill = HybridFill(hybrid_mode)
 
         self._show_grid_lines = show_grid
         self._grid_line_width = grid_line_width
@@ -132,7 +132,7 @@ class RectTilingDrawer:
 
     def _draw(self):
         anim_start = ANIMATION_BEGIN
-        grid_of_fill_side = self._generate_fill_inside_grid()
+        grid_of_fill_inside = self._generate_fill_inside_grid()
 
         for row in range(self._grid_size):
             y_offset = row * self._t_end
@@ -140,39 +140,20 @@ class RectTilingDrawer:
                 x_offset = col * self._t_end
 
                 tile_type = self._grid[row][col]
-                inside_filled = grid_of_fill_side[row][col]
+                inside_filled = grid_of_fill_inside[row][col]
 
                 animate = self._animate and (
                     self._animation_prev_grid[row][col] != self._grid[row][col]
                 )
 
-                if self._connector == Connector.curved:
-                    used_tile = self._get_curved_tile(
-                        x_offset,
-                        y_offset,
-                        tile_type,
-                        inside_filled,
-                        anim_start,
-                        animate,
-                    )
-                else:
-                    func = self.tile_function_map[(self._connector, inside_filled)]
-                    base_tile = func(
-                        tile_type,
-                        self._t_end,
-                        self._line_width,
-                        self._line_color,
-                        self._fill_color,
-                        self._bg_color,
-                        animate,
-                        anim_start,
-                        self._animation_duration,
-                    )
-                    used_tile = dw.Use(
-                        base_tile,
-                        x_offset,
-                        y_offset,
-                    )
+                used_tile = self._get_tile(
+                    x_offset,
+                    y_offset,
+                    tile_type,
+                    inside_filled,
+                    anim_start,
+                    animate,
+                )
 
                 if animate:
                     self._append_rotation(row, col, used_tile, anim_start)
@@ -235,7 +216,7 @@ class RectTilingDrawer:
             return _grid[row - 1][col]
         raise ValueError("Invalid row and column")
 
-    def _get_curved_tile(
+    def _get_tile(
         self,
         x_offset: int,
         y_offset: int,
@@ -244,13 +225,8 @@ class RectTilingDrawer:
         anim_start: float,
         animate: bool,
     ):
-        h_not_2 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_1)
-        h_not_1 = self._hybrid_fill in (HybridFill.none, HybridFill.hybrid_2)
-
-        if (inside_filled and h_not_2) or (not inside_filled and h_not_1):
-            func = self.tile_function_map[(Connector.curved, inside_filled)]
-        else:
-            func = self.tile_function_map[(Connector.line, inside_filled)]
+        connector = self._connector if inside_filled else self._hybrid_connector
+        func = self.tile_function_map[(connector, inside_filled)]
 
         base_tile = func(
             tile_type,

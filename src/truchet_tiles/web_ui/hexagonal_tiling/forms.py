@@ -13,7 +13,7 @@ INITIAL_TILING_VALUES = {
     "function": HexGridType.XSIGNMAG.value.upper(),
     "dimension": 8,
     "connector": Connector.twoline.value,
-    "hybrid_mode": 0,
+    "hybrid_connector": None,
     "flat_top": True,
     "line_width": 2,
     "line_color": "#264653",
@@ -49,9 +49,9 @@ class HexTilingForm(forms.Form):
         widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )
-    hybrid_mode = forms.ChoiceField(
-        choices=[(0, "None"), (1, "Mode 1"), (2, "Mode 2")],
-        initial=INITIAL_TILING_VALUES["hybrid_mode"],
+    hybrid_connector = forms.ChoiceField(
+        choices=[(None, "NONE"), *connectors],
+        initial=INITIAL_TILING_VALUES["hybrid_connector"],
         widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )

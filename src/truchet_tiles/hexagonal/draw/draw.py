@@ -1,11 +1,7 @@
 import drawsvg as dw  # type: ignore
 
 from truchet_tiles.common.constants import ANIMATION_BEGIN, ANIMATION_DELAY
-from truchet_tiles.common.enum import (
-    SvgColors,
-    Connector,
-    HybridFill,
-)
+from truchet_tiles.common.enum import SvgColors, Connector
 from truchet_tiles.hexagonal.draw.enum import HexAnimationMethod, HexTop
 from truchet_tiles.hexagonal.draw.tile_generator import (
     create_inside_filled_curved_base_tile,
@@ -41,7 +37,7 @@ class HexTilingDrawer:
         edge_length: int,
         flat_top: bool = False,
         connector: str = "twoline",
-        hybrid_mode: int = 0,
+        hybrid_connector: str | None = None,
         animate: bool = False,
         animation_method: str = "at_once",
         animation_duration: float = 0.5,
@@ -72,7 +68,10 @@ class HexTilingDrawer:
         self._line_width = line_width
 
         self._connector = Connector(connector)
-        self._hybrid_fill = HybridFill(hybrid_mode)
+        if hybrid_connector:
+            self._hybrid_connector = Connector(hybrid_connector)
+        else:
+            self._hybrid_connector = self._connector
 
         self._show_grid_lines = show_grid
         self._grid_line_width = grid_line_width
@@ -157,22 +156,7 @@ class HexTilingDrawer:
                 elif self._animation_method == HexAnimationMethod.at_once:
                     anim_start = ANIMATION_BEGIN
 
-            if self._connector == Connector.curved:
-                used_tile = self._get_curved_tile(hex_data, anim_start, animate)
-            else:
-                func = self.tile_function_map[(self._connector, hex_data.value)]
-                base_tile = func(
-                    self._edge_length,
-                    self._orientation_name,
-                    self._line_width,
-                    self._line_color,
-                    self._fill_color,
-                    self._bg_color,
-                    animate,
-                    anim_start,
-                    self._animation_duration,
-                )
-                used_tile = dw.Use(base_tile, hex_data.center.x, hex_data.center.y)
+            used_tile = self._get_tile(hex_data, anim_start, animate)
 
             if animate:
                 self._append_rotation(hex_data, used_tile, anim_start)
@@ -201,19 +185,9 @@ class HexTilingDrawer:
             _get_rotation(anim_start, self._animation_duration, 60, 120)
         )
 
-    def _get_curved_tile(self, hex_data: HexGridData, anim_start: float, animate: bool):
-        if self._hybrid_fill == HybridFill.none:
-            func = func = self.tile_function_map[(Connector.curved, hex_data.value)]
-        elif self._hybrid_fill == HybridFill.hybrid_1:
-            if hex_data.value == 0:
-                func = func = self.tile_function_map[(Connector.line, 0)]
-            else:
-                func = func = self.tile_function_map[(Connector.curved, 1)]
-        else:
-            if hex_data.value == 0:
-                func = func = self.tile_function_map[(Connector.curved, 0)]
-            else:
-                func = func = self.tile_function_map[(Connector.twoline, 1)]
+    def _get_tile(self, hex_data: HexGridData, anim_start: float, animate: bool):
+        connector = self._connector if hex_data.value == 0 else self._hybrid_connector
+        func = self.tile_function_map[(connector, hex_data.value)]
 
         base_tile = func(
             self._edge_length,

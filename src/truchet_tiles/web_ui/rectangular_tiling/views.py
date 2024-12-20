@@ -28,7 +28,7 @@ def index(request: HttpRequest):
             function=cleaned_data["function"],
             dimension=cleaned_data["dimension"],
             connector=cleaned_data["connector"].lower(),
-            hybrid_mode=int(cleaned_data["hybrid_mode"]),
+            hybrid_connector=cleaned_data["hybrid_connector"].lower(),
             align_to_axis=cleaned_data["align_to_axis"],
             line_width=cleaned_data["line_width"],
             line_color=cleaned_data["line_color"],
