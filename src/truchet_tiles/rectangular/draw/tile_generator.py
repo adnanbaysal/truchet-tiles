@@ -40,8 +40,20 @@ def _get_lines(
 ) -> tuple[dw.Line, dw.Line]:
     left0, left1, _, right0, right1, _ = _get_line_points(tile_type, edge_length)
 
-    line_left = dw.Line(*left0, *left1, stroke_width=line_width, stroke=line_color)
-    line_right = dw.Line(*right0, *right1, stroke_width=line_width, stroke=line_color)
+    line_left = dw.Line(
+        *left0,
+        *left1,
+        stroke_width=line_width,
+        stroke=line_color,
+        stroke_linecap="round",
+    )
+    line_right = dw.Line(
+        *right0,
+        *right1,
+        stroke_width=line_width,
+        stroke=line_color,
+        stroke_linecap="round",
+    )
     return line_left, line_right
 
 
@@ -131,6 +143,7 @@ def _get_arcs(
         *left_degrees,
         stroke_width=line_width,
         stroke=line_color,
+        stroke_linecap="round",
     )
     curve_right = dw.Arc(
         *right_center,
@@ -138,6 +151,7 @@ def _get_arcs(
         *right_degrees,
         stroke_width=line_width,
         stroke=line_color,
+        stroke_linecap="round",
     )
 
     return curve_left, curve_right
@@ -180,6 +194,7 @@ def _get_twolines(
         *left2,
         stroke_width=line_width,
         stroke=line_color,
+        stroke_linecap="round",
     )
     lines_right = dw.Lines(
         *right0,
@@ -187,6 +202,7 @@ def _get_twolines(
         *right2,
         stroke_width=line_width,
         stroke=line_color,
+        stroke_linecap="round",
     )
 
     return lines_left, lines_right

@@ -48,6 +48,7 @@ def _get_lines(
             hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].y,
             stroke_width=line_width,
             stroke=line_color,
+            stroke_linecap="round",
         )
         for i in range(3)
     ]
@@ -71,6 +72,7 @@ def _get_arcs(
             ),
             stroke_width=line_width,
             stroke=line_color,
+            stroke_linecap="round",
         )
         for i in range(3)
     ]
@@ -89,6 +91,7 @@ def _get_twolines(
             hex_geometry.edge_mids[(2 * i + 1 + tile_type) % 6].y,
             stroke_width=line_width,
             stroke=line_color,
+            stroke_linecap="round",
         )
         for i in range(3)
     ]
