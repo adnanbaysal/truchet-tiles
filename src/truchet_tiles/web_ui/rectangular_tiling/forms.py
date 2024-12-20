@@ -16,7 +16,7 @@ INITIAL_TILING_VALUES = {
     "function": RectGridType.XOR.value.upper(),
     "dimension": 16,
     "connector": Connector.line.value,
-    "hybrid_mode": 0,
+    "hybrid_connector": None,
     "align_to_axis": False,
     "line_width": 2,
     "line_color": "#264653",
@@ -52,9 +52,9 @@ class RectTilingForm(forms.Form):
         widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )
-    hybrid_mode = forms.ChoiceField(
-        choices=[(0, "None"), (1, "Mode 1"), (2, "Mode 2")],
-        initial=INITIAL_TILING_VALUES["hybrid_mode"],
+    hybrid_connector = forms.ChoiceField(
+        choices=[(None, "NONE"), *connectors],
+        initial=INITIAL_TILING_VALUES["hybrid_connector"],
         widget=forms.Select(attrs={"onchange": "submit();"}),
         required=False,
     )
