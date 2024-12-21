@@ -1,3 +1,4 @@
+from collections import defaultdict
 from enum import Enum
 from functools import cache
 from random import randint
@@ -21,7 +22,9 @@ class RectGridType(str, Enum):
 
 
 @cache
-def get_rect_grid(grid_size: int, grid_type: RectGridType) -> list[list[int]]:
+def get_rect_grid(
+    grid_size: int, grid_type: RectGridType
+) -> defaultdict[tuple[int, int], int]:
     match grid_type:
         case RectGridType.XOR:
             grid_func = lambda x, y: parity(x ^ y)  # noqa: E731
@@ -48,4 +51,7 @@ def get_rect_grid(grid_size: int, grid_type: RectGridType) -> list[list[int]]:
         case _:
             grid_func = lambda x, y: randint(0, 1)  # noqa: E731
 
-    return [[grid_func(x, y) for x in range(grid_size)] for y in range(grid_size)]
+    return defaultdict(
+        int,
+        (((x, y), grid_func(x, y)) for x in range(grid_size) for y in range(grid_size)),
+    )

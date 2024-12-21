@@ -1,3 +1,4 @@
+from collections import defaultdict
 from enum import Enum
 from functools import cache
 from random import randint
@@ -44,11 +45,8 @@ def tc_parity(x: int) -> int:  # parity for twos copmlement (tc) form
 
 @cache
 def get_hex_grid(
-    grid_dimension: int, grid_type: str, custom_grid_func: str | None = None
-) -> dict[tuple[int, int], int]:
-    if custom_grid_func:
-        raise NotImplementedError("Custom grid functions are not supported yet")
-
+    grid_dimension: int, grid_type: str
+) -> defaultdict[tuple[int, int], int]:
     match grid_type:
         case HexGridType.XSIGNMAG:
             grid_func = lambda q, r: sm_parity(q) ^ sm_parity(r) ^ sm_parity(-q - r)  # noqa: E731
@@ -69,9 +67,12 @@ def get_hex_grid(
         case _:
             grid_func = lambda q, r: randint(0, 1)  # noqa: E731
 
-    return {
-        (q, r): grid_func(q, r)
-        for q in range(-grid_dimension + 1, grid_dimension)
-        for r in range(-grid_dimension + 1, grid_dimension)
-        if -grid_dimension < (q + r) < grid_dimension
-    }
+    return defaultdict(
+        int,
+        (
+            ((q, r), grid_func(q, r))
+            for q in range(-grid_dimension + 1, grid_dimension)
+            for r in range(-grid_dimension + 1, grid_dimension)
+            if -grid_dimension < (q + r) < grid_dimension
+        ),
+    )

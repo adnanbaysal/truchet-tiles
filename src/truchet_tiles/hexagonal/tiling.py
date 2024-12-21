@@ -18,7 +18,7 @@ def get_hexagonal_tiling(
     show_grid: bool = False,
     line_width: int = 1,
     dimension: int = 8,
-    edge_length: int = 32,
+    edge_length: float = 32,
     animation_duration: float = 1.0,
     rand_seed: int = 0,
     grid_line_width: float = 0.5,

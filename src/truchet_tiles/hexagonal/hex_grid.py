@@ -1,5 +1,6 @@
 # NOTE: Adapted from: https://www.redblobgames.com/grids/hexagons/
 
+from collections import defaultdict
 from dataclasses import dataclass
 import math
 
@@ -127,9 +128,11 @@ class HexGridData:
 class HexGrid(dict):
     def __init__(
         self,
-        hex_grid: dict[tuple[int, int], int],
+        dimension: int,
+        hex_grid: defaultdict[tuple[int, int], int],
         layout: Layout,
     ) -> None:
+        self._dimension = dimension
         self._hex_grid: dict[Hex, HexGridData] = {}
         self._layout = layout
         self._calculate_hex_grid(hex_grid)
@@ -147,19 +150,20 @@ class HexGrid(dict):
         return self._hex_grid.items()
 
     def _calculate_hex_grid(self, hex_grid: dict[tuple[int, int], int]):
-        for key, value in hex_grid.items():
-            q, r = key
-            s = -q - r
-            hex_ = Hex(q, r, s)
+        for q in range(-self._dimension + 1, self._dimension):
+            for r in range(-self._dimension + 1, self._dimension):
+                if -self._dimension < (q + r) < self._dimension:
+                    s = -q - r
+                    hex_ = Hex(q, r, s)
 
-            hex_geometry = HexGeometry(self._layout, hex_)
-            center = hex_geometry.center
-            corners = hex_geometry.corners
-            mids = hex_geometry.edge_mids
+                    hex_geometry = HexGeometry(self._layout, hex_)
+                    center = hex_geometry.center
+                    corners = hex_geometry.corners
+                    mids = hex_geometry.edge_mids
 
-            self._hex_grid[Hex(q, r, s)] = HexGridData(
-                value=value,
-                center=center,
-                corners=corners,
-                mids=mids,
-            )
+                    self._hex_grid[Hex(q, r, s)] = HexGridData(
+                        value=hex_grid[(q, r)],
+                        center=center,
+                        corners=corners,
+                        mids=mids,
+                    )

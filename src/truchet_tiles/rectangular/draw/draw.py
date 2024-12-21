@@ -1,3 +1,4 @@
+from collections import defaultdict
 import drawsvg as dw  # type: ignore
 
 from truchet_tiles.common.constants import ANIMATION_BEGIN, ANIMATION_DELAY
@@ -28,8 +29,9 @@ class RectTilingDrawer:
 
     def __init__(
         self,
-        grid: list[list[int]],
-        edge_length: int,
+        dimension: int,
+        grid: defaultdict[tuple[int, int], int],
+        edge_length: float,
         align_to_axis: bool = False,
         connector: str = "line",
         hybrid_connector: str | None = None,
@@ -44,16 +46,13 @@ class RectTilingDrawer:
         fill_color: str = SvgColors.BLACK,
         grid_color: str = SvgColors.RED,
     ) -> None:
-        assert all(
-            len(row) == len(grid) for row in grid
-        ), "grid should have the same number of rows as the number of columns"
-        self._grid = grid
+        self._grid: defaultdict[tuple[int, int], int] = grid
 
         assert edge_length > 0, "eldge_length must be positive"
-        self._t_end = edge_length
-        self._t_mid = int(self._t_end / 2)
-        self._grid_size = len(self._grid)
-        self._draw_size = self._grid_size * self._t_end
+        self._edge_length = edge_length
+        self._edge_mid = self._edge_length / 2
+        self._dimension = dimension
+        self._draw_size = self._dimension * self._edge_length
 
         self._line_width = line_width
 
@@ -77,7 +76,7 @@ class RectTilingDrawer:
 
         self._animate = animate
         self._animation_method = RectAnimationMethod(animation_method)
-        self._animation_prev_grid = [[0] * self._grid_size] * self._grid_size
+        self._animation_prev_grid: defaultdict[tuple[int, int], int] = defaultdict(int)
         self._animation_duration = animation_duration
 
         self._svg = dw.Drawing(
@@ -109,7 +108,7 @@ class RectTilingDrawer:
 
     def _get_transform(self):
         return (
-            f"matrix(.5 -.5 .5 .5 0 {self._t_end * self._grid_size / 2})"
+            f"matrix(.5 -.5 .5 .5 0 {self._edge_length * self._dimension / 2})"
             if self._alignment_style == AxisAlignment.aligned
             else None
         )
@@ -134,16 +133,16 @@ class RectTilingDrawer:
         anim_start = ANIMATION_BEGIN
         grid_of_fill_inside = self._generate_fill_inside_grid()
 
-        for row in range(self._grid_size):
-            y_offset = row * self._t_end
-            for col in range(self._grid_size):
-                x_offset = col * self._t_end
+        for row in range(self._dimension):
+            y_offset = row * self._edge_length
+            for col in range(self._dimension):
+                x_offset = col * self._edge_length
 
-                tile_type = self._grid[row][col]
-                inside_filled = grid_of_fill_inside[row][col]
+                tile_type = self._grid[(row, col)]
+                inside_filled = grid_of_fill_inside[(row, col)]
 
                 animate = self._animate and (
-                    self._animation_prev_grid[row][col] != self._grid[row][col]
+                    self._animation_prev_grid[(row, col)] != self._grid[(row, col)]
                 )
 
                 used_tile = self._get_tile(
@@ -161,7 +160,7 @@ class RectTilingDrawer:
                 self._svg_top_group.append(used_tile)
 
                 if self._animation_method == RectAnimationMethod.by_tile:
-                    if self._grid[row][col] != self._animation_prev_grid[row][col]:
+                    if self._grid[(row, col)] != self._animation_prev_grid[(row, col)]:
                         anim_start += self._animation_duration
 
             if self._animation_method == RectAnimationMethod.by_row:
@@ -170,8 +169,8 @@ class RectTilingDrawer:
     def _append_rotation(
         self, row: int, col: int, used_tile: dw.Use, anim_start: float
     ):
-        x_offset = col * self._t_end
-        y_offset = row * self._t_end
+        x_offset = col * self._edge_length
+        y_offset = row * self._edge_length
 
         def _get_rotation(begin, dur, start_deg, end_deg):
             return dw.AnimateTransform(
@@ -179,8 +178,8 @@ class RectTilingDrawer:
                 begin=begin,
                 dur=dur,
                 type="rotate",
-                from_or_values=f"{start_deg} {x_offset + self._t_mid} {y_offset + self._t_mid}",
-                to=f"{end_deg} {x_offset + self._t_mid} {y_offset + self._t_mid}",
+                from_or_values=f"{start_deg} {x_offset + self._edge_mid} {y_offset + self._edge_mid}",
+                to=f"{end_deg} {x_offset + self._edge_mid} {y_offset + self._edge_mid}",
                 fill="freeze",
                 repeatCount="1",
             )
@@ -191,29 +190,30 @@ class RectTilingDrawer:
             _get_rotation(anim_start, self._animation_duration, 90, 180)
         )
 
-    def _generate_fill_inside_grid(self) -> list[list[int]]:
-        _grid: list[list[int]] = []
-        for grid_row in range(self._grid_size):
-            _grid.append([])
-            for grid_col in range(self._grid_size):
+    def _generate_fill_inside_grid(self) -> defaultdict[tuple[int, int], int]:
+        fill_inside_grid: defaultdict[tuple[int, int], int] = defaultdict(int)
+        for grid_row in range(self._dimension):
+            for grid_col in range(self._dimension):
                 neighbor = self._neighbor_cell(self._grid, grid_row, grid_col)
-                bit_changed = self._grid[grid_row][grid_col] ^ neighbor
+                bit_changed = self._grid[(grid_row, grid_col)] ^ neighbor
                 if grid_row == 0 and grid_col == 0:
-                    neighbor_fill = self._grid[0][0]
+                    neighbor_fill = self._grid[(0, 0)]
                 else:
-                    neighbor_fill = self._neighbor_cell(_grid, grid_row, grid_col)
-                _grid[grid_row].append(neighbor_fill ^ bit_changed ^ 1)
+                    neighbor_fill = self._neighbor_cell(
+                        fill_inside_grid, grid_row, grid_col
+                    )
+                fill_inside_grid[(grid_row, grid_col)] = neighbor_fill ^ bit_changed ^ 1
 
-        return _grid
+        return fill_inside_grid
 
     @staticmethod
-    def _neighbor_cell(_grid: list[list[int]], row: int, col: int) -> int:
+    def _neighbor_cell(_grid: dict[tuple[int, int], int], row: int, col: int) -> int:
         if row == 0 and col == 0:
-            return _grid[row][col]
+            return _grid[(row, col)]
         if col > 0:
-            return _grid[row][col - 1]
+            return _grid[(row, col - 1)]
         if row > 0:
-            return _grid[row - 1][col]
+            return _grid[(row - 1, col)]
         raise ValueError("Invalid row and column")
 
     def _get_tile(
@@ -230,7 +230,7 @@ class RectTilingDrawer:
 
         base_tile = func(
             tile_type,
-            self._t_end,
+            self._edge_length,
             self._line_width,
             self._line_color,
             self._fill_color,
@@ -243,22 +243,22 @@ class RectTilingDrawer:
         return dw.Use(base_tile, x_offset, y_offset)
 
     def _draw_grid_lines(self):
-        for i in range(self._grid_size + 1):
+        for i in range(self._dimension + 1):
             self._svg_top_group.append(
                 dw.Line(
                     0,
-                    i * self._t_end,
+                    i * self._edge_length,
                     self._draw_size,
-                    i * self._t_end,
+                    i * self._edge_length,
                     stroke=self._grid_color,
                     stroke_width=self._grid_line_width,
                 )
             )
             self._svg_top_group.append(
                 dw.Line(
-                    i * self._t_end,
+                    i * self._edge_length,
                     0,
-                    i * self._t_end,
+                    i * self._edge_length,
                     self._draw_size,
                     stroke=self._grid_color,
                     stroke_width=self._grid_line_width,

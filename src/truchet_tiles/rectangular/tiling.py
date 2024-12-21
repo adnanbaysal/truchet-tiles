@@ -18,7 +18,7 @@ def get_rectangular_tiling(
     show_grid: bool = False,
     line_width: int = 1,
     dimension: int = 8,
-    edge_length: int = 32,
+    edge_length: float = 32.0,
     animation_duration: float = 1.0,
     rand_seed: int = 0,
     grid_line_width: float = 0.5,
@@ -34,6 +34,7 @@ def get_rectangular_tiling(
     grid = get_rect_grid(dimension, RectGridType(function.lower()))
 
     drawer = RectTilingDrawer(
+        dimension=dimension,
         grid=grid,
         edge_length=edge_length,
         align_to_axis=align_to_axis,

@@ -1,3 +1,4 @@
+from collections import defaultdict
 import drawsvg as dw  # type: ignore
 
 from truchet_tiles.common.constants import ANIMATION_BEGIN, ANIMATION_DELAY
@@ -33,8 +34,8 @@ class HexTilingDrawer:
     def __init__(
         self,
         dimension: int,
-        grid: dict[tuple[int, int], int],
-        edge_length: int,
+        grid: defaultdict[tuple[int, int], int],
+        edge_length: float,
         flat_top: bool = False,
         connector: str = "twoline",
         hybrid_connector: str | None = None,
@@ -51,9 +52,6 @@ class HexTilingDrawer:
     ) -> None:
         assert dimension > 0, "dimension must be positive"
         self._dimension = dimension
-
-        assert len(grid) == 1 + sum(6 * i for i in range(dimension))
-
         assert edge_length > 0, "edge_length must be positive"
         self._edge_length = edge_length
         self._draw_size = 2 * (2 * self._dimension - 1) * self._edge_length
@@ -61,9 +59,7 @@ class HexTilingDrawer:
         self._orientation_name = HexTop.flat if flat_top else HexTop.pointy
         self._orientation = ORIENTATIONS[self._orientation_name]
         self._grid = grid
-        self._hex_grid = (
-            self._calculate_hex_grid()
-        )  # NOTE: grid should be updated if orientation changed
+        self._hex_grid = self._calculate_hex_grid()
 
         self._line_width = line_width
 
@@ -105,7 +101,7 @@ class HexTilingDrawer:
             origin=Point(0, 0),
         )
 
-        return HexGrid(hex_grid=self._grid, layout=layout)
+        return HexGrid(dimension=self._dimension, hex_grid=self._grid, layout=layout)
 
     @property
     def svg(self):
