@@ -39,7 +39,7 @@ class HexTilingForm(forms.Form):
     dimension = forms.IntegerField(
         initial=INITIAL_TILING_VALUES["dimension"],
         min_value=1,
-        max_value=64,
+        max_value=1024,
         widget=forms.NumberInput(attrs={"onchange": "submit();"}),
         required=False,
     )
