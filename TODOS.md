@@ -5,6 +5,7 @@
     - My triangle construction to form a hexagon
     - All of the above arranged as anti-diagonals in a rectangular grid
     - All of the above with both mod 2 and bitsum (XOR)
+    - All of the above in rectangular form where half of the anti-diagonal is computed by reflecting over main antidiagonal
 
 * Show the 0-1 grid on the right side of the web page
 * Support user custom grid: User provide a grid of 0-1s from web-ui and app creates the corresponding tiling
