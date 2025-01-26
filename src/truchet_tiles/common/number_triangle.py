@@ -102,9 +102,3 @@ def get_baysal_triangle(height: int) -> NumberTriangle:
         rows[row][-1] = edge_value
 
     return NumberTriangle(as_rows=rows)
-
-
-bt = get_baysal_triangle(8)
-print(bt)
-print("\n".join([str(row) for row in bt.as_rows]))
-print(bt.as_sequence)
