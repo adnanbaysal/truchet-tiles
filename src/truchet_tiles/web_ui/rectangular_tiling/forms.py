@@ -1,7 +1,7 @@
 from django import forms  # type: ignore
 
 from truchet_tiles.common.enum import Connector
-from truchet_tiles.rectangular.grid_generator import RectGridType
+from truchet_tiles.rectangular.grid.generator import RectGridType
 from truchet_tiles.rectangular.draw.enum import RectAnimationMethod
 
 connectors = [
