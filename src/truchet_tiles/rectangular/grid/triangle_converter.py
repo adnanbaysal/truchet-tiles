@@ -1,5 +1,5 @@
 from collections import defaultdict
-from truchet_tiles.common.number_triangle import NumberTriangle, get_pascal_triangle
+from truchet_tiles.common.number_triangle import NumberTriangle
 
 
 def triangle_to_subsquare(
@@ -41,13 +41,3 @@ def triangle_to_reflected_square(
             reflected_square[(row, col)] = reflected_square[(n - 1 - col, n - 1 - row)]
 
     return reflected_square
-
-
-n = 8
-pt = get_pascal_triangle(n)
-square = triangle_to_reflected_square(pt)
-
-for r in range(n):
-    for c in range(n):
-        print(f"{square[(r, c)]:2d}", end=" ")
-    print()
