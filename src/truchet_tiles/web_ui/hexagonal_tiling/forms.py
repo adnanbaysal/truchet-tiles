@@ -1,3 +1,4 @@
+from typing import Any
 from django import forms  # type: ignore
 
 from truchet_tiles.common.enum import Connector
@@ -9,7 +10,7 @@ grid_types = [(gt.value.upper(), gt.value.upper()) for gt in HexGridType]
 animation_methods = [(m.value, m.value.replace("_", " ")) for m in HexAnimationMethod]
 
 
-INITIAL_TILING_VALUES = {
+INITIAL_TILING_VALUES: dict[str, Any] = {
     "function": HexGridType.XSIGNMAG.value.upper(),
     "dimension": 8,
     "connector": Connector.twoline.value,

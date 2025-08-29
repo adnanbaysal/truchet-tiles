@@ -1,3 +1,4 @@
+from typing import Any
 from django import forms  # type: ignore
 
 from truchet_tiles.common.enum import Connector
@@ -12,7 +13,7 @@ connectors = [
 grid_types = [(gt.value.upper(), gt.value.upper()) for gt in RectGridType]
 animation_methods = [(m.value, m.value.replace("_", " ")) for m in RectAnimationMethod]
 
-INITIAL_TILING_VALUES = {
+INITIAL_TILING_VALUES: dict[str, Any] = {
     "function": RectGridType.XOR.value.upper(),
     "dimension": 16,
     "connector": Connector.line.value,
