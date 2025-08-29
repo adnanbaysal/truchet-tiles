@@ -12,7 +12,7 @@ def triangle_to_subsquare(
     height = height if height % 2 == 1 else height - 1
     n = (height + 1) // 2
 
-    subsquare = defaultdict(int)
+    subsquare: defaultdict[tuple[int, int], int] = defaultdict(int)
     for col in range(n):
         for row in range(n):
             subsquare[(row, col)] = triangle.as_rows[row + col][col]
@@ -28,7 +28,7 @@ def triangle_to_reflected_square(
     # If there are n rows, the square will be n x n
     n = len(triangle.as_rows)
 
-    reflected_square = defaultdict(int)
+    reflected_square: defaultdict[tuple[int, int], int] = defaultdict(int)
 
     # Fill the reflected_square with triangle.as_rows in anti-diagonal order
     for row in range(n):
