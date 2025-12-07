@@ -4,7 +4,7 @@ from functools import cache
 
 from truchet_tiles.common.enum import SvgColors
 from truchet_tiles.rectangular.draw import RectTilingDrawer
-from truchet_tiles.rectangular.grid_generator import RectGridType, get_rect_grid
+from truchet_tiles.rectangular.grid.generator import RectGridType, get_rect_grid
 
 
 @cache
